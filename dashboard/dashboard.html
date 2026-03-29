@@ -1,0 +1,869 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Quote Follow Up | Dashboard</title>
+
+    <link rel="icon" href="../shared-assets/images/favicon.svg" type="image/svg+xml" />
+    <link rel="icon" href="../shared-assets/images/favicon-32.png" sizes="32x32" type="image/png" />
+    <link rel="apple-touch-icon" href="../shared-assets/images/apple-touch-icon.png" sizes="180x180" />
+    <link rel="shortcut icon" href="../shared-assets/images/favicon.ico" type="image/x-icon" />
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
+    <link rel="stylesheet" href="../landing-page/assets/css/lineicons.css" />
+    <link rel="stylesheet" href="../shared-assets/ud-styles.css" />
+  </head>
+  <body class="qfu-dashboard-page">
+    <section class="qfu-app-shell">
+      <div class="qfu-app-sidebar">
+        <div class="qfu-app-sidebar-top">
+          <a class="navbar-brand qfu-app-brand" href="dashboard.html" aria-label="Quote FollowUp dashboard home">
+            <span class="qfu-app-brand-mark">
+              <img src="../shared-assets/images/logo/icon.svg" alt="" class="qfu-brand-icon" />
+            </span>
+            <span class="qfu-app-brand-text">
+              <strong>Quote Follow Up</strong>
+              <span>Workspace</span>
+            </span>
+          </a>
+          <div class="qfu-workspace-panel">
+            <span>Current workspace</span>
+            <strong>Bluepeak Software</strong>
+          </div>
+          <nav class="qfu-app-nav qfu-app-nav-vertical" aria-label="Workspace sections">
+            <a href="#dashboard" class="active" data-tab="dashboard">Dashboard</a>
+            <a href="#quotes" data-tab="quotes">Quotes</a>
+            <a href="#chase-list" data-tab="chase-list">Chase List</a>
+            <a href="#team" data-tab="team">Team</a>
+            <a href="#analytics" data-tab="analytics">Analytics</a>
+            <a href="#settings" data-tab="settings">Settings</a>
+          </nav>
+        </div>
+        <div class="qfu-app-sidebar-bottom">
+          <a href="#" id="qfu-logout-link" class="qfu-app-logout-link">Sign out</a>
+          <a href="#chase-list" data-tab="chase-list" class="ud-main-btn ud-white-btn qfu-app-secondary-btn">Open Chase List</a>
+          <a href="#quotes" data-tab="quotes" data-focus="quote-title" class="ud-main-btn qfu-app-primary-btn">Add New Quote</a>
+        </div>
+      </div>
+
+      <div class="qfu-app-main">
+        <section class="qfu-dashboard-shell qfu-tab-panel is-active" id="dashboard-panel" data-panel="dashboard">
+          <div class="qfu-app-topbar">
+            <div>
+              <span class="qfu-dashboard-kicker">Workspace dashboard</span>
+              <h1>Good morning, Bluepeak Software</h1>
+              <p>
+                Start with what needs action today, then review pipeline health and recent movement.
+              </p>
+            </div>
+            <div class="qfu-dashboard-hero-sidecard">
+              <span>Today’s focus</span>
+              <strong>7 quotes need attention</strong>
+              <p>Work the queue first, then review anything starting to drift.</p>
+            </div>
+          </div>
+
+          <div class="qfu-dashboard-metrics qfu-dashboard-metrics-compact row">
+            <div class="col-xl col-md-6">
+              <div class="qfu-metric-card wow fadeInUp" data-wow-delay=".05s">
+                <p>Open pipeline</p>
+                <h3>£18,420</h3>
+                <span>Quotes still in play</span>
+              </div>
+            </div>
+            <div class="col-xl col-md-6">
+              <div class="qfu-metric-card wow fadeInUp" data-wow-delay=".1s">
+                <p>Won revenue</p>
+                <h3>£9,860</h3>
+                <span>Closed business this month</span>
+              </div>
+            </div>
+            <div class="col-xl col-md-6">
+              <div class="qfu-metric-card wow fadeInUp" data-wow-delay=".15s">
+                <p>Quotes tracked</p>
+                <h3>42</h3>
+                <span>All records in workspace</span>
+              </div>
+            </div>
+            <div class="col-xl col-md-6">
+              <div class="qfu-metric-card wow fadeInUp" data-wow-delay=".2s">
+                <p>Win rate</p>
+                <h3>38%</h3>
+                <span>Won vs closed quotes</span>
+              </div>
+            </div>
+            <div class="col-xl col-md-6">
+              <div class="qfu-metric-card wow fadeInUp" data-wow-delay=".25s">
+                <p>Needs attention</p>
+                <h3>7</h3>
+                <span>Overdue follow ups</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="qfu-alert-strip wow fadeInUp" data-wow-delay=".05s">
+            <div class="qfu-alert-dot"></div>
+            <div class="qfu-alert-copy">
+              <strong>7 quotes need attention today.</strong>
+              <span>4 are overdue and 3 are due today.</span>
+            </div>
+            <a href="#chase-list" data-tab="chase-list" class="qfu-alert-link">Work through chase list</a>
+          </div>
+
+          <div class="row qfu-dashboard-grid qfu-dashboard-primary-grid">
+            <div class="col-12">
+              <div class="qfu-panel qfu-panel-priority wow fadeInUp" data-wow-delay=".08s">
+                <div class="qfu-panel-header">
+                  <div>
+                    <span>Today’s queue</span>
+                    <h3>Work next</h3>
+                    <p class="qfu-panel-helper">Your live action queue for overdue and due-today follow ups.</p>
+                  </div>
+                  <a href="#chase-list" data-tab="chase-list">Open full chase list</a>
+                </div>
+                <div class="qfu-table-wrap">
+                  <table class="qfu-table">
+                    <thead>
+                      <tr>
+                        <th>Quote</th>
+                        <th>Age</th>
+                        <th>Status</th>
+                        <th>Next follow up</th>
+                        <th>Value</th>
+                        <th>Recommended next step</th>
+                      </tr>
+                    </thead>
+                    <tbody id="qfu-dashboard-attention-body">
+                      <tr>
+                        <td>
+                          <strong>Kitchen rewiring - Harris</strong>
+                          <span>Sent 4 days ago</span>
+                        </td>
+                        <td><span class="qfu-badge qfu-badge-overdue">Overdue</span></td>
+                        <td>2 days ago</td>
+                        <td>£3,250</td>
+                        <td><a href="javascript:void(0)">Send follow up</a></td>
+                      </tr>
+                      <tr>
+                        <td>
+                          <strong>Boiler replacement - Ahmed</strong>
+                          <span>Awaiting reply</span>
+                        </td>
+                        <td><span class="qfu-badge qfu-badge-today">Due today</span></td>
+                        <td>Today, 2:00 PM</td>
+                        <td>£2,940</td>
+                        <td><a href="javascript:void(0)">Open quote</a></td>
+                      </tr>
+                      <tr>
+                        <td>
+                          <strong>Shop front repaint - Carter</strong>
+                          <span>Second follow up pending</span>
+                        </td>
+                        <td><span class="qfu-badge qfu-badge-overdue">Overdue</span></td>
+                        <td>Yesterday</td>
+                        <td>£1,780</td>
+                        <td><a href="javascript:void(0)">Mark contacted</a></td>
+                      </tr>
+                      <tr>
+                        <td>
+                          <strong>Patio clean and seal - Wilkes</strong>
+                          <span>New quote sent</span>
+                        </td>
+                        <td><span class="qfu-badge qfu-badge-open">Open</span></td>
+                        <td>Tomorrow</td>
+                        <td>£890</td>
+                        <td><a href="javascript:void(0)">Schedule chase</a></td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="row qfu-dashboard-grid">
+            <div class="col-lg-8">
+              <div class="qfu-panel qfu-dashboard-pipeline wow fadeInUp" data-wow-delay=".12s">
+                <div class="qfu-panel-header">
+                  <div>
+                    <span>Pipeline</span>
+                    <h3>Pipeline at a glance</h3>
+                    <p class="qfu-panel-helper">A quick read on where value is sitting across the quote pipeline.</p>
+                  </div>
+                </div>
+                <div class="row qfu-pipeline-grid">
+                  <div class="col-md-3 col-6"><div class="qfu-pipeline-card qfu-pipeline-draft"><label>Draft</label><strong id="qfu-pipeline-draft-count">5</strong><span id="qfu-pipeline-draft-value">£0 waiting to send</span></div></div>
+                  <div class="col-md-3 col-6"><div class="qfu-pipeline-card qfu-pipeline-sent"><label>Sent</label><strong id="qfu-pipeline-sent-count">14</strong><span id="qfu-pipeline-sent-value">£0 waiting first reply</span></div></div>
+                  <div class="col-md-3 col-6"><div class="qfu-pipeline-card qfu-pipeline-due"><label>Follow up due</label><strong id="qfu-pipeline-due-count">7</strong><span id="qfu-pipeline-due-value">£0 needs action now</span></div></div>
+                  <div class="col-md-3 col-6"><div class="qfu-pipeline-card qfu-pipeline-won"><label>Won</label><strong id="qfu-pipeline-won-count">9</strong><span id="qfu-pipeline-won-value">£0 booked work</span></div></div>
+                </div>
+              </div>
+
+              <div class="qfu-panel wow fadeInUp" data-wow-delay=".16s">
+                <div class="qfu-panel-header">
+                  <div>
+                    <span>Recent activity</span>
+                    <h3>Recent activity</h3>
+                    <p class="qfu-panel-helper">A fast read on quote changes, replies, and status movement.</p>
+                  </div>
+                </div>
+                <ul class="qfu-activity-list">
+                  <li><strong>Boiler replacement - Ahmed</strong><span>Marked follow up due · 15 mins ago</span></li>
+                  <li><strong>Kitchen rewiring - Harris</strong><span>Follow up email opened · 42 mins ago</span></li>
+                  <li><strong>Front garden wall - Patel</strong><span>Status changed to won · 1 hour ago</span></li>
+                  <li><strong>Office repaint - Carter</strong><span>New quote added · 3 hours ago</span></li>
+                </ul>
+              </div>
+            </div>
+
+            <div class="col-lg-4">
+              <div class="qfu-panel wow fadeInUp" data-wow-delay=".1s">
+                <div class="qfu-panel-header">
+                  <div>
+                    <span>Simple snapshot</span>
+                    <h3>Outcome snapshot</h3>
+                    <p class="qfu-panel-helper">Lightweight reporting for today — enough signal without crowding the workflow.</p>
+                  </div>
+                </div>
+                <div class="qfu-team-summary qfu-dashboard-summary-grid">
+                  <div><label>Team members</label><strong id="qfu-dashboard-team-count">3 active</strong></div>
+                  <div><label>Sent</label><strong id="qfu-dashboard-sent-total">11</strong></div>
+                  <div><label>Need action</label><strong id="qfu-dashboard-due-total">7</strong></div>
+                  <div><label>Won</label><strong id="qfu-dashboard-won-total">9</strong></div>
+                  <div><label>Lost</label><strong id="qfu-dashboard-lost-total">4</strong></div>
+                  <div><label>Booked value</label><strong id="qfu-dashboard-booked-total">£4,120</strong></div>
+                </div>
+              </div>
+
+              <div class="qfu-panel wow fadeInUp" data-wow-delay=".18s">
+                <div class="qfu-panel-header">
+                  <div>
+                    <span>Stale quotes</span>
+                    <h3>At risk of drifting</h3>
+                    <p class="qfu-panel-helper">Old open quotes that need a decision, a chase, or a close-out.</p>
+                  </div>
+                  <a href="#quotes" data-tab="quotes">Review all quotes</a>
+                </div>
+                <ul class="qfu-activity-list qfu-activity-list-compact" id="qfu-dashboard-stale-list">
+                  <li><strong>No stale quotes yet</strong><span>Your oldest open quotes will appear here.</span></li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="qfu-dashboard-shell qfu-tab-panel" id="quotes-panel" data-panel="quotes" hidden>
+          <div class="qfu-section-heading">
+            <div>
+              <span>Quotes</span>
+              <h2>Records first, editing second</h2>
+              <p>Open a quote from the list, review the details, make the update, and move on without extra clutter.</p>
+            </div>
+            <div class="qfu-inline-actions">
+              <a href="#quotes" data-tab="quotes" data-focus="quote-title" class="ud-main-btn qfu-app-primary-btn">Add new quote</a>
+              <a href="#chase-list" data-tab="chase-list" class="ud-main-btn ud-white-btn">Open chase list</a>
+            </div>
+          </div>
+
+          <div class="qfu-panel qfu-panel-priority">
+            <div class="qfu-panel-header">
+              <div>
+                <span>Quote records</span>
+                <h3>Current pipeline records</h3>
+                <p class="qfu-panel-helper">Start here. Click any quote row to load it into the editor below.</p>
+              </div>
+            </div>
+            <div class="qfu-table-wrap">
+              <table class="qfu-table">
+                <thead>
+                  <tr>
+                    <th>Quote</th>
+                    <th>Owner</th>
+                    <th>Status</th>
+                    <th>Next follow up</th>
+                    <th>Value</th>
+                  </tr>
+                </thead>
+                <tbody id="qfu-all-quotes-body">
+                  <tr>
+                    <td><strong>Kitchen rewiring - Harris</strong><span>Residential electrical</span></td>
+                    <td>Greg</td>
+                    <td><span class="qfu-badge qfu-badge-overdue">Overdue</span></td>
+                    <td>2 days ago</td>
+                    <td>£3,250</td>
+                  </tr>
+                  <tr>
+                    <td><strong>Boiler replacement - Ahmed</strong><span>Heating installation</span></td>
+                    <td>Ella</td>
+                    <td><span class="qfu-badge qfu-badge-today">Due today</span></td>
+                    <td>Today, 2:00 PM</td>
+                    <td>£2,940</td>
+                  </tr>
+                  <tr>
+                    <td><strong>Office repaint - Carter</strong><span>Commercial repaint</span></td>
+                    <td>Lewis</td>
+                    <td><span class="qfu-badge qfu-badge-open">Open</span></td>
+                    <td>Tomorrow</td>
+                    <td>£1,780</td>
+                  </tr>
+                  <tr>
+                    <td><strong>Garden wall repair - Patel</strong><span>Masonry repair</span></td>
+                    <td>Greg</td>
+                    <td><span class="qfu-badge qfu-badge-open">Sent</span></td>
+                    <td>Monday</td>
+                    <td>£1,150</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="qfu-panel" id="qfu-quote-detail-panel">
+            <div class="qfu-panel-header">
+              <div>
+                <span>Step 2</span>
+                <h3 id="qfu-detail-title">Selected quote</h3>
+                <p class="qfu-panel-helper">Review the loaded record here first, then update it in the editor below.</p>
+              </div>
+            </div>
+            <div class="row qfu-dashboard-grid qfu-quotes-detail-layout">
+              <div class="col-lg-7">
+                <div class="qfu-detail-grid">
+                  <div><label>Status</label><strong id="qfu-detail-status">—</strong></div>
+                  <div><label>Owner</label><strong id="qfu-detail-owner">—</strong></div>
+                  <div><label>Value</label><strong id="qfu-detail-value">—</strong></div>
+                  <div><label>Next follow up</label><strong id="qfu-detail-followup">—</strong></div>
+                </div>
+                <div class="qfu-detail-notes">
+                  <label>Notes</label>
+                  <p id="qfu-detail-notes">Load a quote to inspect its notes and recent actions.</p>
+                </div>
+              </div>
+              <div class="col-lg-5">
+                <div class="qfu-detail-actions">
+                  <label>Quick actions</label>
+                  <div class="qfu-inline-link-actions qfu-inline-link-actions-stack">
+                    <button id="qfu-quote-mark-contacted" type="button" class="qfu-link-button">Mark contacted</button>
+                    <button id="qfu-quote-mark-won" type="button" class="qfu-link-button">Mark won</button>
+                    <button id="qfu-quote-mark-lost" type="button" class="qfu-link-button">Mark lost</button>
+                    <button id="qfu-quote-archive" type="button" class="qfu-link-button">Archive quote</button>
+                    <button id="qfu-quote-delete" type="button" class="qfu-link-button qfu-link-button-danger">Delete quote</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="qfu-detail-activity">
+              <div class="qfu-panel-header qfu-panel-header-tight">
+                <div>
+                  <span>Activity history</span>
+                  <h3>Latest timeline</h3>
+                </div>
+              </div>
+              <ul id="qfu-quote-activity-list" class="qfu-activity-list qfu-activity-list-compact">
+                <li><strong>No quote selected</strong><span>Click a row in the quote table to inspect it here.</span></li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="qfu-panel qfu-panel-editing">
+            <div class="qfu-panel-header">
+              <div>
+                <span id="qfu-quote-form-kicker">Step 3</span>
+                <h3 id="qfu-quote-form-title">Update or add a quote</h3>
+                <p class="qfu-panel-helper">Make the changes you need here, save them, then go back to the records list.</p>
+              </div>
+            </div>
+            <form id="qfu-quote-form" class="qfu-form-grid qfu-prototype-form">
+              <input id="quote-id" type="hidden" />
+              <div>
+                <label for="quote-title">Quote title</label>
+                <input id="quote-title" type="text" placeholder="Kitchen rewiring - Harris" />
+              </div>
+              <div>
+                <label for="quote-value">Value</label>
+                <input id="quote-value" type="text" placeholder="£3,250" />
+              </div>
+              <div>
+                <label for="quote-status">Status</label>
+                <select id="quote-status">
+                  <option>Draft</option>
+                  <option>Sent</option>
+                  <option selected>Follow up due</option>
+                  <option>Replied</option>
+                  <option>Won</option>
+                  <option>Lost</option>
+                </select>
+              </div>
+              <div>
+                <label for="quote-owner">Owner</label>
+                <select id="quote-owner">
+                  <option selected>Greg</option>
+                  <option>Ella</option>
+                  <option>Lewis</option>
+                </select>
+              </div>
+              <div>
+                <label for="quote-date">Sent date</label>
+                <input id="quote-date" type="date" value="2026-03-24" />
+              </div>
+              <div>
+                <label for="quote-followup">Next follow up</label>
+                <input id="quote-followup" type="date" value="2026-03-28" />
+              </div>
+              <div class="qfu-form-span-2">
+                <label for="quote-notes">Notes</label>
+                <textarea id="quote-notes" rows="4" placeholder="Customer asked for two options and wants a callback after 4pm."></textarea>
+              </div>
+              <div id="qfu-quote-form-notice" class="qfu-inline-notice qfu-form-span-2" style="display:none;"></div>
+              <div class="qfu-form-actions qfu-form-span-2 qfu-form-actions-clean">
+                <button id="qfu-quote-save-button" type="submit" class="ud-main-btn qfu-app-primary-btn">Save quote</button>
+                <button id="qfu-quote-clear-button" type="button" class="ud-main-btn ud-white-btn">Clear form</button>
+              </div>
+              <p class="qfu-form-hint qfu-form-span-2">Workflow: open record → review details → edit → save.</p>
+            </form>
+          </div>
+        </section>
+
+        <section class="qfu-dashboard-shell qfu-tab-panel" id="chase-list-panel" data-panel="chase-list" hidden>
+          <div class="qfu-section-heading">
+            <div>
+              <span>Chase List</span>
+              <h2>Know exactly who to follow up today</h2>
+              <p>Prioritise overdue quotes first, then work through today’s follow ups with ready-to-send prompts.</p>
+            </div>
+            <div class="qfu-inline-actions">
+              <a href="#quotes" data-tab="quotes" class="ud-main-btn ud-white-btn">Open quotes</a>
+              <a href="#dashboard" data-tab="dashboard" class="ud-main-btn qfu-app-primary-btn">Back to overview</a>
+            </div>
+          </div>
+
+          <div class="qfu-chase-summary-grid">
+            <div class="qfu-stat-card qfu-stat-card-warn">
+              <label>Overdue</label>
+              <strong id="qfu-chase-overdue-count">0</strong>
+              <span id="qfu-chase-overdue-note">No overdue quotes</span>
+            </div>
+            <div class="qfu-stat-card">
+              <label>Due today</label>
+              <strong id="qfu-chase-due-today-count">0</strong>
+              <span id="qfu-chase-due-today-note">Nothing due today</span>
+            </div>
+            <div class="qfu-stat-card qfu-stat-card-success">
+              <label>Queue value</label>
+              <strong id="qfu-chase-queue-value">£0</strong>
+              <span id="qfu-chase-queue-note">Active follow ups in focus</span>
+            </div>
+          </div>
+
+          <div class="row qfu-dashboard-grid">
+            <div class="col-lg-8">
+              <div class="qfu-panel">
+                <div class="qfu-panel-header">
+                  <div>
+                    <span>Priority queue</span>
+                    <h3>Due and overdue follow ups</h3>
+                  </div>
+                </div>
+                <div id="qfu-chase-action-notice" class="qfu-inline-notice" style="display:none; margin-bottom: 16px;"></div>
+                <div class="qfu-table-wrap">
+                  <table class="qfu-table">
+                    <thead>
+                      <tr>
+                        <th>Customer</th>
+                        <th>Quote</th>
+                        <th>Reason</th>
+                        <th>Suggested action</th>
+                      </tr>
+                    </thead>
+                    <tbody id="qfu-chase-list-body">
+                      <tr>
+                        <td><strong>Harris</strong><span>Kitchen rewiring</span></td>
+                        <td>£3,250</td>
+                        <td><span class="qfu-badge qfu-badge-overdue">2 days overdue</span></td>
+                        <td><a href="#quotes" data-tab="quotes">Send polite follow up</a></td>
+                      </tr>
+                      <tr>
+                        <td><strong>Ahmed</strong><span>Boiler replacement</span></td>
+                        <td>£2,940</td>
+                        <td><span class="qfu-badge qfu-badge-today">Due today</span></td>
+                        <td><a href="#quotes" data-tab="quotes">Open quote record</a></td>
+                      </tr>
+                      <tr>
+                        <td><strong>Carter</strong><span>Shop front repaint</span></td>
+                        <td>£1,780</td>
+                        <td><span class="qfu-badge qfu-badge-overdue">Yesterday</span></td>
+                        <td><a href="#quotes" data-tab="quotes">Mark contacted</a></td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+            <div class="col-lg-4">
+              <div class="qfu-panel">
+                <div class="qfu-panel-header">
+                  <div>
+                    <span>Follow up prompts</span>
+                    <h3>Ready-to-use copy</h3>
+                  </div>
+                </div>
+                <div class="qfu-message-stack">
+                  <div class="qfu-message-card">
+                    <label>First chase</label>
+                    <p>Hi {{name}}, just checking you saw the quote I sent across. Happy to answer any questions or make any changes if helpful.</p>
+                  </div>
+                  <div class="qfu-message-card">
+                    <label>Second chase</label>
+                    <p>Hi {{name}}, following up on the quote again in case it got buried. If you want, I can talk through the options and next steps.</p>
+                  </div>
+                  <div class="qfu-message-card">
+                    <label>Final nudge</label>
+                    <p>Hi {{name}}, I’ll close this quote out for now, but if you’d still like to move forward just reply here and I can pick it straight back up.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="qfu-dashboard-shell qfu-tab-panel" id="team-panel" data-panel="team" hidden>
+          <div class="qfu-section-heading">
+            <div>
+              <span>Team</span>
+              <h2>Keep the workspace aligned</h2>
+              <p>See who owns which quotes, who is sending follow ups, and where extra help is needed.</p>
+            </div>
+          </div>
+
+          <div class="row qfu-dashboard-grid">
+            <div class="col-lg-7">
+              <div class="qfu-panel">
+                <div class="qfu-panel-header">
+                  <div>
+                    <span>Members</span>
+                    <h3>Active workspace team</h3>
+                  </div>
+                </div>
+                <div class="qfu-member-grid">
+                  <div class="qfu-member-card">
+                    <div class="qfu-member-avatar">G</div>
+                    <div><strong>Greg</strong><span>Owner · handles high-value quotes</span></div>
+                    <label>12 active quotes</label>
+                  </div>
+                  <div class="qfu-member-card">
+                    <div class="qfu-member-avatar">E</div>
+                    <div><strong>Ella</strong><span>Ops · handles daily follow ups</span></div>
+                    <label>9 active quotes</label>
+                  </div>
+                  <div class="qfu-member-card">
+                    <div class="qfu-member-avatar">L</div>
+                    <div><strong>Lewis</strong><span>Estimator · drafts and sends quotes</span></div>
+                    <label>7 active quotes</label>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-lg-5">
+              <div class="qfu-panel">
+                <div class="qfu-panel-header">
+                  <div>
+                    <span>Invite</span>
+                    <h3>Add a teammate</h3>
+                  </div>
+                </div>
+                <form id="qfu-team-form" class="qfu-form-grid qfu-prototype-form">
+                  <div>
+                    <label for="team-name">Name</label>
+                    <input id="team-name" type="text" placeholder="Sam" />
+                  </div>
+                  <div>
+                    <label for="team-email">Email</label>
+                    <input id="team-email" type="email" placeholder="sam@example.com" />
+                  </div>
+                  <div class="qfu-form-span-2">
+                    <label for="team-role">Role</label>
+                    <select id="team-role">
+                      <option>Admin</option>
+                      <option selected>Member</option>
+                      <option>Viewer</option>
+                    </select>
+                  </div>
+                  <div class="qfu-form-actions qfu-form-span-2">
+                    <button type="submit" class="ud-main-btn qfu-app-primary-btn">Send invite</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+
+          <div class="qfu-panel">
+            <div class="qfu-panel-header">
+              <div>
+                <span>Ownership</span>
+                <h3>Who is responsible for what</h3>
+              </div>
+            </div>
+            <div class="qfu-table-wrap">
+              <table class="qfu-table">
+                <thead>
+                  <tr>
+                    <th>Team member</th>
+                    <th>Open quotes</th>
+                    <th>Due today</th>
+                    <th>Won this week</th>
+                    <th>Avg reply time</th>
+                  </tr>
+                </thead>
+                <tbody id="qfu-team-ownership-body">
+                  <tr><td><strong>Greg</strong><span>Owner</span></td><td>12</td><td>3</td><td>£2,450</td><td>1.8 days</td></tr>
+                  <tr><td><strong>Ella</strong><span>Ops</span></td><td>9</td><td>2</td><td>£1,200</td><td>2.0 days</td></tr>
+                  <tr><td><strong>Lewis</strong><span>Estimator</span></td><td>7</td><td>2</td><td>£470</td><td>3.1 days</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+
+        <section class="qfu-dashboard-shell qfu-tab-panel" id="analytics-panel" data-panel="analytics" hidden>
+          <div class="qfu-section-heading">
+            <div>
+              <span>Analytics</span>
+              <h2>See what is moving the workspace</h2>
+              <p>Use pipeline value, status mix, ownership, and follow-up pressure to spot what needs attention and where conversion is strongest.</p>
+            </div>
+            <div class="qfu-inline-actions">
+              <a href="#quotes" data-tab="quotes" class="ud-main-btn ud-white-btn">Open quotes</a>
+              <a href="#dashboard" data-tab="dashboard" class="ud-main-btn qfu-app-primary-btn">Back to overview</a>
+            </div>
+          </div>
+
+          <div class="row qfu-dashboard-grid">
+            <div class="col-lg-8">
+              <div class="qfu-panel">
+                <div class="qfu-panel-header">
+                  <div>
+                    <span>Pipeline by status</span>
+                    <h3>Where quote value is sitting</h3>
+                  </div>
+                </div>
+                <div id="qfu-analytics-status-bars" class="qfu-chart-list"></div>
+              </div>
+
+              <div class="qfu-panel">
+                <div class="qfu-panel-header">
+                  <div>
+                    <span>Team performance</span>
+                    <h3>Who owns the current pipeline</h3>
+                  </div>
+                </div>
+                <div id="qfu-analytics-team-bars" class="qfu-chart-list"></div>
+              </div>
+            </div>
+            <div class="col-lg-4">
+              <div class="qfu-panel">
+                <div class="qfu-panel-header">
+                  <div>
+                    <span>Highlights</span>
+                    <h3>Useful workspace signals</h3>
+                  </div>
+                </div>
+                <div class="qfu-stat-stack">
+                  <div class="qfu-stat-card">
+                    <label>Average quote value</label>
+                    <strong id="qfu-analytics-average-value">—</strong>
+                    <span id="qfu-analytics-average-note">—</span>
+                  </div>
+                  <div class="qfu-stat-card qfu-stat-card-warn">
+                    <label>Follow-up pressure</label>
+                    <strong id="qfu-analytics-followup-pressure">—</strong>
+                    <span id="qfu-analytics-followup-note">—</span>
+                  </div>
+                  <div class="qfu-stat-card qfu-stat-card-success">
+                    <label>Best owner</label>
+                    <strong id="qfu-analytics-best-owner">—</strong>
+                    <span id="qfu-analytics-best-owner-note">—</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="qfu-dashboard-shell qfu-tab-panel" id="settings-panel" data-panel="settings" hidden>
+          <div class="qfu-section-heading">
+            <div>
+              <span>Settings</span>
+              <h2>Control how follow ups run</h2>
+              <p>Set the workspace defaults, chase timing, and the behaviour the team sees every day.</p>
+            </div>
+          </div>
+
+          <div class="row qfu-dashboard-grid">
+            <div class="col-lg-7">
+              <div class="qfu-panel">
+                <div class="qfu-panel-header">
+                  <div>
+                    <span>Workspace</span>
+                    <h3>Business defaults</h3>
+                  </div>
+                </div>
+                <form id="qfu-settings-form" class="qfu-form-grid qfu-prototype-form">
+                  <div>
+                    <label for="business-name">Business name</label>
+                    <input id="business-name" type="text" value="Bluepeak Software" />
+                  </div>
+                  <div>
+                    <label for="business-email">Reply email</label>
+                    <input id="business-email" type="email" value="quotes@bluepeak.example" />
+                  </div>
+                  <div>
+                    <label for="currency">Currency</label>
+                    <select id="currency">
+                      <option selected>GBP (£)</option>
+                      <option>USD ($)</option>
+                      <option>EUR (€)</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label for="timezone">Timezone</label>
+                    <select id="timezone">
+                      <option selected>Europe/London</option>
+                      <option>UTC</option>
+                      <option>America/New_York</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label for="first-followup">1st follow up</label>
+                    <select id="first-followup">
+                      <option>1 day after sent</option>
+                      <option selected>2 days after sent</option>
+                      <option>3 days after sent</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label for="second-followup">2nd follow up</label>
+                    <select id="second-followup">
+                      <option>3 days later</option>
+                      <option selected>5 days later</option>
+                      <option>7 days later</option>
+                    </select>
+                  </div>
+                  <div class="qfu-form-span-2">
+                    <label for="settings-notes">Internal workflow notes</label>
+                    <textarea id="settings-notes" rows="4">Keep quote follow ups concise, direct, and easy to reply to. Prioritise overdue quotes before new drafts.</textarea>
+                  </div>
+                  <div class="qfu-form-actions qfu-form-span-2">
+                    <button type="submit" class="ud-main-btn qfu-app-primary-btn">Save settings</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+            <div class="col-lg-5">
+              <div class="qfu-panel">
+                <div class="qfu-panel-header">
+                  <div>
+                    <span>Plan</span>
+                    <h3>Workspace summary</h3>
+                  </div>
+                </div>
+                <div class="qfu-stat-stack">
+                  <div class="qfu-stat-card">
+                    <label>Current plan</label>
+                    <strong>Business</strong>
+                    <span>3 members included</span>
+                  </div>
+                  <div class="qfu-stat-card">
+                    <label>Usage this month</label>
+                    <strong>42 tracked quotes</strong>
+                    <span>9 won · 5 lost</span>
+                  </div>
+                  <div class="qfu-stat-card qfu-stat-card-success">
+                    <label>Renewal</label>
+                    <strong>7 Apr 2026</strong>
+                    <span>£59.99 / month</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+    </section>
+
+    <!-- ====== Footer Start ====== -->
+    <footer class="qfu-workspace-footer wow fadeInUp" data-wow-delay=".15s">
+      <div class="container">
+        <div class="row align-items-center">
+          <div class="col-md-8">
+            <ul class="qfu-workspace-footer-links">
+              <li><a href="javascript:void(0)">Privacy policy</a></li>
+              <li><a href="javascript:void(0)">Support policy</a></li>
+              <li><a href="javascript:void(0)">Terms of service</a></li>
+            </ul>
+          </div>
+          <div class="col-md-4">
+            <p class="qfu-workspace-footer-copy">Quote Follow Up workspace</p>
+          </div>
+        </div>
+      </div>
+    </footer>
+    <!-- ====== Footer End ====== -->
+
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/wow/1.1.2/wow.min.js"></script>
+    <script>
+      document.addEventListener('DOMContentLoaded', function () {
+        if (window.WOW) {
+          new WOW().init();
+        }
+
+        const tabs = Array.from(document.querySelectorAll('[data-tab]'));
+        const panels = Array.from(document.querySelectorAll('[data-panel]'));
+
+        function activateTab(tabName, focusId) {
+          tabs.forEach((tab) => {
+            const active = tab.dataset.tab === tabName;
+            tab.classList.toggle('active', active);
+            tab.setAttribute('aria-current', active ? 'page' : 'false');
+          });
+
+          panels.forEach((panel) => {
+            const active = panel.dataset.panel === tabName;
+            panel.hidden = !active;
+            panel.classList.toggle('is-active', active);
+          });
+
+          if (tabName) {
+            history.replaceState(null, '', '#' + tabName);
+          }
+
+          if (focusId) {
+            const focusEl = document.getElementById(focusId);
+            if (focusEl) {
+              setTimeout(() => focusEl.focus(), 60);
+            }
+          }
+        }
+
+        tabs.forEach((tab) => {
+          tab.addEventListener('click', function (event) {
+            const tabName = tab.dataset.tab;
+            if (!tabName) return;
+            event.preventDefault();
+            activateTab(tabName, tab.dataset.focus || null);
+          });
+        });
+
+        const initial = window.location.hash.replace('#', '');
+        const valid = panels.some((panel) => panel.dataset.panel === initial) ? initial : 'dashboard';
+        activateTab(valid);
+      });
+    </script>
+    <script type="module" src="../shared-assets/js/main.js"></script>
+  </body>
+</html>

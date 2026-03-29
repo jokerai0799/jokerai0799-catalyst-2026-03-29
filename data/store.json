@@ -1,0 +1,845 @@
+{
+  "users": [
+    {
+      "id": "user_d8c64351b30a_mn9rx70p",
+      "workspaceId": "workspace_55282ea7ed89_mn9rx70p",
+      "name": "Demo User",
+      "email": "demo@catalyst.local",
+      "passwordHash": "8070b187502223c5815235239138adbc:c1457059fbd01cfc1c1a5d8e851a7ff56b48526782f00618276c6eab45c7cbdad2cc109845f553cc946c60cc3e5eb017a853e37628220cbbac1e8409fb69fefc",
+      "verified": true,
+      "createdAt": "2026-03-28T03:31:37.862Z"
+    },
+    {
+      "id": "user_cef281cc7f38_mn9rxkux",
+      "workspaceId": "workspace_94489390989d_mn9rxkux",
+      "name": "Test User",
+      "email": "tester.@catalyst.local",
+      "passwordHash": "7a2656d12a847bad1a2bf93eeb140e44:30e8a1333cda4dd19270b37e187d6dcd411a1c0ed18ce2c365981e8c6e5bf0c03adb2eada79bcbd8fa2299faa2d4105366cd145c5708ad70792a7a9219c2070c",
+      "verified": false,
+      "verificationToken": "verify_b9501abccb8d_mn9rxkwq",
+      "createdAt": "2026-03-28T03:31:55.802Z"
+    },
+    {
+      "id": "user_31e9165b2ef0_mn9ry87y",
+      "workspaceId": "workspace_b64af12fe67b_mn9ry87y",
+      "name": "Test User",
+      "email": "tester2_1774668746@catalyst.local",
+      "passwordHash": "cd080b3bddb2156e3dee96905fe185c6:1f04ff152aa525b3f10d0f0c93f0677ba645264742ecd0c87565906f6484dd6f277db67c9467afe2194ca15c19d9e6da1a53331969a92ecf30db90ed4bed47da",
+      "verified": true,
+      "createdAt": "2026-03-28T03:32:26.068Z"
+    }
+  ],
+  "workspaces": [
+    {
+      "id": "workspace_55282ea7ed89_mn9rx70p",
+      "name": "Catalyst Demo Workspace",
+      "replyEmail": "demo@catalyst.local",
+      "firstFollowupDays": 2,
+      "secondFollowupDays": 5,
+      "notes": "Prototype demo workspace",
+      "createdAt": "2026-03-28T03:31:37.801Z"
+    },
+    {
+      "id": "workspace_94489390989d_mn9rxkux",
+      "name": "Test Co",
+      "replyEmail": "tester.@catalyst.local",
+      "firstFollowupDays": 2,
+      "secondFollowupDays": 5,
+      "notes": "Keep quote follow ups concise, direct, and easy to reply to.",
+      "createdAt": "2026-03-28T03:31:55.737Z"
+    },
+    {
+      "id": "workspace_b64af12fe67b_mn9ry87y",
+      "name": "Test Co",
+      "replyEmail": "tester2_1774668746@catalyst.local",
+      "firstFollowupDays": 2,
+      "secondFollowupDays": 5,
+      "notes": "Keep quote follow ups concise, direct, and easy to reply to.",
+      "createdAt": "2026-03-28T03:32:26.014Z"
+    }
+  ],
+  "quotes": [
+    {
+      "id": "quote_ccc96da40c94_mn9ry8ci",
+      "workspaceId": "workspace_b64af12fe67b_mn9ry87y",
+      "title": "Test quote - Client",
+      "customer": "Client",
+      "owner": "Test User",
+      "status": "Won",
+      "value": 1234,
+      "sentDate": "2026-03-28",
+      "nextFollowUp": "2026-03-29",
+      "notes": "hello",
+      "createdAt": "2026-03-28T03:32:26.178Z",
+      "archived": false,
+      "history": [
+        {
+          "id": "event_f8d7ed5d1b26_mn9ry8dh",
+          "summary": "Quote marked won",
+          "detail": "Status updated from the editor.",
+          "createdAt": "2026-03-28T03:32:26.213Z"
+        },
+        {
+          "id": "event_160548473ab0_mn9ry8ci",
+          "summary": "Quote created",
+          "detail": "Added with status Sent and value £1234.",
+          "createdAt": "2026-03-28T03:32:26.178Z"
+        }
+      ]
+    },
+    {
+      "id": "quote_1d13b3981527_mn9rx72e",
+      "workspaceId": "workspace_55282ea7ed89_mn9rx70p",
+      "title": "Kitchen rewiring - Harris",
+      "customer": "Harris",
+      "owner": "Demo User",
+      "status": "Follow up due",
+      "value": 3250,
+      "sentDate": "2026-03-24",
+      "nextFollowUp": "2026-03-26",
+      "notes": "Customer asked for two options and wants a callback after 4pm.",
+      "createdAt": "2026-03-28T03:31:37.862Z",
+      "archived": false,
+      "history": [
+        {
+          "id": "event_62d0f70fc58b_mn9rx72e",
+          "summary": "Quote imported",
+          "detail": "Seeded demo record for Harris.",
+          "createdAt": "2026-03-28T03:31:37.862Z"
+        }
+      ]
+    },
+    {
+      "id": "quote_228a90638297_mn9rx72e",
+      "workspaceId": "workspace_55282ea7ed89_mn9rx70p",
+      "title": "Boiler replacement - Ahmed",
+      "customer": "Ahmed",
+      "owner": "Ella",
+      "status": "Follow up due",
+      "value": 2940,
+      "sentDate": "2026-03-26",
+      "nextFollowUp": "2026-03-28",
+      "notes": "Awaiting final confirmation on timing.",
+      "createdAt": "2026-03-28T03:31:37.862Z",
+      "archived": false,
+      "history": [
+        {
+          "id": "event_eefaa7f8d19a_mn9rx72f",
+          "summary": "Quote imported",
+          "detail": "Seeded demo record for Ahmed.",
+          "createdAt": "2026-03-28T03:31:37.863Z"
+        }
+      ]
+    },
+    {
+      "id": "quote_4445f1ac7b48_mn9rx72f",
+      "workspaceId": "workspace_55282ea7ed89_mn9rx70p",
+      "title": "Office repaint - Carter",
+      "customer": "Carter",
+      "owner": "Lewis",
+      "status": "Sent",
+      "value": 1780,
+      "sentDate": "2026-03-27",
+      "nextFollowUp": "2026-03-29",
+      "notes": "Commercial repaint quote sent yesterday.",
+      "createdAt": "2026-03-28T03:31:37.863Z",
+      "archived": false,
+      "history": [
+        {
+          "id": "event_a654bccd1261_mn9rx72f",
+          "summary": "Quote imported",
+          "detail": "Seeded demo record for Carter.",
+          "createdAt": "2026-03-28T03:31:37.863Z"
+        }
+      ]
+    },
+    {
+      "id": "quote_a838e88d39f8_mn9rx72f",
+      "workspaceId": "workspace_55282ea7ed89_mn9rx70p",
+      "title": "Garden wall repair - Patel",
+      "customer": "Patel",
+      "owner": "Demo User",
+      "status": "Won",
+      "value": 1150,
+      "sentDate": "2026-03-21",
+      "nextFollowUp": "2026-03-27",
+      "notes": "Approved and booked in.",
+      "createdAt": "2026-03-28T03:31:37.863Z",
+      "archived": false,
+      "history": [
+        {
+          "id": "event_0b82a0cb0455_mn9rx72f",
+          "summary": "Quote imported",
+          "detail": "Seeded demo record for Patel.",
+          "createdAt": "2026-03-28T03:31:37.863Z"
+        }
+      ]
+    },
+    {
+      "id": "quote_9b8986e0ed96_mn9rx72f",
+      "workspaceId": "workspace_55282ea7ed89_mn9rx70p",
+      "title": "Bathroom refit - Morgan",
+      "customer": "Morgan",
+      "owner": "Sam",
+      "status": "Sent",
+      "value": 6840,
+      "sentDate": "2026-03-25",
+      "nextFollowUp": "2026-03-29",
+      "notes": "Needs decision on premium fittings.",
+      "createdAt": "2026-03-28T03:31:37.863Z",
+      "archived": false,
+      "history": [
+        {
+          "id": "event_6048e310ac9e_mn9rx72f",
+          "summary": "Quote imported",
+          "detail": "Seeded demo record for Morgan.",
+          "createdAt": "2026-03-28T03:31:37.863Z"
+        }
+      ]
+    },
+    {
+      "id": "quote_0cc51acb0e3d_mn9rx72f",
+      "workspaceId": "workspace_55282ea7ed89_mn9rx70p",
+      "title": "Driveway clean - Wilkes",
+      "customer": "Wilkes",
+      "owner": "Ella",
+      "status": "Follow up due",
+      "value": 890,
+      "sentDate": "2026-03-23",
+      "nextFollowUp": "2026-03-27",
+      "notes": "Customer opened the quote twice.",
+      "createdAt": "2026-03-28T03:31:37.863Z",
+      "archived": false,
+      "history": [
+        {
+          "id": "event_3a0b2a707f1b_mn9rx72f",
+          "summary": "Follow up due",
+          "detail": "Needs attention on 2026-03-27.",
+          "createdAt": "2026-03-28T03:31:37.863Z"
+        },
+        {
+          "id": "event_dc583bbb0eab_mn9rx72f",
+          "summary": "Quote imported",
+          "detail": "Seeded demo record for Wilkes.",
+          "createdAt": "2026-03-28T03:31:37.863Z"
+        }
+      ]
+    },
+    {
+      "id": "quote_0ae0c5aa1ccd_mn9rx72f",
+      "workspaceId": "workspace_55282ea7ed89_mn9rx70p",
+      "title": "Loft insulation - Green",
+      "customer": "Green",
+      "owner": "Lewis",
+      "status": "Draft",
+      "value": 2210,
+      "sentDate": "2026-03-28",
+      "nextFollowUp": "2026-03-30",
+      "notes": "Waiting for updated measurements.",
+      "createdAt": "2026-03-28T03:31:37.863Z",
+      "archived": false,
+      "history": [
+        {
+          "id": "event_8692e9fe6a36_mn9rx72f",
+          "summary": "Quote imported",
+          "detail": "Seeded demo record for Green.",
+          "createdAt": "2026-03-28T03:31:37.863Z"
+        }
+      ]
+    },
+    {
+      "id": "quote_5350803edcf4_mn9rx72f",
+      "workspaceId": "workspace_55282ea7ed89_mn9rx70p",
+      "title": "Shop signage install - Barnes",
+      "customer": "Barnes",
+      "owner": "Sam",
+      "status": "Replied",
+      "value": 4120,
+      "sentDate": "2026-03-22",
+      "nextFollowUp": "2026-03-31",
+      "notes": "Asked for split payment option.",
+      "createdAt": "2026-03-28T03:31:37.863Z",
+      "archived": false,
+      "history": [
+        {
+          "id": "event_8e9673130d1c_mn9rx72f",
+          "summary": "Quote imported",
+          "detail": "Seeded demo record for Barnes.",
+          "createdAt": "2026-03-28T03:31:37.863Z"
+        }
+      ]
+    },
+    {
+      "id": "quote_04eb0f23532a_mn9rx72f",
+      "workspaceId": "workspace_55282ea7ed89_mn9rx70p",
+      "title": "Roof repair - Collins",
+      "customer": "Collins",
+      "owner": "Demo User",
+      "status": "Follow up due",
+      "value": 5760,
+      "sentDate": "2026-03-20",
+      "nextFollowUp": "2026-03-25",
+      "notes": "Storm damage quote, high urgency.",
+      "createdAt": "2026-03-28T03:31:37.863Z",
+      "archived": false,
+      "history": [
+        {
+          "id": "event_cd9e6998999f_mn9rx72f",
+          "summary": "Follow up due",
+          "detail": "Needs attention on 2026-03-25.",
+          "createdAt": "2026-03-28T03:31:37.863Z"
+        },
+        {
+          "id": "event_44e166bc5f27_mn9rx72f",
+          "summary": "Quote imported",
+          "detail": "Seeded demo record for Collins.",
+          "createdAt": "2026-03-28T03:31:37.863Z"
+        }
+      ]
+    },
+    {
+      "id": "quote_74a68b19e6fd_mn9rx72f",
+      "workspaceId": "workspace_55282ea7ed89_mn9rx70p",
+      "title": "Patio sealing - Jacobs",
+      "customer": "Jacobs",
+      "owner": "Ella",
+      "status": "Sent",
+      "value": 960,
+      "sentDate": "2026-03-26",
+      "nextFollowUp": "2026-03-30",
+      "notes": "Sent after site visit.",
+      "createdAt": "2026-03-28T03:31:37.863Z",
+      "archived": false,
+      "history": [
+        {
+          "id": "event_37c695be6eb5_mn9rx72f",
+          "summary": "Quote imported",
+          "detail": "Seeded demo record for Jacobs.",
+          "createdAt": "2026-03-28T03:31:37.863Z"
+        }
+      ]
+    },
+    {
+      "id": "quote_d90ed2c274c4_mn9rx72f",
+      "workspaceId": "workspace_55282ea7ed89_mn9rx70p",
+      "title": "Warehouse lighting - Singh",
+      "customer": "Singh",
+      "owner": "Lewis",
+      "status": "Won",
+      "value": 9320,
+      "sentDate": "2026-03-18",
+      "nextFollowUp": "2026-03-26",
+      "notes": "Booked for next month.",
+      "createdAt": "2026-03-28T03:31:37.863Z",
+      "archived": false,
+      "history": [
+        {
+          "id": "event_aa26f078dee0_mn9rx72f",
+          "summary": "Quote marked won",
+          "detail": "Booked into the demo pipeline.",
+          "createdAt": "2026-03-28T03:31:37.863Z"
+        },
+        {
+          "id": "event_b8b2e00e28dd_mn9rx72f",
+          "summary": "Quote imported",
+          "detail": "Seeded demo record for Singh.",
+          "createdAt": "2026-03-28T03:31:37.863Z"
+        }
+      ]
+    },
+    {
+      "id": "quote_eec7231795fa_mn9rx72f",
+      "workspaceId": "workspace_55282ea7ed89_mn9rx70p",
+      "title": "Garden office wiring - Price",
+      "customer": "Price",
+      "owner": "Demo User",
+      "status": "Lost",
+      "value": 2675,
+      "sentDate": "2026-03-16",
+      "nextFollowUp": "2026-03-24",
+      "notes": "Went with cheaper local quote.",
+      "createdAt": "2026-03-28T03:31:37.863Z",
+      "archived": false,
+      "history": [
+        {
+          "id": "event_0fa8d135deaa_mn9rx72f",
+          "summary": "Quote marked lost",
+          "detail": "Closed out in the demo pipeline.",
+          "createdAt": "2026-03-28T03:31:37.863Z"
+        },
+        {
+          "id": "event_36c7c5b4516d_mn9rx72f",
+          "summary": "Quote imported",
+          "detail": "Seeded demo record for Price.",
+          "createdAt": "2026-03-28T03:31:37.863Z"
+        }
+      ]
+    },
+    {
+      "id": "quote_a562605ceb66_mn9rx72f",
+      "workspaceId": "workspace_55282ea7ed89_mn9rx70p",
+      "title": "Restaurant repaint - Khan",
+      "customer": "Khan",
+      "owner": "Sam",
+      "status": "Follow up due",
+      "value": 4380,
+      "sentDate": "2026-03-24",
+      "nextFollowUp": "2026-03-28",
+      "notes": "Needs revised start date.",
+      "createdAt": "2026-03-28T03:31:37.863Z",
+      "archived": false,
+      "history": [
+        {
+          "id": "event_68093beb2c6e_mn9rx72f",
+          "summary": "Follow up due",
+          "detail": "Needs attention on 2026-03-28.",
+          "createdAt": "2026-03-28T03:31:37.863Z"
+        },
+        {
+          "id": "event_6300caf94a23_mn9rx72f",
+          "summary": "Quote imported",
+          "detail": "Seeded demo record for Khan.",
+          "createdAt": "2026-03-28T03:31:37.863Z"
+        }
+      ]
+    },
+    {
+      "id": "quote_3e2c617b9e76_mn9rx72f",
+      "workspaceId": "workspace_55282ea7ed89_mn9rx70p",
+      "title": "Fence replacement - Doyle",
+      "customer": "Doyle",
+      "owner": "Ella",
+      "status": "Replied",
+      "value": 1520,
+      "sentDate": "2026-03-22",
+      "nextFollowUp": "2026-04-01",
+      "notes": "Customer replied asking about lead time.",
+      "createdAt": "2026-03-28T03:31:37.863Z",
+      "archived": false,
+      "history": [
+        {
+          "id": "event_d0006950b8c4_mn9rx72f",
+          "summary": "Quote imported",
+          "detail": "Seeded demo record for Doyle.",
+          "createdAt": "2026-03-28T03:31:37.863Z"
+        }
+      ]
+    },
+    {
+      "id": "quote_5833355c7bdc_mn9rx72f",
+      "workspaceId": "workspace_55282ea7ed89_mn9rx70p",
+      "title": "Solar battery install - Foster",
+      "customer": "Foster",
+      "owner": "Lewis",
+      "status": "Sent",
+      "value": 7180,
+      "sentDate": "2026-03-27",
+      "nextFollowUp": "2026-03-30",
+      "notes": "High-value opportunity.",
+      "createdAt": "2026-03-28T03:31:37.863Z",
+      "archived": false,
+      "history": [
+        {
+          "id": "event_9ec46a4f3b44_mn9rx72f",
+          "summary": "Quote imported",
+          "detail": "Seeded demo record for Foster.",
+          "createdAt": "2026-03-28T03:31:37.863Z"
+        }
+      ]
+    },
+    {
+      "id": "quote_cc1f2049dcc0_mn9rx72f",
+      "workspaceId": "workspace_55282ea7ed89_mn9rx70p",
+      "title": "Gutter replacement - Bell",
+      "customer": "Bell",
+      "owner": "Demo User",
+      "status": "Follow up due",
+      "value": 1240,
+      "sentDate": "2026-03-25",
+      "nextFollowUp": "2026-03-27",
+      "notes": "Chase after rainfall.",
+      "createdAt": "2026-03-28T03:31:37.863Z",
+      "archived": false,
+      "history": [
+        {
+          "id": "event_c80838f04b71_mn9rx72f",
+          "summary": "Follow up due",
+          "detail": "Needs attention on 2026-03-27.",
+          "createdAt": "2026-03-28T03:31:37.863Z"
+        },
+        {
+          "id": "event_83a7279fed4c_mn9rx72f",
+          "summary": "Quote imported",
+          "detail": "Seeded demo record for Bell.",
+          "createdAt": "2026-03-28T03:31:37.863Z"
+        }
+      ]
+    },
+    {
+      "id": "quote_c43c13632a13_mn9rx72f",
+      "workspaceId": "workspace_55282ea7ed89_mn9rx70p",
+      "title": "Retail fit-out electrical - Young",
+      "customer": "Young",
+      "owner": "Sam",
+      "status": "Draft",
+      "value": 11800,
+      "sentDate": "2026-03-28",
+      "nextFollowUp": "2026-03-31",
+      "notes": "Need landlord approval note.",
+      "createdAt": "2026-03-28T03:31:37.863Z",
+      "archived": false,
+      "history": [
+        {
+          "id": "event_352e42e1ce73_mn9rx72f",
+          "summary": "Quote imported",
+          "detail": "Seeded demo record for Young.",
+          "createdAt": "2026-03-28T03:31:37.863Z"
+        }
+      ]
+    },
+    {
+      "id": "quote_fbed5f24b0c8_mn9rx72f",
+      "workspaceId": "workspace_55282ea7ed89_mn9rx70p",
+      "title": "Emergency boiler swap - Ali",
+      "customer": "Ali",
+      "owner": "Ella",
+      "status": "Won",
+      "value": 3490,
+      "sentDate": "2026-03-19",
+      "nextFollowUp": "2026-03-26",
+      "notes": "Fast turnaround, already scheduled.",
+      "createdAt": "2026-03-28T03:31:37.863Z",
+      "archived": false,
+      "history": [
+        {
+          "id": "event_bb1bec69e79b_mn9rx72f",
+          "summary": "Quote marked won",
+          "detail": "Booked into the demo pipeline.",
+          "createdAt": "2026-03-28T03:31:37.863Z"
+        },
+        {
+          "id": "event_564cb75b6cfd_mn9rx72f",
+          "summary": "Quote imported",
+          "detail": "Seeded demo record for Ali.",
+          "createdAt": "2026-03-28T03:31:37.863Z"
+        }
+      ]
+    },
+    {
+      "id": "quote_480f336a28d7_mn9rx72f",
+      "workspaceId": "workspace_55282ea7ed89_mn9rx70p",
+      "title": "External render repair - Murphy",
+      "customer": "Murphy",
+      "owner": "Lewis",
+      "status": "Sent",
+      "value": 2950,
+      "sentDate": "2026-03-26",
+      "nextFollowUp": "2026-03-29",
+      "notes": "Waiting on customer availability.",
+      "createdAt": "2026-03-28T03:31:37.863Z",
+      "archived": false,
+      "history": [
+        {
+          "id": "event_43780140ffaa_mn9rx72f",
+          "summary": "Quote imported",
+          "detail": "Seeded demo record for Murphy.",
+          "createdAt": "2026-03-28T03:31:37.863Z"
+        }
+      ]
+    },
+    {
+      "id": "quote_60405d8c6784_mn9rx72f",
+      "workspaceId": "workspace_55282ea7ed89_mn9rx70p",
+      "title": "Security lighting - Turner",
+      "customer": "Turner",
+      "owner": "Demo User",
+      "status": "Follow up due",
+      "value": 1320,
+      "sentDate": "2026-03-23",
+      "nextFollowUp": "2026-03-28",
+      "notes": "Customer asked if weekend install possible.",
+      "createdAt": "2026-03-28T03:31:37.863Z",
+      "archived": false,
+      "history": [
+        {
+          "id": "event_eb258da93761_mn9rx72f",
+          "summary": "Follow up due",
+          "detail": "Needs attention on 2026-03-28.",
+          "createdAt": "2026-03-28T03:31:37.863Z"
+        },
+        {
+          "id": "event_1db33d10c0c6_mn9rx72f",
+          "summary": "Quote imported",
+          "detail": "Seeded demo record for Turner.",
+          "createdAt": "2026-03-28T03:31:37.863Z"
+        }
+      ]
+    },
+    {
+      "id": "quote_f6fbd9c6d338_mn9rxkwq",
+      "workspaceId": "workspace_94489390989d_mn9rxkux",
+      "title": "Kitchen rewiring - Harris",
+      "customer": "Harris",
+      "owner": "Test User",
+      "status": "Follow up due",
+      "value": 3250,
+      "sentDate": "2026-03-24",
+      "nextFollowUp": "2026-03-26",
+      "notes": "Customer asked for two options and wants a callback after 4pm.",
+      "createdAt": "2026-03-28T03:31:55.802Z",
+      "archived": false,
+      "history": [
+        {
+          "id": "event_4873d13c4365_mn9rxkwq",
+          "summary": "Quote imported",
+          "detail": "Seeded demo record for Harris.",
+          "createdAt": "2026-03-28T03:31:55.802Z"
+        }
+      ]
+    },
+    {
+      "id": "quote_748cb6e0d57f_mn9rxkwq",
+      "workspaceId": "workspace_94489390989d_mn9rxkux",
+      "title": "Boiler replacement - Ahmed",
+      "customer": "Ahmed",
+      "owner": "Ella",
+      "status": "Follow up due",
+      "value": 2940,
+      "sentDate": "2026-03-26",
+      "nextFollowUp": "2026-03-28",
+      "notes": "Awaiting final confirmation on timing.",
+      "createdAt": "2026-03-28T03:31:55.802Z",
+      "archived": false,
+      "history": [
+        {
+          "id": "event_1fa593d6abf1_mn9rxkwq",
+          "summary": "Quote imported",
+          "detail": "Seeded demo record for Ahmed.",
+          "createdAt": "2026-03-28T03:31:55.802Z"
+        }
+      ]
+    },
+    {
+      "id": "quote_863fab0418b8_mn9rxkwq",
+      "workspaceId": "workspace_94489390989d_mn9rxkux",
+      "title": "Office repaint - Carter",
+      "customer": "Carter",
+      "owner": "Lewis",
+      "status": "Sent",
+      "value": 1780,
+      "sentDate": "2026-03-27",
+      "nextFollowUp": "2026-03-29",
+      "notes": "Commercial repaint quote sent yesterday.",
+      "createdAt": "2026-03-28T03:31:55.802Z",
+      "archived": false,
+      "history": [
+        {
+          "id": "event_0816edd0a8ec_mn9rxkwq",
+          "summary": "Quote imported",
+          "detail": "Seeded demo record for Carter.",
+          "createdAt": "2026-03-28T03:31:55.802Z"
+        }
+      ]
+    },
+    {
+      "id": "quote_485d6beae8df_mn9rxkwq",
+      "workspaceId": "workspace_94489390989d_mn9rxkux",
+      "title": "Garden wall repair - Patel",
+      "customer": "Patel",
+      "owner": "Test User",
+      "status": "Won",
+      "value": 1150,
+      "sentDate": "2026-03-21",
+      "nextFollowUp": "2026-03-27",
+      "notes": "Approved and booked in.",
+      "createdAt": "2026-03-28T03:31:55.802Z",
+      "archived": false,
+      "history": [
+        {
+          "id": "event_a845bc0f4710_mn9rxkwq",
+          "summary": "Quote imported",
+          "detail": "Seeded demo record for Patel.",
+          "createdAt": "2026-03-28T03:31:55.802Z"
+        }
+      ]
+    },
+    {
+      "id": "quote_0ead15e02d3c_mn9ry89g",
+      "workspaceId": "workspace_b64af12fe67b_mn9ry87y",
+      "title": "Kitchen rewiring - Harris",
+      "customer": "Harris",
+      "owner": "Test User",
+      "status": "Follow up due",
+      "value": 3250,
+      "sentDate": "2026-03-24",
+      "nextFollowUp": "2026-03-26",
+      "notes": "Customer asked for two options and wants a callback after 4pm.",
+      "createdAt": "2026-03-28T03:32:26.068Z",
+      "archived": false,
+      "history": [
+        {
+          "id": "event_45cec9521694_mn9ry89g",
+          "summary": "Quote imported",
+          "detail": "Seeded demo record for Harris.",
+          "createdAt": "2026-03-28T03:32:26.068Z"
+        }
+      ]
+    },
+    {
+      "id": "quote_e1296e75e6c5_mn9ry89g",
+      "workspaceId": "workspace_b64af12fe67b_mn9ry87y",
+      "title": "Boiler replacement - Ahmed",
+      "customer": "Ahmed",
+      "owner": "Ella",
+      "status": "Follow up due",
+      "value": 2940,
+      "sentDate": "2026-03-26",
+      "nextFollowUp": "2026-03-28",
+      "notes": "Awaiting final confirmation on timing.",
+      "createdAt": "2026-03-28T03:32:26.068Z",
+      "archived": false,
+      "history": [
+        {
+          "id": "event_a56023f42f04_mn9ry89g",
+          "summary": "Quote imported",
+          "detail": "Seeded demo record for Ahmed.",
+          "createdAt": "2026-03-28T03:32:26.068Z"
+        }
+      ]
+    },
+    {
+      "id": "quote_7ef1e532b27e_mn9ry89h",
+      "workspaceId": "workspace_b64af12fe67b_mn9ry87y",
+      "title": "Office repaint - Carter",
+      "customer": "Carter",
+      "owner": "Lewis",
+      "status": "Sent",
+      "value": 1780,
+      "sentDate": "2026-03-27",
+      "nextFollowUp": "2026-03-29",
+      "notes": "Commercial repaint quote sent yesterday.",
+      "createdAt": "2026-03-28T03:32:26.069Z",
+      "archived": false,
+      "history": [
+        {
+          "id": "event_dc85fb1ffeb9_mn9ry89h",
+          "summary": "Quote imported",
+          "detail": "Seeded demo record for Carter.",
+          "createdAt": "2026-03-28T03:32:26.069Z"
+        }
+      ]
+    },
+    {
+      "id": "quote_0d70643c1a5a_mn9ry89h",
+      "workspaceId": "workspace_b64af12fe67b_mn9ry87y",
+      "title": "Garden wall repair - Patel",
+      "customer": "Patel",
+      "owner": "Test User",
+      "status": "Won",
+      "value": 1150,
+      "sentDate": "2026-03-21",
+      "nextFollowUp": "2026-03-27",
+      "notes": "Approved and booked in.",
+      "createdAt": "2026-03-28T03:32:26.069Z",
+      "archived": false,
+      "history": [
+        {
+          "id": "event_7c16fec8f62c_mn9ry89h",
+          "summary": "Quote imported",
+          "detail": "Seeded demo record for Patel.",
+          "createdAt": "2026-03-28T03:32:26.069Z"
+        }
+      ]
+    }
+  ],
+  "teamMembers": [
+    {
+      "id": "team_4d4341acba20_mn9rx72e",
+      "workspaceId": "workspace_55282ea7ed89_mn9rx70p",
+      "name": "Demo User",
+      "email": "demo@catalyst.local",
+      "role": "Owner",
+      "activeQuotes": 0
+    },
+    {
+      "id": "team_ec6c3083bc7d_mn9rx72e",
+      "workspaceId": "workspace_55282ea7ed89_mn9rx70p",
+      "name": "Ella",
+      "email": "ella@example.com",
+      "role": "Ops",
+      "activeQuotes": 0
+    },
+    {
+      "id": "team_029926383cad_mn9rx72e",
+      "workspaceId": "workspace_55282ea7ed89_mn9rx70p",
+      "name": "Lewis",
+      "email": "lewis@example.com",
+      "role": "Estimator",
+      "activeQuotes": 0
+    },
+    {
+      "id": "team_9c477a681844_mn9rx72f",
+      "workspaceId": "workspace_55282ea7ed89_mn9rx70p",
+      "activeQuotes": 0,
+      "name": "Sam",
+      "email": "sam@example.com",
+      "role": "Sales"
+    },
+    {
+      "id": "team_9eda6337ef8e_mn9rx72f",
+      "workspaceId": "workspace_55282ea7ed89_mn9rx70p",
+      "activeQuotes": 0,
+      "name": "Nina",
+      "email": "nina@example.com",
+      "role": "Admin"
+    },
+    {
+      "id": "team_2497cadb0714_mn9rxkwq",
+      "workspaceId": "workspace_94489390989d_mn9rxkux",
+      "name": "Test User",
+      "email": "tester.@catalyst.local",
+      "role": "Owner",
+      "activeQuotes": 0
+    },
+    {
+      "id": "team_1b120618d5ce_mn9rxkwq",
+      "workspaceId": "workspace_94489390989d_mn9rxkux",
+      "name": "Ella",
+      "email": "ella@example.com",
+      "role": "Ops",
+      "activeQuotes": 0
+    },
+    {
+      "id": "team_9ac845ddf6fc_mn9rxkwq",
+      "workspaceId": "workspace_94489390989d_mn9rxkux",
+      "name": "Lewis",
+      "email": "lewis@example.com",
+      "role": "Estimator",
+      "activeQuotes": 0
+    },
+    {
+      "id": "team_daacb16bb460_mn9ry89g",
+      "workspaceId": "workspace_b64af12fe67b_mn9ry87y",
+      "name": "Test User",
+      "email": "tester2_1774668746@catalyst.local",
+      "role": "Owner",
+      "activeQuotes": 0
+    },
+    {
+      "id": "team_d0270b76b245_mn9ry89g",
+      "workspaceId": "workspace_b64af12fe67b_mn9ry87y",
+      "name": "Ella",
+      "email": "ella@example.com",
+      "role": "Ops",
+      "activeQuotes": 0
+    },
+    {
+      "id": "team_cddd4a855d0f_mn9ry89g",
+      "workspaceId": "workspace_b64af12fe67b_mn9ry87y",
+      "name": "Lewis",
+      "email": "lewis@example.com",
+      "role": "Estimator",
+      "activeQuotes": 0
+    }
+  ]
+}
