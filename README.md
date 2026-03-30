@@ -4,7 +4,7 @@ Catalyst is an active standalone Quote Follow Up-style prototype.
 
 ## Current state
 
-This project now runs as a small local client + backend prototype with:
+This project now runs as a small static frontend + Node backend prototype with:
 - public landing page
 - sign up / sign in flow
 - check-email / verify flow for local prototype use
@@ -12,7 +12,7 @@ This project now runs as a small local client + backend prototype with:
 - authenticated dashboard shell
 - quote creation + persisted workspace data
 - chase list / team / settings backed by the local server
-- optional Supabase-backed persistence/session storage for the Catalyst project only
+- Supabase-backed persistence/session storage for the Catalyst project only
 
 ## Important rules
 
@@ -22,22 +22,21 @@ This project now runs as a small local client + backend prototype with:
 ## Architecture
 
 ### Backend
-- `server.js`
-- fallback local JSON persistence in `data/store.json`
-- optional Supabase persistence via `SUPABASE_URL_CATALYST` + `SUPABASE_SECRET_CATALYST`
-- cookie-based session auth stored either locally or in Supabase `sessions`
+- `server.js` bootstraps the HTTP server only
+- `catalyst-server/` contains config, API handlers, sessions, email delivery, store/domain helpers, and Supabase access
+- Supabase persistence via `SUPABASE_URL_CATALYST` + `SUPABASE_SECRET_CATALYST`
+- cookie-based session auth stored in Supabase `sessions`
 - API routes for auth, workspace, quotes, and team data
 
 ### Frontend modules
-- `shared-assets/js/main.js`
-- `shared-assets/js/auth.js`
-- `shared-assets/js/store.js`
-- `shared-assets/js/dashboard.js`
-- `shared-assets/js/quotes.js`
-- `shared-assets/js/chase-list.js`
-- `shared-assets/js/api.js`
-- `shared-assets/js/dom.js`
-- `shared-assets/js/utils.js`
+- `shared-assets/js/main.js` bootstraps page loading
+- `shared-assets/js/routes.js` resolves page initializers
+- `shared-assets/js/core/` holds shared API, DOM, state, and utility modules
+- `shared-assets/js/features/auth/` owns login/signup/check-email/reset flows
+- `shared-assets/js/features/dashboard/` owns dashboard rendering
+- `shared-assets/js/features/quotes/` owns quote table/editor/detail flows
+- `shared-assets/js/features/chase-list/` owns follow-up queue rendering/actions
+- top-level files in `shared-assets/js/` are compatibility re-export shims during the refactor
 
 ## Run locally
 
@@ -71,9 +70,8 @@ npm run migrate:supabase
 ```
 
 ### Notes
-- If the Supabase schema is not present yet, Catalyst falls back to local `data/store.json` automatically.
-- On Vercel, this removes the current `/tmp/catalyst-data` persistence dependency once the schema exists and env vars are set.
-- The current auth model is still app-managed (custom users + sessions), now with optional database-backed storage. Moving to full Supabase Auth can happen later if desired.
+- Supabase is now the required runtime storage layer.
+- The current auth model is still app-managed (custom users + sessions), backed by Supabase tables rather than Supabase Auth.
 - Security: enable RLS for all Catalyst tables. The current backend uses the service-role key server-side, so it continues to work with RLS enabled while public/anon access stays blocked.
 
 ## Near-term next steps
