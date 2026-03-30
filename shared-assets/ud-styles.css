@@ -4557,6 +4557,55 @@ p {
   align-self: start;
 }
 
+.qfu-quote-page-shell {
+  padding-top: 0;
+}
+
+.qfu-quote-page-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) minmax(320px, 0.95fr);
+  gap: 18px;
+  align-items: start;
+}
+
+.qfu-quote-primary-panel {
+  min-width: 0;
+}
+
+.qfu-quote-secondary-column {
+  display: grid;
+  gap: 18px;
+  position: sticky;
+  top: 24px;
+}
+
+.qfu-inline-actions-tight {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: center;
+}
+
+.qfu-inline-actions-tight input {
+  min-width: 0;
+}
+
+@media (max-width: 1199px) {
+  .qfu-quote-page-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .qfu-quote-secondary-column {
+    position: static;
+  }
+}
+
+@media (max-width: 767px) {
+  .qfu-inline-actions-tight {
+    grid-template-columns: 1fr;
+  }
+}
+
 .qfu-app-topbar.qfu-app-topbar-hidden {
   display: none;
 }
