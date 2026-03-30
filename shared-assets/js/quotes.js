@@ -83,8 +83,10 @@ export function loadQuoteIntoEditor(quote) {
   text($('#qfu-quote-form-title'), quote.title);
   text($('#qfu-quote-save-button'), 'Save changes');
   renderQuoteDetail(quote);
-  const trigger = document.querySelector('.qfu-app-nav-vertical [data-tab="quotes"]');
-  if (trigger) trigger.click();
+  if (!document.body.classList.contains('qfu-quote-page')) {
+    const trigger = document.querySelector('.qfu-app-nav-vertical [data-tab="quotes"]');
+    if (trigger) trigger.click();
+  }
   setNotice($('#qfu-quote-form-notice'), `Loaded ${quote.title}. Update the fields below and save.`, 'success');
 }
 
@@ -100,8 +102,7 @@ function createActionButton(label, action, quoteId) {
 function createOpenLink(quoteId) {
   return create('a', {
     text: 'Open quote',
-    attrs: { href: '#quotes' },
-    dataset: { tab: 'quotes', quoteOpen: quoteId, focus: 'quote-title' },
+    attrs: { href: `./quote.html?id=${encodeURIComponent(quoteId)}` },
   });
 }
 
@@ -181,8 +182,7 @@ export function bindQuoteInteractions(state, refreshApp) {
     row.dataset.bound = 'true';
     row.addEventListener('click', (event) => {
       if (event.target.closest('a,button')) return;
-      const quote = state.quotes.find((item) => item.id === row.dataset.quoteId);
-      if (quote) loadQuoteIntoEditor(quote);
+      window.location.href = `./quote.html?id=${encodeURIComponent(row.dataset.quoteId)}`;
     });
   });
 
@@ -191,8 +191,7 @@ export function bindQuoteInteractions(state, refreshApp) {
     link.dataset.bound = 'true';
     link.addEventListener('click', (event) => {
       event.preventDefault();
-      const quote = state.quotes.find((item) => item.id === link.dataset.quoteOpen);
-      if (quote) loadQuoteIntoEditor(quote);
+      window.location.href = `./quote.html?id=${encodeURIComponent(link.dataset.quoteOpen)}`;
     });
   });
 

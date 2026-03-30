@@ -1,5 +1,6 @@
 import { ensureLandingLinks, initCheckEmailPage, initForgotPasswordPage, initLoginPage, initResetPasswordPage, initSignupPage, initVerifyPage } from './auth.js';
 import { renderDashboard } from './dashboard.js';
+import { initQuotePage } from './quote-page.js';
 import { getState, refreshState } from './store.js';
 
 async function initDashboardPage() {
@@ -27,6 +28,7 @@ async function initPage() {
   if (body.classList.contains('qfu-verify-page')) return initVerifyPage();
   if (body.classList.contains('qfu-forgot-page')) return initForgotPasswordPage();
   if (body.classList.contains('qfu-reset-page')) return initResetPasswordPage();
+  if (body.classList.contains('qfu-quote-page')) return initQuotePage();
   if (body.classList.contains('qfu-dashboard-page')) return initDashboardPage();
   if (body.classList.contains('qfu-landing-page')) return ensureLandingLinks();
 }

@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Catalyst | Quote record</title>
+    <link rel="shortcut icon" href="../shared-assets/images/favicon.svg" type="image/svg" />
+    <link rel="stylesheet" href="assets/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="assets/css/animate.css" />
+    <link rel="stylesheet" href="assets/css/lineicons.css" />
+    <link rel="stylesheet" href="../shared-assets/ud-styles.css" />
+  </head>
+  <body class="qfu-dashboard-page qfu-quote-page">
+    <section class="qfu-app-shell">
+      <div class="qfu-app-sidebar">
+        <div class="qfu-app-sidebar-top">
+          <a href="./dashboard.html#dashboard" class="qfu-app-brand">
+            <img src="../shared-assets/images/logo/icon.svg" alt="" class="qfu-brand-icon" />
+            <div>
+              <strong id="qfu-quote-page-workspace">Workspace</strong>
+              <span>Catalyst</span>
+            </div>
+          </a>
+          <nav class="qfu-app-nav-vertical">
+            <a href="./dashboard.html#dashboard" data-tab="dashboard">Dashboard</a>
+            <a href="./dashboard.html#quotes" data-tab="quotes" class="active">Quotes</a>
+            <a href="./dashboard.html#chase-list" data-tab="chase-list">Chase List</a>
+            <a href="./dashboard.html#team" data-tab="team">Team</a>
+            <a href="./dashboard.html#settings" data-tab="settings">Settings</a>
+          </nav>
+        </div>
+        <div class="qfu-app-sidebar-bottom">
+          <a id="qfu-logout-link" href="#">Sign out</a>
+        </div>
+      </div>
+
+      <div class="qfu-app-content">
+        <div class="qfu-app-topbar">
+          <div>
+            <span class="qfu-dashboard-kicker">Quote record</span>
+            <h1 id="qfu-quote-page-title">Quote record</h1>
+            <p id="qfu-quote-page-subtitle">Open a quote, update it, and move back to the list.</p>
+          </div>
+          <div class="qfu-inline-actions">
+            <a id="qfu-quote-back-link" href="./dashboard.html#quotes" class="ud-main-btn ud-white-btn">Back to quotes</a>
+          </div>
+        </div>
+
+        <section class="qfu-dashboard-shell">
+          <div class="qfu-panel" id="qfu-quote-detail-panel">
+            <div class="qfu-panel-header">
+              <div>
+                <span>Record summary</span>
+                <h3 id="qfu-detail-title">Selected quote</h3>
+                <p class="qfu-panel-helper">Everything related to this quote lives here.</p>
+              </div>
+            </div>
+            <div class="row qfu-dashboard-grid qfu-quotes-detail-layout">
+              <div class="col-lg-7">
+                <div class="qfu-detail-grid">
+                  <div><label>Status</label><strong id="qfu-detail-status">—</strong></div>
+                  <div><label>Owner</label><strong id="qfu-detail-owner">—</strong></div>
+                  <div><label>Value</label><strong id="qfu-detail-value">—</strong></div>
+                  <div><label>Next follow up</label><strong id="qfu-detail-followup">—</strong></div>
+                </div>
+                <div class="qfu-detail-notes">
+                  <label>Notes</label>
+                  <p id="qfu-detail-notes">Load a quote to inspect its notes and recent actions.</p>
+                </div>
+              </div>
+              <div class="col-lg-5">
+                <div class="qfu-detail-actions">
+                  <label>Quick actions</label>
+                  <div class="qfu-inline-link-actions qfu-inline-link-actions-stack">
+                    <button id="qfu-quote-mark-contacted" type="button" class="qfu-link-button">Mark contacted</button>
+                    <button id="qfu-quote-mark-won" type="button" class="qfu-link-button">Mark won</button>
+                    <button id="qfu-quote-mark-lost" type="button" class="qfu-link-button">Mark lost</button>
+                    <button id="qfu-quote-archive" type="button" class="qfu-link-button">Archive quote</button>
+                    <button id="qfu-quote-delete" type="button" class="qfu-link-button qfu-link-button-danger">Delete quote</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="qfu-detail-activity">
+              <div class="qfu-panel-header qfu-panel-header-tight">
+                <div>
+                  <span>Activity history</span>
+                  <h3>Latest timeline</h3>
+                </div>
+              </div>
+              <ul id="qfu-quote-activity-list" class="qfu-activity-list qfu-activity-list-compact">
+                <li><strong>No quote selected</strong><span>Open a quote from the quotes list to inspect it here.</span></li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="qfu-panel qfu-panel-editing">
+            <div class="qfu-panel-header">
+              <div>
+                <span id="qfu-quote-form-kicker">Editing quote</span>
+                <h3 id="qfu-quote-form-title">Update quote</h3>
+                <p class="qfu-panel-helper">Change anything related to this quote here and save it in place.</p>
+              </div>
+            </div>
+            <form id="qfu-quote-form" class="qfu-form-grid qfu-prototype-form">
+              <input id="quote-id" type="hidden" />
+              <div>
+                <label for="quote-title">Quote title</label>
+                <input id="quote-title" type="text" placeholder="Kitchen rewiring - Harris" />
+              </div>
+              <div>
+                <label for="quote-value">Value</label>
+                <input id="quote-value" type="text" placeholder="£3,250" />
+              </div>
+              <div>
+                <label for="quote-status">Status</label>
+                <select id="quote-status">
+                  <option>Draft</option>
+                  <option>Sent</option>
+                  <option>Follow up due</option>
+                  <option>Replied</option>
+                  <option>Won</option>
+                  <option>Lost</option>
+                </select>
+              </div>
+              <div>
+                <label for="quote-owner">Owner</label>
+                <select id="quote-owner"></select>
+              </div>
+              <div>
+                <label for="quote-date">Sent date</label>
+                <input id="quote-date" type="date" />
+              </div>
+              <div>
+                <label for="quote-followup">Next follow up</label>
+                <div class="qfu-inline-actions" style="gap:10px;align-items:center;">
+                  <input id="quote-followup" type="date" />
+                  <button id="qfu-quote-followup-button" type="button" class="ud-main-btn ud-white-btn">Auto schedule</button>
+                </div>
+              </div>
+              <div class="qfu-form-span-2">
+                <label for="quote-notes">Notes</label>
+                <textarea id="quote-notes" rows="5" placeholder="Customer asked for two options and wants a callback after 4pm."></textarea>
+              </div>
+              <div id="qfu-quote-form-notice" class="qfu-inline-notice qfu-form-span-2" style="display:none;"></div>
+              <div class="qfu-form-actions qfu-form-span-2 qfu-form-actions-clean">
+                <button id="qfu-quote-save-button" type="submit" class="ud-main-btn qfu-app-primary-btn">Save changes</button>
+                <a href="./dashboard.html#quotes" class="ud-main-btn ud-white-btn">Back to list</a>
+              </div>
+            </form>
+          </div>
+        </section>
+      </div>
+    </section>
+
+    <script type="module" src="../shared-assets/js/main.js"></script>
+  </body>
+  </html>
