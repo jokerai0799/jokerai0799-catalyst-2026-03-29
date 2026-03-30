@@ -45,9 +45,45 @@ export async function initCheckEmailPage() {
   const email = params.get('email') || '';
   text(document.querySelector('[data-email-target]'), email || 'your email address');
   const verifyLink = document.querySelector('[data-verify-link]');
+  const resendButton = document.querySelector('[data-resend-verification]');
+  const helper = document.querySelector('[data-check-email-helper]');
   if (!verifyLink) return;
   const data = await api.checkEmail(email);
-  verifyLink.setAttribute('href', data.verifyUrl);
+  if (helper) {
+    helper.textContent = data.emailDeliveryAvailable
+      ? 'We sent a verification email to your inbox. Open it to activate your login.'
+      : 'Email delivery is not configured here, so you can verify directly using the button below.';
+  }
+  if (data.verifyUrl) {
+    verifyLink.style.display = '';
+    verifyLink.setAttribute('href', data.verifyUrl);
+  } else {
+    verifyLink.style.display = 'none';
+  }
+  if (resendButton) {
+    resendButton.addEventListener('click', async () => {
+      try {
+        const result = await api.resendVerification(email);
+        if (result.verified) {
+          window.location.href = `login.html?verified=success&email=${encodeURIComponent(email)}`;
+          return;
+        }
+        if (helper) {
+          helper.textContent = result.sent
+            ? 'Verification email resent. Check your inbox.'
+            : (result.verifyUrl
+              ? 'A fresh verification link is ready below for local/dev use.'
+              : 'We could not send an email right now.');
+        }
+        if (result.verifyUrl) {
+          verifyLink.style.display = '';
+          verifyLink.setAttribute('href', result.verifyUrl);
+        }
+      } catch (error) {
+        if (helper) helper.textContent = error.message;
+      }
+    });
+  }
 }
 
 export async function initVerifyPage() {
@@ -73,17 +109,23 @@ export function initForgotPasswordPage() {
     const email = String(new FormData(form).get('email') || '').trim().toLowerCase();
     try {
       const data = await api.forgotPassword(email);
-      setNotice(notice, 'Reset link created below for this prototype.', 'success');
+      setNotice(notice, data.sent || data.emailDeliveryAvailable
+        ? 'If that email exists, we sent password reset instructions.'
+        : 'Email delivery is not configured here. Use the local reset link below.', 'success');
       let link = form.querySelector('.qfu-reset-link');
-      if (!link) {
-        link = document.createElement('a');
-        link.className = 'qfu-reset-link';
-        link.style.display = 'block';
-        link.style.marginTop = '12px';
-        form.appendChild(link);
+      if (data.resetUrl) {
+        if (!link) {
+          link = document.createElement('a');
+          link.className = 'qfu-reset-link';
+          link.style.display = 'block';
+          link.style.marginTop = '12px';
+          form.appendChild(link);
+        }
+        link.href = data.resetUrl;
+        link.textContent = 'Open reset password page';
+      } else if (link) {
+        link.remove();
       }
-      link.href = data.resetUrl;
-      link.textContent = 'Open reset password page';
     } catch (error) {
       setNotice(notice, error.message, 'error');
     }

@@ -12,6 +12,7 @@ This project now runs as a small local client + backend prototype with:
 - authenticated dashboard shell
 - quote creation + persisted workspace data
 - chase list / team / settings backed by the local server
+- optional Supabase-backed persistence/session storage for the Catalyst project only
 
 ## Important rules
 
@@ -22,8 +23,9 @@ This project now runs as a small local client + backend prototype with:
 
 ### Backend
 - `server.js`
-- local JSON persistence in `data/store.json`
-- cookie-based session auth
+- fallback local JSON persistence in `data/store.json`
+- optional Supabase persistence via `SUPABASE_URL_CATALYST` + `SUPABASE_SECRET_CATALYST`
+- cookie-based session auth stored either locally or in Supabase `sessions`
 - API routes for auth, workspace, quotes, and team data
 
 ### Frontend modules
@@ -52,9 +54,32 @@ Demo login:
 - `demo@catalyst.local`
 - `Catalyst123!`
 
+## Supabase setup
+
+Catalyst now supports its own dedicated Supabase project without touching any other app.
+
+1. Create/apply the schema from:
+   - `supabase/schema.sql`
+2. Set env vars:
+   - `SUPABASE_URL_CATALYST`
+   - `SUPABASE_PUBLIC_CATALYST`
+   - `SUPABASE_SECRET_CATALYST`
+3. Import the current local prototype data if wanted:
+
+```bash
+npm run migrate:supabase
+```
+
+### Notes
+- If the Supabase schema is not present yet, Catalyst falls back to local `data/store.json` automatically.
+- On Vercel, this removes the current `/tmp/catalyst-data` persistence dependency once the schema exists and env vars are set.
+- The current auth model is still app-managed (custom users + sessions), now with optional database-backed storage. Moving to full Supabase Auth can happen later if desired.
+- Security: enable RLS for all Catalyst tables. The current backend uses the service-role key server-side, so it continues to work with RLS enabled while public/anon access stays blocked.
+
 ## Near-term next steps
 
-1. move from JSON-file persistence to a real database
-2. add server-side validation and stronger auth/session hardening
-3. turn the remaining prototype actions into fuller CRUD workflows
-4. clean remaining template residue from marketing/auth pages
+1. apply `supabase/schema.sql` to the Catalyst Supabase project
+2. run the local-to-Supabase import once
+3. set the three Catalyst Supabase env vars in Vercel
+4. verify signup/login/demo flows against Supabase-backed storage
+5. later, decide whether to keep custom auth or move to Supabase Auth fully

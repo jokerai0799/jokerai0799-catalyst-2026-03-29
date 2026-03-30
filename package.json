@@ -3,6 +3,7 @@
   "private": true,
   "version": "0.1.0",
   "scripts": {
-    "start": "node server.js"
+    "start": "node server.js",
+    "migrate:supabase": "node scripts/migrate-local-to-supabase.js"
   }
 }

@@ -29,6 +29,9 @@ export const api = {
   checkEmail(email) {
     return request(`/api/auth/check-email?email=${encodeURIComponent(email)}`);
   },
+  resendVerification(email) {
+    return request('/api/auth/resend-verification', { method: 'POST', body: JSON.stringify({ email }) });
+  },
   verify(token) {
     return request('/api/auth/verify', { method: 'POST', body: JSON.stringify({ token }) });
   },
