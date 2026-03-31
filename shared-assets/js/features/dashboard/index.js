@@ -214,11 +214,6 @@ function setMetricCards(openQuotes, wonQuotes, lostQuotes, allQuotes, attentionQ
     text(quoteHealthCards[2].querySelector('strong'), formatCurrency(wonValue));
     text(quoteHealthCards[2].querySelector('span'), `${wonQuotes.length} jobs booked`);
   }
-  const sideFocus = document.querySelector('.qfu-dashboard-hero-sidecard');
-  if (sideFocus) {
-    text(sideFocus.querySelector('strong'), `${attentionQuotes.length} quotes need attention`);
-    text(sideFocus.querySelector('p'), 'Work the queue first, then review anything starting to drift.');
-  }
 }
 
 function setAlert(workspaceId, attentionQuotes, overdueCount, dueTodayCount) {
