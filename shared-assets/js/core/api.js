@@ -38,9 +38,6 @@ export const api = {
   login(payload) {
     return request('/api/auth/login', { method: 'POST', body: JSON.stringify(payload) });
   },
-  demoLogin() {
-    return request('/api/auth/demo-login', { method: 'POST', body: JSON.stringify({}) });
-  },
   logout() {
     return request('/api/auth/logout', { method: 'POST', body: JSON.stringify({}) });
   },

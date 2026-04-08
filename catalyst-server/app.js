@@ -9,7 +9,6 @@ const {
   ALLOWED_QUOTE_ACTIONS,
   buildBootstrap,
   buildQuoteInput,
-  ensureDemoAccount,
   ensureQuoteMeta,
   findUserByEmail,
   loadStore,
@@ -332,12 +331,6 @@ async function handleApi(req, res, url) {
     if (!user.verified) return badRequest(res, 'Check your email page and verify your account before logging in.');
     await createSession(res, user.id);
     return sendJson(res, 200, { ok: true, user: sanitizeUser(user) });
-  }
-
-  if (req.method === 'POST' && pathname === '/api/auth/demo-login') {
-    const demo = await ensureDemoAccount(store);
-    await createSession(res, demo.user.id);
-    return sendJson(res, 200, { ok: true, user: sanitizeUser(demo.user) });
   }
 
   if (req.method === 'POST' && pathname === '/api/auth/logout') {

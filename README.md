@@ -49,10 +49,6 @@ Then open:
 - `http://127.0.0.1:18081/`
 - `http://127.0.0.1:18081/dashboard/dashboard.html`
 
-Demo login:
-- `demo@catalyst.local`
-- `Catalyst123!`
-
 ## Supabase setup
 
 Catalyst now supports its own dedicated Supabase project without touching any other app.
@@ -79,5 +75,5 @@ npm run migrate:supabase
 1. apply `supabase/schema.sql` to the Catalyst Supabase project
 2. run the local-to-Supabase import once
 3. set the three Catalyst Supabase env vars in Vercel
-4. verify signup/login/demo flows against Supabase-backed storage
+4. verify signup/login flows against Supabase-backed storage
 5. later, decide whether to keep custom auth or move to Supabase Auth fully

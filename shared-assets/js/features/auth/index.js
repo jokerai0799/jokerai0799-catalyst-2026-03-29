@@ -1,5 +1,5 @@
 import { api } from '../../core/api.js';
-import { $, setNotice, text } from '../../core/dom.js';
+import { setNotice, text } from '../../core/dom.js';
 
 export async function ensureLandingLinks() {
   const { user } = await api.getMe();
@@ -189,16 +189,4 @@ export function initLoginPage() {
       setNotice(notice, error.message, 'error');
     }
   });
-
-  const demoButton = $('#qfu-demo-login-button');
-  if (demoButton) {
-    demoButton.addEventListener('click', async () => {
-      try {
-        await api.demoLogin();
-        window.location.href = '../dashboard/dashboard.html';
-      } catch (error) {
-        setNotice(notice, error.message, 'error');
-      }
-    });
-  }
 }
