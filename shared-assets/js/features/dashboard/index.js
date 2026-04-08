@@ -273,13 +273,18 @@ function bindSharedLinks(state, refreshApp, attentionSignature) {
     teamForm.dataset.bound = 'true';
     teamForm.addEventListener('submit', async (event) => {
       event.preventDefault();
-      await api.addTeamMember({
-        name: $('#team-name').value.trim(),
-        email: $('#team-email').value.trim().toLowerCase(),
-        role: $('#team-role').value,
-      });
-      teamForm.reset();
-      await refreshApp();
+      try {
+        await api.addTeamMember({
+          name: $('#team-name').value.trim(),
+          email: $('#team-email').value.trim().toLowerCase(),
+          role: $('#team-role').value,
+        });
+        teamForm.reset();
+        setNotice($('#qfu-team-notice'), 'Team member added.', 'success');
+        await refreshApp();
+      } catch (error) {
+        setNotice($('#qfu-team-notice'), error.message, 'error');
+      }
     });
   }
 

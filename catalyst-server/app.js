@@ -414,6 +414,13 @@ async function handleApi(req, res, url) {
     if (store.teamMembers.some((member) => member.workspaceId === auth.workspace.id && member.email.toLowerCase() === email)) {
       return badRequest(res, 'A team member with that email already exists.');
     }
+    const existingUser = findUserByEmail(store, email);
+    if (!existingUser) {
+      return badRequest(res, 'This teammate needs a Catalyst account before they can be added to a workspace.');
+    }
+    if (existingUser.workspaceId !== auth.workspace.id) {
+      return badRequest(res, 'Multi-workspace access is not live yet, so this existing account cannot join another workspace yet.');
+    }
     const member = { id: uid('team'), workspaceId: auth.workspace.id, name, email, role, activeQuotes: 0, createdAt: new Date().toISOString() };
     store.teamMembers.push(member);
     await saveStore(store);
