@@ -20,6 +20,15 @@
     <link rel="stylesheet" href="assets/css/animate.css" />
     <link rel="stylesheet" href="assets/css/lineicons.css" />
     <link rel="stylesheet" href="../shared-assets/ud-styles.css" />
+    <style>
+      .qfu-google-auth-button {
+        display: inline-flex;
+        width: 100%;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+      }
+    </style>
   </head>
   <body class="qfu-auth-page qfu-auth-page-login">
     <!-- ====== Header Start ====== -->
@@ -144,11 +153,10 @@
 
               <div class="ud-socials-connect qfu-socials-connect">
                 <p>Or continue with</p>
-                <ul>
-                  <li><a href="javascript:void(0)" class="facebook"><i class="lni lni-facebook-filled"></i></a></li>
-                  <li><a href="javascript:void(0)" class="twitter"><i class="lni lni-twitter-filled"></i></a></li>
-                  <li><a href="javascript:void(0)" class="google"><i class="lni lni-google"></i></a></li>
-                </ul>
+                <a href="/api/auth/google/start" class="ud-main-btn ud-border-btn w-100 qfu-google-auth-button">
+                  <i class="lni lni-google"></i>
+                  <span>Continue with Google</span>
+                </a>
               </div>
 
               <a class="forget-pass" href="forgot-password.html">Forget Password?</a>

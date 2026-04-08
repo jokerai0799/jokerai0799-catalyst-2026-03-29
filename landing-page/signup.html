@@ -26,6 +26,13 @@
         grid-template-columns: 1fr 1fr;
         gap: 20px;
       }
+      .qfu-google-auth-button {
+        display: inline-flex;
+        width: 100%;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+      }
       @media (max-width: 767px) {
         .ud-login-form .ud-form-group-double {
           grid-template-columns: 1fr;
@@ -160,11 +167,10 @@
 
               <div class="ud-socials-connect qfu-socials-connect">
                 <p>Or continue with</p>
-                <ul>
-                  <li><a href="javascript:void(0)" class="facebook"><i class="lni lni-facebook-filled"></i></a></li>
-                  <li><a href="javascript:void(0)" class="twitter"><i class="lni lni-twitter-filled"></i></a></li>
-                  <li><a href="javascript:void(0)" class="google"><i class="lni lni-google"></i></a></li>
-                </ul>
+                <a href="/api/auth/google/start" class="ud-main-btn ud-border-btn w-100 qfu-google-auth-button">
+                  <i class="lni lni-google"></i>
+                  <span>Continue with Google</span>
+                </a>
               </div>
 
               <p class="signup-option">Already have an account? <a href="login.html"> Sign In </a></p>

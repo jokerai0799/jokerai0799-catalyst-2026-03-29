@@ -54,15 +54,25 @@ async function getSessionUser(req, store) {
   return store.users.find((user) => user.id === session.userId) || null;
 }
 
+function appendSetCookie(res, value) {
+  const existing = res.getHeader('Set-Cookie');
+  if (!existing) {
+    res.setHeader('Set-Cookie', value);
+    return;
+  }
+  const list = Array.isArray(existing) ? existing.concat(value) : [existing, value];
+  res.setHeader('Set-Cookie', list);
+}
+
 async function createSession(res, userId) {
   const sid = await persistSession(userId);
-  res.setHeader('Set-Cookie', `${SESSION_COOKIE}=${sid}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${SESSION_MAX_AGE_SECONDS}${IS_VERCEL ? '; Secure' : ''}`);
+  appendSetCookie(res, `${SESSION_COOKIE}=${sid}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${SESSION_MAX_AGE_SECONDS}${IS_VERCEL ? '; Secure' : ''}`);
 }
 
 async function clearSession(req, res) {
   const sid = parseCookies(req)[SESSION_COOKIE];
   await deleteSession(sid);
-  res.setHeader('Set-Cookie', `${SESSION_COOKIE}=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0${IS_VERCEL ? '; Secure' : ''}`);
+  appendSetCookie(res, `${SESSION_COOKIE}=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0${IS_VERCEL ? '; Secure' : ''}`);
 }
 
 module.exports = {

@@ -1,5 +1,6 @@
+const crypto = require('crypto');
 const { URL } = require('url');
-const { RESEND_API_KEY } = require('./config');
+const { APP_URL, GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, RESEND_API_KEY } = require('./config');
 const { attemptEmail, sendPasswordResetEmail, sendVerificationEmail } = require('./email');
 const { badRequest, notFound, readJsonOrReject, sendJson, serveStatic, unauthorized } = require('./http');
 const { clearSession, createSession, getSessionUser } = require('./session');
@@ -31,11 +32,118 @@ const {
   addDays,
 } = require('./utils');
 
+const GOOGLE_STATE_COOKIE = 'catalyst_google_state';
+
+function getAppBaseUrl(req) {
+  if (APP_URL) return APP_URL.replace(/\/$/, '');
+  const proto = req.headers['x-forwarded-proto'] || 'http';
+  const host = req.headers['x-forwarded-host'] || req.headers.host || '127.0.0.1';
+  return `${proto}://${host}`.replace(/\/$/, '');
+}
+
+function getGoogleRedirectUri(req) {
+  return `${getAppBaseUrl(req)}/api/auth/google/callback`;
+}
+
+function parseCookieMap(req) {
+  const header = req.headers.cookie || '';
+  return Object.fromEntries(
+    header
+      .split(';')
+      .map((part) => part.trim())
+      .filter(Boolean)
+      .map((part) => {
+        const index = part.indexOf('=');
+        return [part.slice(0, index), decodeURIComponent(part.slice(index + 1))];
+      }),
+  );
+}
+
+function appendSetCookie(res, value) {
+  const existing = res.getHeader('Set-Cookie');
+  if (!existing) {
+    res.setHeader('Set-Cookie', value);
+    return;
+  }
+  const list = Array.isArray(existing) ? existing.concat(value) : [existing, value];
+  res.setHeader('Set-Cookie', list);
+}
+
+function setCookie(res, name, value, { maxAge = 300, secure = false } = {}) {
+  appendSetCookie(res, `${name}=${encodeURIComponent(value)}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${maxAge}${secure ? '; Secure' : ''}`);
+}
+
+function clearCookie(res, name, { secure = false } = {}) {
+  appendSetCookie(res, `${name}=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0${secure ? '; Secure' : ''}`);
+}
+
+async function exchangeGoogleCode(req, code) {
+  const body = new URLSearchParams({
+    code,
+    client_id: GOOGLE_CLIENT_ID,
+    client_secret: GOOGLE_CLIENT_SECRET,
+    redirect_uri: getGoogleRedirectUri(req),
+    grant_type: 'authorization_code',
+  });
+
+  const response = await fetch('https://oauth2.googleapis.com/token', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body,
+  });
+
+  const text = await response.text();
+  const data = text ? JSON.parse(text) : {};
+  if (!response.ok) {
+    const error = new Error(data.error_description || data.error || 'Google token exchange failed');
+    error.status = response.status;
+    throw error;
+  }
+  return data;
+}
+
+async function fetchGoogleProfile(accessToken) {
+  const response = await fetch('https://www.googleapis.com/oauth2/v2/userinfo', {
+    headers: { Authorization: `Bearer ${accessToken}` },
+  });
+  const text = await response.text();
+  const data = text ? JSON.parse(text) : {};
+  if (!response.ok) {
+    const error = new Error(data.error?.message || 'Failed to load Google profile');
+    error.status = response.status;
+    throw error;
+  }
+  return data;
+}
+
+function ensureWorkspaceName(profile) {
+  const company = clampText(profile?.hd || '', 160);
+  const name = clampText(profile?.name || '', 160);
+  return company || `${name || 'Google'} Workspace`;
+}
+
 async function handleApi(req, res, url) {
   const pathname = url.pathname;
 
   if (req.method === 'GET' && pathname === '/api/health') {
     return sendJson(res, 200, { ok: true, storage: (await isSupabaseReady()) ? 'supabase' : 'unavailable' });
+  }
+
+  if (req.method === 'GET' && pathname === '/api/auth/google/start') {
+    if (!GOOGLE_CLIENT_ID || !GOOGLE_CLIENT_SECRET) return badRequest(res, 'Google auth is not configured yet.');
+    const state = crypto.randomBytes(24).toString('hex');
+    const redirectUri = getGoogleRedirectUri(req);
+    const googleUrl = new URL('https://accounts.google.com/o/oauth2/v2/auth');
+    googleUrl.searchParams.set('client_id', GOOGLE_CLIENT_ID);
+    googleUrl.searchParams.set('redirect_uri', redirectUri);
+    googleUrl.searchParams.set('response_type', 'code');
+    googleUrl.searchParams.set('scope', 'openid email profile');
+    googleUrl.searchParams.set('prompt', 'select_account');
+    googleUrl.searchParams.set('state', state);
+    setCookie(res, GOOGLE_STATE_COOKIE, state, { secure: url.protocol === 'https:' });
+    res.writeHead(302, { Location: googleUrl.toString() });
+    res.end();
+    return;
   }
 
   if (!(await isSupabaseReady())) {
@@ -53,6 +161,84 @@ async function handleApi(req, res, url) {
   if (req.method === 'GET' && pathname === '/api/auth/me') {
     const user = await getSessionUser(req, store);
     return sendJson(res, 200, { user: user ? sanitizeUser(user) : null });
+  }
+
+  if (req.method === 'GET' && pathname === '/api/auth/google/callback') {
+    if (!GOOGLE_CLIENT_ID || !GOOGLE_CLIENT_SECRET) {
+      res.writeHead(302, { Location: '/landing-page/login.html?google=not-configured' });
+      res.end();
+      return;
+    }
+
+    const cookies = parseCookieMap(req);
+    const state = String(url.searchParams.get('state') || '');
+    const code = String(url.searchParams.get('code') || '');
+    const error = String(url.searchParams.get('error') || '');
+    const secure = url.protocol === 'https:';
+
+    if (error) {
+      clearCookie(res, GOOGLE_STATE_COOKIE, { secure });
+      res.writeHead(302, { Location: '/landing-page/login.html?google=cancelled' });
+      res.end();
+      return;
+    }
+
+    if (!code || !state || !cookies[GOOGLE_STATE_COOKIE] || cookies[GOOGLE_STATE_COOKIE] !== state) {
+      clearCookie(res, GOOGLE_STATE_COOKIE, { secure });
+      res.writeHead(302, { Location: '/landing-page/login.html?google=invalid-state' });
+      res.end();
+      return;
+    }
+
+    try {
+      const tokenData = await exchangeGoogleCode(req, code);
+      const profile = await fetchGoogleProfile(tokenData.access_token);
+      const email = String(profile.email || '').trim().toLowerCase();
+      if (!profile.verified_email || !isValidEmail(email)) {
+        throw new Error('Google account email is missing or not verified.');
+      }
+
+      let user = findUserByEmail(store, email);
+      if (!user) {
+        const workspace = {
+          id: uid('workspace'),
+          name: ensureWorkspaceName(profile),
+          replyEmail: email,
+          firstFollowupDays: 2,
+          secondFollowupDays: 5,
+          notes: 'Keep quote follow ups concise, direct, and easy to reply to.',
+          createdAt: new Date().toISOString(),
+        };
+        user = {
+          id: uid('user'),
+          workspaceId: workspace.id,
+          name: normalizeName(profile.name || email.split('@')[0]),
+          email,
+          passwordHash: '',
+          verified: true,
+          createdAt: new Date().toISOString(),
+        };
+        store.workspaces.push(workspace);
+        store.users.push(user);
+        seedWorkspace(store, workspace, user);
+        await saveStore(store);
+      } else {
+        user.verified = true;
+        if (!user.name && profile.name) user.name = normalizeName(profile.name);
+        await saveStore(store);
+      }
+
+      await createSession(res, user.id);
+      clearCookie(res, GOOGLE_STATE_COOKIE, { secure });
+      res.writeHead(302, { Location: '/dashboard/dashboard.html' });
+      res.end();
+      return;
+    } catch {
+      clearCookie(res, GOOGLE_STATE_COOKIE, { secure });
+      res.writeHead(302, { Location: '/landing-page/login.html?google=failed' });
+      res.end();
+      return;
+    }
   }
 
   if (req.method === 'POST' && pathname === '/api/auth/signup') {
@@ -140,7 +326,9 @@ async function handleApi(req, res, url) {
     const password = String(body.password || '');
     if (!isValidEmail(email)) return badRequest(res, 'Invalid email or password.');
     const user = findUserByEmail(store, email);
-    if (!user || !verifyPassword(password, user.passwordHash)) return badRequest(res, 'Invalid email or password.');
+    if (!user) return badRequest(res, 'Invalid email or password.');
+    if (!user.passwordHash) return badRequest(res, 'Use Google sign-in for this account.');
+    if (!verifyPassword(password, user.passwordHash)) return badRequest(res, 'Invalid email or password.');
     if (!user.verified) return badRequest(res, 'Check your email page and verify your account before logging in.');
     await createSession(res, user.id);
     return sendJson(res, 200, { ok: true, user: sanitizeUser(user) });

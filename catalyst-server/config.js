@@ -31,6 +31,8 @@ const SESSION_MAX_AGE_SECONDS = 30 * 24 * 60 * 60;
 const APP_URL = process.env.APP_URL_CATALYST || process.env.APP_URL || '';
 const RESEND_API_KEY = process.env.RESEND_API_KEY || '';
 const RESEND_FROM_EMAIL = process.env.RESEND_FROM_EMAIL || process.env.CATALYST_FROM_EMAIL || 'onboarding@resend.dev';
+const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID_CATALYST || process.env.GOOGLE_CLIENT_ID || '';
+const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET_CATALYST || process.env.GOOGLE_CLIENT_SECRET || '';
 const SUPABASE_REF = process.env.SUPABASE_URL_CATALYST || '';
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SECRET_CATALYST || '';
 const SUPABASE_BASE_URL = SUPABASE_REF ? `https://${SUPABASE_REF}.supabase.co` : '';
@@ -45,6 +47,8 @@ module.exports = {
   APP_URL,
   RESEND_API_KEY,
   RESEND_FROM_EMAIL,
+  GOOGLE_CLIENT_ID,
+  GOOGLE_CLIENT_SECRET,
   SUPABASE_REF,
   SUPABASE_SERVICE_KEY,
   SUPABASE_BASE_URL,

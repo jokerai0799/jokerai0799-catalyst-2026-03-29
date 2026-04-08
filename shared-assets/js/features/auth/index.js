@@ -168,9 +168,14 @@ export function initLoginPage() {
   const verified = params.get('verified');
   const email = params.get('email');
   const reset = params.get('reset');
+  const google = params.get('google');
   if (verified === 'success') setNotice(notice, `Email verified${email ? ` for ${email}` : ''}. You can log in now.`, 'success');
   if (verified === 'invalid') setNotice(notice, 'That verification link is invalid or expired.', 'error');
   if (reset === 'success') setNotice(notice, 'Password updated. You can log in now.', 'success');
+  if (google === 'failed') setNotice(notice, 'Google sign-in failed. Try again.', 'error');
+  if (google === 'cancelled') setNotice(notice, 'Google sign-in was cancelled.', 'error');
+  if (google === 'invalid-state') setNotice(notice, 'Google sign-in expired. Try again.', 'error');
+  if (google === 'not-configured') setNotice(notice, 'Google sign-in is not configured yet.', 'error');
 
   form.addEventListener('submit', async (event) => {
     event.preventDefault();
