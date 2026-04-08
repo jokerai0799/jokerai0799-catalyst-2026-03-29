@@ -406,9 +406,8 @@ export function renderDashboard(state, refreshApp) {
       });
     }
   }
-  setOwnerOptions(state, availableOwners);
-
   const availableOwners = state.workspace?.teamEnabled ? state.teamMembers : [{ name: state.user.name, role: 'Owner', email: state.user.email, activeQuotes: 0 }];
+  setOwnerOptions(state, availableOwners);
   const openQuotes = state.quotes.filter((quote) => !quote.archived && !['Won', 'Lost'].includes(quote.status));
   const wonQuotes = state.quotes.filter((quote) => !quote.archived && quote.status === 'Won');
   const lostQuotes = state.quotes.filter((quote) => !quote.archived && quote.status === 'Lost');
