@@ -60,24 +60,80 @@ function renderAnalytics(quotes) {
   text($('#qfu-analytics-best-owner-note'), `${formatCurrency(bestOwnerEntry[1])} currently owned`);
 }
 
+function renderLockedTeamPreview(state) {
+  const teamGrid = document.querySelector('.qfu-member-grid');
+  if (teamGrid) {
+    clear(teamGrid);
+    ['You', 'Estimator', 'Ops'].forEach((name, index) => {
+      teamGrid.appendChild(create('div', {
+        className: 'qfu-member-card',
+        children: [
+          create('div', { className: 'qfu-member-avatar', text: name.charAt(0).toUpperCase() }),
+          create('div', { children: [create('strong', { text: name }), create('span', { text: ['Owner', 'Estimator', 'Ops'][index] || 'Member' })] }),
+          create('label', { text: `${index === 0 ? 6 : index === 1 ? 4 : 3} active quotes` }),
+        ],
+      }));
+    });
+  }
+
+  const pendingInvitesList = $('#qfu-pending-invites-list');
+  if (pendingInvitesList) {
+    clear(pendingInvitesList);
+    pendingInvitesList.appendChild(create('div', {
+      className: 'qfu-pending-invite-card',
+      children: [
+        create('strong', { text: 'sarah@example.com' }),
+        create('span', { text: 'Pending invite · Sales' }),
+      ],
+    }));
+  }
+
+  const ownershipBody = $('#qfu-team-ownership-body');
+  if (ownershipBody) {
+    clear(ownershipBody);
+    [
+      ['You', '6', '2', '£3,250', '1 day'],
+      ['Estimator', '4', '1', '£1,780', '2 days'],
+      ['Ops', '3', '0', '£1,150', '1 day'],
+    ].forEach(([name, open, due, won, avg]) => {
+      const row = create('tr');
+      row.appendChild(create('td', { children: [create('strong', { text: name }), create('span', { text: 'Preview' })] }));
+      row.appendChild(create('td', { text: open }));
+      row.appendChild(create('td', { text: due }));
+      row.appendChild(create('td', { text: won }));
+      row.appendChild(create('td', { text: avg }));
+      ownershipBody.appendChild(row);
+    });
+  }
+}
+
 function renderTeam(state, refreshApp) {
   const teamTabLink = $('#qfu-team-tab-link');
+  const teamTabBadge = $('#qfu-team-tab-badge');
   const teamPlanNotice = $('#qfu-team-plan-notice');
+  const previewShell = $('#qfu-team-preview-shell');
   const businessGrid = $('#qfu-team-business-grid');
   const teamPanel = $('#team-panel');
+  const teamLockOverlay = $('#qfu-team-lock-overlay');
   const teamEnabled = Boolean(state.workspace?.teamEnabled);
-  if (teamTabLink) teamTabLink.style.display = teamEnabled ? '' : 'none';
+  if (teamTabLink) teamTabLink.style.display = '';
+  if (teamTabBadge) teamTabBadge.hidden = teamEnabled;
+  if (previewShell) previewShell.classList.toggle('is-locked', !teamEnabled);
+  if (teamLockOverlay) teamLockOverlay.hidden = teamEnabled;
   if (teamPlanNotice) {
     if (teamEnabled) {
       teamPlanNotice.style.display = 'none';
     } else {
-      setNotice(teamPlanNotice, 'Team invites are available on the Business workspace plan. Your current trial is using a personal workspace.', 'error');
+      setNotice(teamPlanNotice, 'Team collaboration is locked on your current plan. Upgrade to Business to add teammates, assign owners, and share pipeline visibility.', 'error');
     }
   }
-  if (businessGrid) businessGrid.style.display = teamEnabled ? '' : 'none';
+  if (businessGrid) businessGrid.style.display = '';
   const ownershipWrap = teamPanel?.querySelector('.qfu-panel:last-of-type');
-  if (ownershipWrap) ownershipWrap.style.display = teamEnabled ? '' : 'none';
-  if (!teamEnabled) return;
+  if (ownershipWrap) ownershipWrap.style.display = '';
+  if (!teamEnabled) {
+    renderLockedTeamPreview(state);
+    return;
+  }
   const currentMember = state.teamMembers.find((member) => member.email?.toLowerCase() === state.user.email?.toLowerCase());
   const isOwner = currentMember?.role === 'Owner';
   const ownerCount = state.teamMembers.filter((member) => member.role === 'Owner').length;
