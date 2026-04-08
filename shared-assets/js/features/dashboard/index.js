@@ -82,7 +82,7 @@ function renderLockedTeamPreview(state) {
 
   const teamNotice = $('#qfu-team-notice');
   if (teamNotice) {
-    setNotice(teamNotice, 'Preview only — add teammates, send invites, and share ownership after upgrading to Business.', 'error');
+    teamNotice.style.display = 'none';
   }
 
   const pendingInvitesList = $('#qfu-pending-invites-list');
@@ -118,24 +118,14 @@ function renderLockedTeamPreview(state) {
 
 function renderTeam(state, refreshApp) {
   const teamTabLink = $('#qfu-team-tab-link');
-  const teamTabBadge = $('#qfu-team-tab-badge');
-  const teamPlanNotice = $('#qfu-team-plan-notice');
   const previewShell = $('#qfu-team-preview-shell');
   const businessGrid = $('#qfu-team-business-grid');
   const teamPanel = $('#team-panel');
   const teamLockOverlay = $('#qfu-team-lock-overlay');
   const teamEnabled = Boolean(state.workspace?.teamEnabled);
   if (teamTabLink) teamTabLink.style.display = '';
-  if (teamTabBadge) teamTabBadge.hidden = teamEnabled;
   if (previewShell) previewShell.classList.toggle('is-locked', !teamEnabled);
   if (teamLockOverlay) teamLockOverlay.hidden = teamEnabled;
-  if (teamPlanNotice) {
-    if (teamEnabled) {
-      teamPlanNotice.style.display = 'none';
-    } else {
-      setNotice(teamPlanNotice, 'Team collaboration is locked on your current plan. Upgrade to Business to add teammates, assign owners, and share pipeline visibility.', 'error');
-    }
-  }
   if (businessGrid) businessGrid.style.display = '';
   const ownershipWrap = teamPanel?.querySelector('.qfu-panel:last-of-type');
   if (ownershipWrap) ownershipWrap.style.display = '';

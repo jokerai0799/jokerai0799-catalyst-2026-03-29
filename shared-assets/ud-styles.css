@@ -3721,18 +3721,6 @@ p {
   box-shadow: none;
 }
 
-.qfu-nav-pill {
-  margin-left: 8px;
-  padding: 2px 8px;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.16);
-  color: rgba(255, 255, 255, 0.92);
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  vertical-align: middle;
-}
 
 .qfu-app-sidebar-bottom {
   display: grid;
@@ -4080,10 +4068,10 @@ p {
   inset: 0;
   z-index: 5;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
-  padding: 24px;
-  background: linear-gradient(180deg, rgba(237, 243, 255, 0.12) 0%, rgba(237, 243, 255, 0.46) 38%, rgba(237, 243, 255, 0.70) 100%);
+  padding: 72px 24px 24px;
+  background: linear-gradient(180deg, rgba(237, 243, 255, 0.08) 0%, rgba(237, 243, 255, 0.34) 30%, rgba(237, 243, 255, 0.64) 100%);
 }
 
 .qfu-team-lock-card {
@@ -4095,6 +4083,17 @@ p {
   background: rgba(255, 255, 255, 0.97);
   box-shadow: 0 24px 56px rgba(19, 33, 68, 0.14);
   backdrop-filter: blur(12px);
+}
+
+.qfu-upgrade-business-btn {
+  background: #16a34a;
+  border-color: #16a34a;
+}
+
+.qfu-upgrade-business-btn:hover {
+  background: #15803d;
+  border-color: #15803d;
+  color: #ffffff;
 }
 
 .qfu-team-lock-kicker {
@@ -4236,6 +4235,10 @@ p {
   .qfu-workspace-footer-copy {
     margin-top: 10px;
     text-align: left;
+  }
+
+  .qfu-team-lock-overlay {
+    padding-top: 44px;
   }
 }
 
