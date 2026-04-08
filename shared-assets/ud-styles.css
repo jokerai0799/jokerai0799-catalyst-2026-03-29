@@ -4102,6 +4102,7 @@ p {
 .qfu-workspace-footer-copy {
   margin: 0;
   text-align: right;
+  font-weight: 500;
 }
 
 @media (max-width: 1199px) {
