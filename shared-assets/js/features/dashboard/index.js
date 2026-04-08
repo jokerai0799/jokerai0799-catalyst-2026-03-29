@@ -147,6 +147,13 @@ function renderRecentActivity(quotes) {
     .sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''))
     .slice(0, 5);
 
+  if (!events.length) {
+    activityList.appendChild(create('li', {
+      children: [create('strong', { text: 'No recent activity yet' }), create('span', { text: 'Recent quote changes will appear here.' })],
+    }));
+    return;
+  }
+
   events.forEach((event) => {
     activityList.appendChild(create('li', {
       children: [
@@ -294,6 +301,7 @@ function bindSharedLinks(state, refreshApp, attentionSignature) {
 }
 
 export function renderDashboard(state, refreshApp) {
+  document.body.classList.remove('is-loading');
   setTopbar(state.workspace);
   if ($('#business-name')) $('#business-name').value = state.workspace.name;
   if ($('#business-email')) $('#business-email').value = state.workspace.replyEmail || state.user.email;

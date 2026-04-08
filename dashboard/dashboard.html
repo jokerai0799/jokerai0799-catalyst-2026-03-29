@@ -16,7 +16,7 @@
     <link rel="stylesheet" href="../landing-page/assets/css/lineicons.css" />
     <link rel="stylesheet" href="../shared-assets/ud-styles.css" />
   </head>
-  <body class="qfu-dashboard-page">
+  <body class="qfu-dashboard-page is-loading">
     <section class="qfu-app-shell">
       <div class="qfu-app-sidebar">
         <div class="qfu-app-sidebar-top">
@@ -31,7 +31,7 @@
           </a>
           <div class="qfu-workspace-panel">
             <span>Current workspace</span>
-            <strong>Bluepeak Software</strong>
+            <strong>Loading workspace…</strong>
           </div>
           <nav class="qfu-app-nav qfu-app-nav-vertical" aria-label="Workspace sections">
             <a href="#today" class="active" data-tab="today">Today</a>
@@ -52,9 +52,9 @@
           <div class="qfu-app-topbar">
             <div>
               <span class="qfu-dashboard-kicker">Today</span>
-              <h1>What needs action today</h1>
+              <h1>Loading workspace…</h1>
               <p>
-                Work overdue follow ups first, then update quote records and keep the pipeline moving.
+                Pulling the latest workspace data.
               </p>
             </div>
           </div>
@@ -62,8 +62,8 @@
           <div class="qfu-alert-strip wow fadeInUp" data-wow-delay=".05s">
             <div class="qfu-alert-dot"></div>
             <div class="qfu-alert-copy">
-              <strong>7 quotes need attention today.</strong>
-              <span>4 are overdue and 3 are due today.</span>
+              <strong>Loading follow ups…</strong>
+              <span>Please wait while we load the workspace.</span>
             </div>
             <a href="#quotes" data-tab="quotes" class="qfu-alert-link">Open quotes</a>
           </div>
@@ -72,21 +72,21 @@
             <div class="col-lg-4 col-md-6">
               <div class="qfu-metric-card wow fadeInUp" data-wow-delay=".05s">
                 <p>Open pipeline</p>
-                <h3>£18,420</h3>
+                <h3>—</h3>
                 <span>Quotes still in play</span>
               </div>
             </div>
             <div class="col-lg-4 col-md-6">
               <div class="qfu-metric-card wow fadeInUp" data-wow-delay=".1s">
                 <p>Need action</p>
-                <h3>7</h3>
+                <h3>—</h3>
                 <span>Overdue or due today</span>
               </div>
             </div>
             <div class="col-lg-4 col-md-6">
               <div class="qfu-metric-card wow fadeInUp" data-wow-delay=".15s">
                 <p>Won revenue</p>
-                <h3>£9,860</h3>
+                <h3>—</h3>
                 <span>Closed business</span>
               </div>
             </div>
@@ -115,48 +115,7 @@
                         <th>Recommended next step</th>
                       </tr>
                     </thead>
-                    <tbody id="qfu-dashboard-attention-body">
-                      <tr>
-                        <td>
-                          <strong>Kitchen rewiring - Harris</strong>
-                          <span>Sent 4 days ago</span>
-                        </td>
-                        <td><span class="qfu-badge qfu-badge-overdue">Overdue</span></td>
-                        <td>2 days ago</td>
-                        <td>£3,250</td>
-                        <td><a href="javascript:void(0)">Send follow up</a></td>
-                      </tr>
-                      <tr>
-                        <td>
-                          <strong>Boiler replacement - Ahmed</strong>
-                          <span>Awaiting reply</span>
-                        </td>
-                        <td><span class="qfu-badge qfu-badge-today">Due today</span></td>
-                        <td>Today, 2:00 PM</td>
-                        <td>£2,940</td>
-                        <td><a href="javascript:void(0)">Open quote</a></td>
-                      </tr>
-                      <tr>
-                        <td>
-                          <strong>Shop front repaint - Carter</strong>
-                          <span>Second follow up pending</span>
-                        </td>
-                        <td><span class="qfu-badge qfu-badge-overdue">Overdue</span></td>
-                        <td>Yesterday</td>
-                        <td>£1,780</td>
-                        <td><a href="javascript:void(0)">Mark contacted</a></td>
-                      </tr>
-                      <tr>
-                        <td>
-                          <strong>Patio clean and seal - Wilkes</strong>
-                          <span>New quote sent</span>
-                        </td>
-                        <td><span class="qfu-badge qfu-badge-open">Open</span></td>
-                        <td>Tomorrow</td>
-                        <td>£890</td>
-                        <td><a href="javascript:void(0)">Schedule chase</a></td>
-                      </tr>
-                    </tbody>
+                    <tbody id="qfu-dashboard-attention-body"></tbody>
                   </table>
                 </div>
               </div>
@@ -173,12 +132,7 @@
                     <p class="qfu-panel-helper">A fast read on quote changes, replies, and status movement.</p>
                   </div>
                 </div>
-                <ul class="qfu-activity-list">
-                  <li><strong>Boiler replacement - Ahmed</strong><span>Marked follow up due · 15 mins ago</span></li>
-                  <li><strong>Kitchen rewiring - Harris</strong><span>Follow up email opened · 42 mins ago</span></li>
-                  <li><strong>Front garden wall - Patel</strong><span>Status changed to won · 1 hour ago</span></li>
-                  <li><strong>Office repaint - Carter</strong><span>New quote added · 3 hours ago</span></li>
-                </ul>
+                <ul class="qfu-activity-list"></ul>
               </div>
             </div>
 
@@ -192,12 +146,12 @@
                   </div>
                 </div>
                 <div class="qfu-team-summary qfu-dashboard-summary-grid">
-                  <div><label>Team members</label><strong id="qfu-dashboard-team-count">3 active</strong></div>
-                  <div><label>Sent</label><strong id="qfu-dashboard-sent-total">11</strong></div>
-                  <div><label>Need action</label><strong id="qfu-dashboard-due-total">7</strong></div>
-                  <div><label>Won</label><strong id="qfu-dashboard-won-total">9</strong></div>
-                  <div><label>Lost</label><strong id="qfu-dashboard-lost-total">4</strong></div>
-                  <div><label>Booked value</label><strong id="qfu-dashboard-booked-total">£4,120</strong></div>
+                  <div><label>Team members</label><strong id="qfu-dashboard-team-count">—</strong></div>
+                  <div><label>Sent</label><strong id="qfu-dashboard-sent-total">—</strong></div>
+                  <div><label>Need action</label><strong id="qfu-dashboard-due-total">—</strong></div>
+                  <div><label>Won</label><strong id="qfu-dashboard-won-total">—</strong></div>
+                  <div><label>Lost</label><strong id="qfu-dashboard-lost-total">—</strong></div>
+                  <div><label>Booked value</label><strong id="qfu-dashboard-booked-total">—</strong></div>
                 </div>
               </div>
 
@@ -250,36 +204,7 @@
                     <th>Value</th>
                   </tr>
                 </thead>
-                <tbody id="qfu-all-quotes-body">
-                  <tr>
-                    <td><strong>Kitchen rewiring - Harris</strong><span>Residential electrical</span></td>
-                    <td>Greg</td>
-                    <td><span class="qfu-badge qfu-badge-overdue">Overdue</span></td>
-                    <td>2 days ago</td>
-                    <td>£3,250</td>
-                  </tr>
-                  <tr>
-                    <td><strong>Boiler replacement - Ahmed</strong><span>Heating installation</span></td>
-                    <td>Ella</td>
-                    <td><span class="qfu-badge qfu-badge-today">Due today</span></td>
-                    <td>Today, 2:00 PM</td>
-                    <td>£2,940</td>
-                  </tr>
-                  <tr>
-                    <td><strong>Office repaint - Carter</strong><span>Commercial repaint</span></td>
-                    <td>Lewis</td>
-                    <td><span class="qfu-badge qfu-badge-open">Open</span></td>
-                    <td>Tomorrow</td>
-                    <td>£1,780</td>
-                  </tr>
-                  <tr>
-                    <td><strong>Garden wall repair - Patel</strong><span>Masonry repair</span></td>
-                    <td>Greg</td>
-                    <td><span class="qfu-badge qfu-badge-open">Sent</span></td>
-                    <td>Monday</td>
-                    <td>£1,150</td>
-                  </tr>
-                </tbody>
+                <tbody id="qfu-all-quotes-body"></tbody>
               </table>
             </div>
           </div>
@@ -362,23 +287,7 @@
                   </div>
                 </div>
                 <div id="qfu-team-notice" class="qfu-inline-notice" style="display:none; margin-bottom: 16px;"></div>
-                <div class="qfu-member-grid">
-                  <div class="qfu-member-card">
-                    <div class="qfu-member-avatar">G</div>
-                    <div><strong>Greg</strong><span>Owner · handles high-value quotes</span></div>
-                    <label>12 active quotes</label>
-                  </div>
-                  <div class="qfu-member-card">
-                    <div class="qfu-member-avatar">E</div>
-                    <div><strong>Ella</strong><span>Ops · handles daily follow ups</span></div>
-                    <label>9 active quotes</label>
-                  </div>
-                  <div class="qfu-member-card">
-                    <div class="qfu-member-avatar">L</div>
-                    <div><strong>Lewis</strong><span>Estimator · drafts and sends quotes</span></div>
-                    <label>7 active quotes</label>
-                  </div>
-                </div>
+                <div class="qfu-member-grid"></div>
               </div>
             </div>
             <div class="col-lg-5">
@@ -401,9 +310,10 @@
                   <div class="qfu-form-span-2">
                     <label for="team-role">Role</label>
                     <select id="team-role">
-                      <option>Admin</option>
-                      <option selected>Member</option>
-                      <option>Viewer</option>
+                      <option>Owner</option>
+                      <option selected>Ops</option>
+                      <option>Estimator</option>
+                      <option>Sales</option>
                     </select>
                   </div>
                   <div class="qfu-form-actions qfu-form-span-2">
@@ -432,11 +342,7 @@
                     <th>Avg reply time</th>
                   </tr>
                 </thead>
-                <tbody id="qfu-team-ownership-body">
-                  <tr><td><strong>Greg</strong><span>Owner</span></td><td>12</td><td>3</td><td>£2,450</td><td>1.8 days</td></tr>
-                  <tr><td><strong>Ella</strong><span>Ops</span></td><td>9</td><td>2</td><td>£1,200</td><td>2.0 days</td></tr>
-                  <tr><td><strong>Lewis</strong><span>Estimator</span></td><td>7</td><td>2</td><td>£470</td><td>3.1 days</td></tr>
-                </tbody>
+                <tbody id="qfu-team-ownership-body"></tbody>
               </table>
             </div>
           </div>
