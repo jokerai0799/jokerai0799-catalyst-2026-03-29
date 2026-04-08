@@ -291,9 +291,18 @@ export function bindQuoteInteractions(state, refreshApp) {
         setNotice($('#qfu-quote-form-notice'), 'Add a customer email to this quote first.', 'error');
         return;
       }
-      const subject = encodeURIComponent(`Quote follow up: ${button.dataset.emailClientTitle || 'Quote'}`);
-      const body = encodeURIComponent(`Hi ${button.dataset.emailClientCustomer || ''},\n\nJust following up on your quote. Happy to answer any questions or make any changes if helpful.\n`);
-      window.location.href = `mailto:${email}?subject=${subject}&body=${body}`;
+      const quoteId = button.dataset.emailClientId;
+      api.sendQuoteEmail(quoteId)
+        .then(async () => {
+          setNotice($('#qfu-quote-form-notice'), 'Follow-up email sent.', 'success');
+          await refreshApp();
+        })
+        .catch((error) => {
+          const subject = encodeURIComponent(`Quote follow up: ${button.dataset.emailClientTitle || 'Quote'}`);
+          const body = encodeURIComponent(`Hi ${button.dataset.emailClientCustomer || ''},\n\nJust following up on your quote. Happy to answer any questions or make any changes if helpful.\n`);
+          window.location.href = `mailto:${email}?subject=${subject}&body=${body}`;
+          setNotice($('#qfu-quote-form-notice'), error.message.includes('configured') ? 'Email sending is not configured yet, so we opened your mail client instead.' : error.message, error.message.includes('configured') ? 'success' : 'error');
+        });
     });
   });
 

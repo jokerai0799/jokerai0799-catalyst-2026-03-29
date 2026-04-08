@@ -38,7 +38,7 @@ export function renderChaseList(attentionQuotes, overdueCount, dueTodayCount) {
     const actions = create('div', { className: 'qfu-inline-link-actions qfu-inline-link-actions-stack' });
     actions.appendChild(createActionButton('Mark contacted', 'contacted', quote.id));
     actions.appendChild(createActionButton('Reschedule', 'reschedule', quote.id));
-    actions.appendChild(createActionButton('Email client', 'email-client', quote.id));
+    actions.appendChild(createActionButton('Send follow-up email', 'email-client', quote.id));
     actions.appendChild(create('button', {
       className: 'qfu-link-button',
       text: 'Open quote record',
@@ -59,22 +59,29 @@ export function bindChaseActions(refreshApp) {
       const action = button.dataset.chaseAction;
       const quoteId = button.dataset.quoteActionId;
       if (action === 'email-client') {
-        const quote = (window.__qfuState?.quotes || []).find((item) => item.id === quoteId);
-        const email = quote?.customerEmail || '';
-        if (!email) {
-          setNotice($('#qfu-chase-action-notice'), 'Add a customer email to this quote first.', 'error');
+        try {
+          await api.sendQuoteEmail(quoteId);
+          setNotice($('#qfu-chase-action-notice'), 'Follow-up email sent.', 'success');
+          await refreshApp();
+        } catch (error) {
+          const quote = (window.__qfuState?.quotes || []).find((item) => item.id === quoteId);
+          const email = quote?.customerEmail || '';
+          if (email) {
+            const subject = encodeURIComponent(`Quote follow up: ${quote.title || 'Quote'}`);
+            const body = encodeURIComponent(`Hi ${quote.customer || ''},\n\nJust following up on your quote. Happy to answer any questions or make any changes if helpful.\n`);
+            window.location.href = `mailto:${email}?subject=${subject}&body=${body}`;
+            setNotice($('#qfu-chase-action-notice'), 'Email sending is not configured yet, so we opened your mail client instead.', 'success');
+            return;
+          }
+          setNotice($('#qfu-chase-action-notice'), error.message, 'error');
           return;
         }
-        const subject = encodeURIComponent(`Quote follow up: ${quote.title || 'Quote'}`);
-        const body = encodeURIComponent(`Hi ${quote.customer || ''},\n\nJust following up on your quote. Happy to answer any questions or make any changes if helpful.\n`);
-        window.location.href = `mailto:${email}?subject=${subject}&body=${body}`;
-        return;
       }
       await api.quoteAction(quoteId, action);
       const labels = {
         contacted: 'marked contacted.',
         reschedule: 'rescheduled for tomorrow.',
-        'email-client': 'opened in your email client.',
+        'email-client': 'follow-up sent.',
       };
       setNotice($('#qfu-chase-action-notice'), `Quote ${labels[action] || 'updated.'}`, 'success');
       await refreshApp();

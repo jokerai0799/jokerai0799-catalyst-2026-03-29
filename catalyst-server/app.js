@@ -1,7 +1,7 @@
 const crypto = require('crypto');
 const { URL } = require('url');
-const { APP_URL, GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, RESEND_API_KEY } = require('./config');
-const { attemptEmail, sendPasswordResetEmail, sendVerificationEmail } = require('./email');
+const { APP_URL, GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET } = require('./config');
+const { attemptEmail, sendPasswordResetEmail, sendQuoteFollowupEmail, sendVerificationEmail } = require('./email');
 const { badRequest, notFound, readJsonOrReject, sendJson, serveStatic, unauthorized } = require('./http');
 const { clearSession, createSession, getSessionUser } = require('./session');
 const { isSupabaseReady } = require('./supabase');
@@ -119,6 +119,17 @@ function ensureWorkspaceName(profile) {
   const company = clampText(profile?.hd || '', 160);
   const name = clampText(profile?.name || '', 160);
   return company || `${name || 'Google'} Workspace`;
+}
+
+function findInviteById(store, inviteId) {
+  return (store.invites || []).find((invite) => invite.id === inviteId) || null;
+}
+
+function inviteForUser(store, inviteId, email) {
+  const invite = findInviteById(store, inviteId);
+  if (!invite) return null;
+  const inviteeEmail = String(invite.inviteeEmail || '').trim().toLowerCase();
+  return invite.status === 'pending' && inviteeEmail === String(email || '').trim().toLowerCase() ? invite : null;
 }
 
 async function handleApi(req, res, url) {
@@ -414,21 +425,79 @@ async function handleApi(req, res, url) {
     if (store.teamMembers.some((member) => member.workspaceId === auth.workspace.id && member.email.toLowerCase() === email)) {
       return badRequest(res, 'A team member with that email already exists.');
     }
+    const existingPendingInvite = (store.invites || []).find(
+      (invite) => invite.workspaceId === auth.workspace.id && invite.status === 'pending' && String(invite.inviteeEmail || '').trim().toLowerCase() === email,
+    );
+    if (existingPendingInvite) {
+      return badRequest(res, 'There is already a pending invite for that email.');
+    }
     const existingUser = findUserByEmail(store, email);
-    if (!existingUser) {
-      return badRequest(res, 'This teammate needs an account before they can be added to a workspace.');
-    }
-    if (existingUser.workspaceId !== auth.workspace.id) {
-      return badRequest(res, 'Multi-workspace access is not live yet, so this existing account cannot join another workspace yet.');
-    }
-    const member = { id: uid('team'), workspaceId: auth.workspace.id, name, email, role, activeQuotes: 0, createdAt: new Date().toISOString() };
-    store.teamMembers.push(member);
+    const invite = {
+      id: uid('invite'),
+      workspaceId: auth.workspace.id,
+      inviterUserId: auth.user.id,
+      inviterName: auth.user.name || 'Owner',
+      workspaceName: auth.workspace.name,
+      inviteeName: name,
+      inviteeEmail: email,
+      role,
+      status: 'pending',
+      createdAt: new Date().toISOString(),
+      respondedAt: null,
+    };
+    store.invites = Array.isArray(store.invites) ? store.invites : [];
+    store.invites.push(invite);
     await saveStore(store);
-    return sendJson(res, 201, { ok: true, member });
+    return sendJson(res, 201, {
+      ok: true,
+      invite,
+      delivery: existingUser ? 'account-notification' : 'pending-until-signup',
+      joinAvailableNow: Boolean(existingUser && existingUser.workspaceId === auth.workspace.id),
+    });
+  }
+
+  const inviteAcceptMatch = pathname.match(/^\/api\/invites\/([^/]+)\/accept$/);
+  if (inviteAcceptMatch && req.method === 'POST') {
+    const auth = await withUser(req, res, store, getSessionUser, unauthorized);
+    if (!auth) return;
+    const invite = inviteForUser(store, inviteAcceptMatch[1], auth.user.email);
+    if (!invite) return notFound(res);
+    if (auth.user.workspaceId !== invite.workspaceId) {
+      return badRequest(res, 'You have a workspace invite waiting, but joining another workspace is not live yet.');
+    }
+    const alreadyMember = store.teamMembers.some(
+      (member) => member.workspaceId === invite.workspaceId && member.email.toLowerCase() === auth.user.email.toLowerCase(),
+    );
+    if (!alreadyMember) {
+      store.teamMembers.push({
+        id: uid('team'),
+        workspaceId: invite.workspaceId,
+        name: normalizeName(auth.user.name || invite.inviteeName || auth.user.email.split('@')[0]),
+        email: auth.user.email,
+        role: normalizeRole(invite.role),
+        activeQuotes: 0,
+        createdAt: new Date().toISOString(),
+      });
+    }
+    invite.status = 'accepted';
+    invite.respondedAt = new Date().toISOString();
+    await saveStore(store);
+    return sendJson(res, 200, { ok: true, invite });
+  }
+
+  const inviteDeclineMatch = pathname.match(/^\/api\/invites\/([^/]+)\/decline$/);
+  if (inviteDeclineMatch && req.method === 'POST') {
+    const auth = await withUser(req, res, store, getSessionUser, unauthorized);
+    if (!auth) return;
+    const invite = inviteForUser(store, inviteDeclineMatch[1], auth.user.email);
+    if (!invite) return notFound(res);
+    invite.status = 'declined';
+    invite.respondedAt = new Date().toISOString();
+    await saveStore(store);
+    return sendJson(res, 200, { ok: true, invite });
   }
 
   const teamMatch = pathname.match(/^\/api\/team\/([^/]+)$/);
-  const teamRemoveMatch = pathname.match(/^\/api\/team\/([^/]+)\/remove$/);
   if (teamMatch && req.method === 'DELETE') {
     const auth = await withUser(req, res, store, getSessionUser, unauthorized);
     if (!auth) return;
@@ -456,37 +525,6 @@ async function handleApi(req, res, url) {
     });
     await saveStore(store);
     return sendJson(res, 200, { ok: true });
-  }
-
-  if (teamRemoveMatch && req.method === 'GET') {
-    const auth = await withUser(req, res, store, getSessionUser, unauthorized);
-    if (!auth) return;
-    const currentMember = store.teamMembers.find((member) => member.workspaceId === auth.workspace.id && member.email.toLowerCase() === auth.user.email.toLowerCase());
-    if (!currentMember || currentMember.role !== 'Owner') return unauthorized(res);
-
-    const target = store.teamMembers.find((member) => member.id === teamRemoveMatch[1] && member.workspaceId === auth.workspace.id);
-    if (!target) return notFound(res);
-
-    const ownerMembers = store.teamMembers.filter((member) => member.workspaceId === auth.workspace.id && member.role === 'Owner');
-    if (target.email.toLowerCase() === auth.user.email.toLowerCase() && ownerMembers.length <= 1) {
-      return badRequest(res, 'You cannot remove the last owner from the workspace.');
-    }
-
-    const replacementOwner = currentMember.name === target.name
-      ? ownerMembers.find((member) => member.id !== target.id)?.name || auth.user.name
-      : currentMember.name;
-
-    store.teamMembers = store.teamMembers.filter((member) => member.id !== target.id);
-    store.quotes.forEach((quote) => {
-      if (quote.workspaceId === auth.workspace.id && quote.owner === target.name) {
-        quote.owner = replacementOwner;
-        recordQuoteEvent(quote, 'Quote reassigned', `Ownership moved from ${target.name} to ${replacementOwner}.`);
-      }
-    });
-    await saveStore(store);
-    res.writeHead(302, { Location: '/dashboard/dashboard.html#team' });
-    res.end();
-    return;
   }
 
   if (req.method === 'POST' && pathname === '/api/quotes') {
@@ -551,6 +589,29 @@ async function handleApi(req, res, url) {
     store.quotes.splice(index, 1);
     await saveStore(store);
     return sendJson(res, 200, { ok: true });
+  }
+
+  const quoteEmailMatch = pathname.match(/^\/api\/quotes\/([^/]+)\/send-email$/);
+  if (quoteEmailMatch && req.method === 'POST') {
+    const auth = await withUser(req, res, store, getSessionUser, unauthorized);
+    if (!auth) return;
+    const quote = store.quotes.find((item) => item.id === quoteEmailMatch[1] && item.workspaceId === auth.workspace.id);
+    if (!quote) return notFound(res);
+    ensureQuoteMeta(quote);
+    if (!quote.customerEmail) return badRequest(res, 'Add a customer email to this quote first.');
+    const delivery = await attemptEmail(() => sendQuoteFollowupEmail(req, { quote, workspace: auth.workspace, sender: auth.user }));
+    if (!delivery.sent) {
+      const errorMessage = delivery.provider === 'none'
+        ? 'Email sending is not configured yet for this workspace.'
+        : (delivery.error || 'Follow-up email could not be sent.');
+      return sendJson(res, 503, { error: errorMessage, delivery });
+    }
+    quote.archived = false;
+    quote.status = 'Replied';
+    quote.nextFollowUp = addDays(today(), auth.workspace.secondFollowupDays || auth.workspace.firstFollowupDays || 2);
+    recordQuoteEvent(quote, 'Follow-up email sent', `Sent to ${quote.customerEmail} and queued next follow up for ${quote.nextFollowUp}.`);
+    await saveStore(store);
+    return sendJson(res, 200, { ok: true, quote, delivery });
   }
 
   const quoteActionMatch = pathname.match(/^\/api\/quotes\/([^/]+)\/actions$/);

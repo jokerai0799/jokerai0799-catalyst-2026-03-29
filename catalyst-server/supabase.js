@@ -105,6 +105,22 @@ function mapTeamMemberFromDb(row) {
   };
 }
 
+function mapInviteFromDb(row) {
+  return {
+    id: row.id,
+    workspaceId: row.workspace_id,
+    inviterUserId: row.inviter_user_id,
+    inviterName: row.inviter_name || '',
+    workspaceName: row.workspace_name || '',
+    inviteeName: row.invitee_name || '',
+    inviteeEmail: row.invitee_email,
+    role: row.role,
+    status: row.status || 'pending',
+    createdAt: isoDate(row.created_at),
+    respondedAt: row.responded_at ? isoDate(row.responded_at) : null,
+  };
+}
+
 function mapWorkspaceToDb(row) {
   return {
     id: row.id,
@@ -161,6 +177,22 @@ function mapTeamMemberToDb(row) {
   };
 }
 
+function mapInviteToDb(row) {
+  return {
+    id: row.id,
+    workspace_id: row.workspaceId,
+    inviter_user_id: row.inviterUserId,
+    inviter_name: row.inviterName || '',
+    workspace_name: row.workspaceName || '',
+    invitee_name: row.inviteeName || '',
+    invitee_email: row.inviteeEmail,
+    role: row.role,
+    status: row.status || 'pending',
+    created_at: isoDate(row.createdAt),
+    responded_at: row.respondedAt ? isoDate(row.respondedAt) : null,
+  };
+}
+
 function flattenQuoteEvents(quotes) {
   return quotes.flatMap((quote) =>
     (Array.isArray(quote.history) ? quote.history : []).map((event) => ({
@@ -174,12 +206,13 @@ function flattenQuoteEvents(quotes) {
 }
 
 async function loadStore() {
-  const [workspacesRows, usersRows, quotesRows, teamRows, eventRows] = await Promise.all([
+  const [workspacesRows, usersRows, quotesRows, teamRows, eventRows, inviteRows] = await Promise.all([
     supabaseRequest('workspaces?select=*'),
     supabaseRequest('users?select=*'),
     supabaseRequest('quotes?select=*'),
     supabaseRequest('team_members?select=*'),
     supabaseRequest('quote_events?select=*'),
+    supabaseRequest('workspace_invites?select=*', { allow404: true }),
   ]);
 
   const eventsByQuote = new Map();
@@ -199,6 +232,7 @@ async function loadStore() {
     workspaces: (workspacesRows || []).map(mapWorkspaceFromDb),
     quotes: (quotesRows || []).map((row) => mapQuoteFromDb(row, eventsByQuote)),
     teamMembers: (teamRows || []).map(mapTeamMemberFromDb),
+    invites: (inviteRows || []).map(mapInviteFromDb),
   };
 }
 
@@ -209,8 +243,16 @@ async function deleteMissingRows(table, existingIds, desiredIds) {
   }
 }
 
-async function syncTable(table, rows, mapper) {
-  const existing = await supabaseRequest(`${table}?select=id`);
+async function syncTable(table, rows, mapper, { allowMissing = false } = {}) {
+  const existing = await supabaseRequest(`${table}?select=id`, { allow404: allowMissing });
+  if (allowMissing && existing == null) {
+    if (rows.length) {
+      const error = new Error(`Supabase table ${table} is missing.`);
+      error.status = 503;
+      throw error;
+    }
+    return;
+  }
   const existingIds = new Set((existing || []).map((row) => row.id));
   const desired = rows.map(mapper);
   const desiredIds = new Set(desired.map((row) => row.id));
@@ -232,6 +274,7 @@ async function saveStore(store) {
   await syncTable('team_members', store.teamMembers, mapTeamMemberToDb);
   await syncTable('quotes', store.quotes, mapQuoteToDb);
   await syncTable('quote_events', flattenQuoteEvents(store.quotes), (row) => row);
+  await syncTable('workspace_invites', store.invites || [], mapInviteToDb, { allowMissing: true });
 }
 
 module.exports = {

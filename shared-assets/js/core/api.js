@@ -65,7 +65,16 @@ export const api = {
   addTeamMember(payload) {
     return request('/api/team', { method: 'POST', body: JSON.stringify(payload) });
   },
+  acceptInvite(id) {
+    return request(`/api/invites/${encodeURIComponent(id)}/accept`, { method: 'POST', body: JSON.stringify({}) });
+  },
+  declineInvite(id) {
+    return request(`/api/invites/${encodeURIComponent(id)}/decline`, { method: 'POST', body: JSON.stringify({}) });
+  },
   deleteTeamMember(id) {
     return request(`/api/team/${encodeURIComponent(id)}`, { method: 'DELETE' });
+  },
+  sendQuoteEmail(id) {
+    return request(`/api/quotes/${encodeURIComponent(id)}/send-email`, { method: 'POST', body: JSON.stringify({}) });
   },
 };

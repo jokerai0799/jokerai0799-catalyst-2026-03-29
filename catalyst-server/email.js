@@ -13,20 +13,22 @@ function buildAbsoluteUrl(req, pathname) {
   return `${getAppBaseUrl(req)}${normalized}`;
 }
 
-async function sendEmail({ to, subject, html }) {
+async function sendEmail({ to, subject, html, replyTo }) {
   if (!RESEND_API_KEY) return { sent: false, provider: 'none' };
+  const payload = {
+    from: RESEND_FROM_EMAIL,
+    to: [to],
+    subject,
+    html,
+  };
+  if (replyTo) payload.reply_to = replyTo;
   const response = await fetch('https://api.resend.com/emails', {
     method: 'POST',
     headers: {
       Authorization: `Bearer ${RESEND_API_KEY}`,
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({
-      from: RESEND_FROM_EMAIL,
-      to: [to],
-      subject,
-      html,
-    }),
+    body: JSON.stringify(payload),
   });
   if (!response.ok) {
     const body = await response.text();
@@ -82,6 +84,27 @@ async function sendPasswordResetEmail(req, user) {
   });
 }
 
+async function sendQuoteFollowupEmail(_req, { quote, workspace, sender }) {
+  const customerEmail = String(quote?.customerEmail || '').trim().toLowerCase();
+  if (!customerEmail) return { sent: false, provider: 'none' };
+  const customerName = escapeHtml(quote?.customer || 'there');
+  const quoteTitle = escapeHtml(quote?.title || 'your quote');
+  const senderName = escapeHtml(sender?.name || workspace?.name || 'The team');
+  const replyTo = String(workspace?.replyEmail || sender?.email || '').trim().toLowerCase() || undefined;
+  return sendEmail({
+    to: customerEmail,
+    subject: `Following up on ${quote?.title || 'your quote'}`,
+    replyTo,
+    html: `
+      <div style="font-family:Inter,Arial,sans-serif;max-width:560px;margin:0 auto;padding:24px;color:#0f172a;line-height:1.6">
+        <p style="margin:0 0 16px">Hi ${customerName},</p>
+        <p style="margin:0 0 16px">Just following up on <strong>${quoteTitle}</strong>. If you want any changes, timings, or a quick call to run through it, just reply and we’ll pick it up.</p>
+        <p style="margin:0">Thanks,<br />${senderName}</p>
+      </div>
+    `,
+  });
+}
+
 async function attemptEmail(task) {
   try {
     return await task();
@@ -99,5 +122,6 @@ async function attemptEmail(task) {
 module.exports = {
   attemptEmail,
   sendPasswordResetEmail,
+  sendQuoteFollowupEmail,
   sendVerificationEmail,
 };

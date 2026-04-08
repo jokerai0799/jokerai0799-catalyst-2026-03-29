@@ -1,5 +1,5 @@
 import { api } from '../../core/api.js';
-import { $, $all, clear, create, show, text } from '../../core/dom.js';
+import { $, $all, clear, create, setNotice, show, text } from '../../core/dom.js';
 import { dismissWorkspaceAlert, getAttentionSignature, isWorkspaceAlertDismissed } from '../../core/store.js';
 import { daysBetween, formatCurrency, formatEventTime, relativeFollowUpLabel, statusSortValue } from '../../core/utils.js';
 import { bindChaseActions } from '../chase-list/index.js';
@@ -112,12 +112,17 @@ function renderTeam(state, refreshApp) {
   document.querySelectorAll('[data-remove-team-id]').forEach((button) => {
     if (button.dataset.bound) return;
     button.dataset.bound = 'true';
-    button.addEventListener('click', () => {
+    button.addEventListener('click', async () => {
       const name = button.dataset.removeTeamName || 'this team member';
       const memberId = button.dataset.removeTeamId;
       const confirmed = window.confirm(`Remove ${name} from the workspace? Their assigned quotes will be reassigned.`);
       if (!confirmed) return;
-      window.location.href = `/api/team/${encodeURIComponent(memberId)}/remove`;
+      try {
+        await api.deleteTeamMember(memberId);
+        await refreshApp();
+      } catch (error) {
+        setNotice($('#qfu-team-notice'), error.message, 'error');
+      }
     });
   });
 }
@@ -274,19 +279,50 @@ function bindSharedLinks(state, refreshApp, attentionSignature) {
     teamForm.addEventListener('submit', async (event) => {
       event.preventDefault();
       try {
-        await api.addTeamMember({
+        const result = await api.addTeamMember({
           name: $('#team-name').value.trim(),
           email: $('#team-email').value.trim().toLowerCase(),
           role: $('#team-role').value,
         });
         teamForm.reset();
-        setNotice($('#qfu-team-notice'), 'Team member added.', 'success');
+        const message = result.delivery === 'account-notification'
+          ? 'Invite sent. They will see it inside their account.'
+          : 'Invite saved. They will see it when they sign up or log in with that email.';
+        setNotice($('#qfu-team-notice'), message, 'success');
         await refreshApp();
       } catch (error) {
         setNotice($('#qfu-team-notice'), error.message, 'error');
       }
     });
   }
+
+  document.querySelectorAll('[data-invite-accept]').forEach((button) => {
+    if (button.dataset.bound) return;
+    button.dataset.bound = 'true';
+    button.addEventListener('click', async () => {
+      try {
+        await api.acceptInvite(button.dataset.inviteAccept);
+        setNotice($('#qfu-invite-notice'), 'Invite accepted.', 'success');
+        await refreshApp();
+      } catch (error) {
+        setNotice($('#qfu-invite-notice'), error.message, 'error');
+      }
+    });
+  });
+
+  document.querySelectorAll('[data-invite-decline]').forEach((button) => {
+    if (button.dataset.bound) return;
+    button.dataset.bound = 'true';
+    button.addEventListener('click', async () => {
+      try {
+        await api.declineInvite(button.dataset.inviteDecline);
+        setNotice($('#qfu-invite-notice'), 'Invite declined.', 'success');
+        await refreshApp();
+      } catch (error) {
+        setNotice($('#qfu-invite-notice'), error.message, 'error');
+      }
+    });
+  });
 
   const settingsForm = $('#qfu-settings-form');
   if (settingsForm && !settingsForm.dataset.bound) {
@@ -314,6 +350,45 @@ export function renderDashboard(state, refreshApp) {
   if ($('#first-followup')) $('#first-followup').value = `${state.workspace.firstFollowupDays || 2} days after sent`;
   if ($('#second-followup')) $('#second-followup').value = `${state.workspace.secondFollowupDays || 5} days later`;
   if ($('#settings-notes')) $('#settings-notes').value = state.workspace.notes || '';
+  const inviteStrip = $('#qfu-incoming-invite-strip');
+  const inviteSummary = $('#qfu-incoming-invite-summary');
+  if (inviteStrip && inviteSummary) {
+    const invite = state.incomingInvites?.[0] || null;
+    if (invite) {
+      text(inviteSummary, `${invite.inviterName || 'Someone'} invited you to join ${invite.workspaceName || 'this workspace'} as ${invite.role}.`);
+      const accept = inviteStrip.querySelector('[data-invite-accept]');
+      const decline = inviteStrip.querySelector('[data-invite-decline]');
+      if (accept) accept.dataset.inviteAccept = invite.id;
+      if (decline) decline.dataset.inviteDecline = invite.id;
+      inviteStrip.hidden = false;
+    } else {
+      inviteStrip.hidden = true;
+    }
+  }
+  const pendingInvitesList = $('#qfu-pending-invites-list');
+  if (pendingInvitesList) {
+    clear(pendingInvitesList);
+    const pendingInvites = state.pendingInvites || [];
+    if (!pendingInvites.length) {
+      pendingInvitesList.appendChild(create('div', {
+        className: 'qfu-member-card',
+        children: [
+          create('strong', { text: 'No pending invites' }),
+          create('span', { text: 'New invites will appear here until they are accepted or declined.' }),
+        ],
+      }));
+    } else {
+      pendingInvites.forEach((invite) => {
+        pendingInvitesList.appendChild(create('div', {
+          className: 'qfu-member-card',
+          children: [
+            create('strong', { text: invite.inviteeName || invite.inviteeEmail }),
+            create('span', { text: `${invite.inviteeEmail} · ${invite.role}` }),
+          ],
+        }));
+      });
+    }
+  }
   setOwnerOptions(state);
 
   const openQuotes = state.quotes.filter((quote) => !quote.archived && !['Won', 'Lost'].includes(quote.status));

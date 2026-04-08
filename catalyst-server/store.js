@@ -29,6 +29,15 @@ function getWorkspaceTeam(store, workspaceId) {
   return store.teamMembers.filter((member) => member.workspaceId === workspaceId);
 }
 
+function getWorkspaceInvites(store, workspaceId) {
+  return (store.invites || []).filter((invite) => invite.workspaceId === workspaceId);
+}
+
+function getIncomingInvites(store, email) {
+  const targetEmail = String(email || '').trim().toLowerCase();
+  return (store.invites || []).filter((invite) => invite.status === 'pending' && String(invite.inviteeEmail || '').trim().toLowerCase() === targetEmail);
+}
+
 function getWorkspaceOwnerNames(store, workspaceId) {
   return new Set(getWorkspaceTeam(store, workspaceId).map((member) => member.name));
 }
@@ -128,10 +137,15 @@ function buildBootstrap(store, user) {
   const workspace = getWorkspace(store, user.workspaceId);
   const quotes = getWorkspaceQuotes(store, workspace.id).map((quote) => ensureQuoteMeta({ ...quote }));
   const teamMembers = getWorkspaceTeam(store, workspace.id).map((member) => ({ ...member }));
+  const pendingInvites = getWorkspaceInvites(store, workspace.id)
+    .filter((invite) => invite.status === 'pending')
+    .sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''));
+  const incomingInvites = getIncomingInvites(store, user.email)
+    .sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''));
   teamMembers.forEach((member) => {
     member.activeQuotes = quotes.filter((quote) => quote.owner === member.name && !['Won', 'Lost', 'Archived'].includes(quote.status)).length;
   });
-  return { user: sanitizeUser(user), workspace, quotes, teamMembers };
+  return { user: sanitizeUser(user), workspace, quotes, teamMembers, pendingInvites, incomingInvites };
 }
 
 async function withUser(req, res, store, getSessionUser, unauthorized) {
@@ -154,6 +168,8 @@ module.exports = {
   buildQuoteInput,
   ensureQuoteMeta,
   findUserByEmail,
+  getIncomingInvites,
+  getWorkspaceInvites,
   getWorkspace,
   getWorkspaceQuotes,
   getWorkspaceTeam,
