@@ -122,12 +122,8 @@ function renderTeam(state, refreshApp) {
       setNotice($('#qfu-team-notice'), `Removing ${name}...`, 'success');
       try {
         await api.deleteTeamMember(memberId);
-        const card = document.querySelector(`.qfu-member-card[data-member-id="${memberId}"]`);
-        if (card) card.remove();
-        const row = document.querySelector(`#qfu-team-ownership-body tr[data-member-id="${memberId}"]`);
-        if (row) row.remove();
-        await refreshApp();
-        setNotice($('#qfu-team-notice'), `${name} removed from the workspace.`, 'success');
+        window.location.reload();
+        return;
       } catch (error) {
         button.disabled = false;
         button.textContent = 'Remove';
