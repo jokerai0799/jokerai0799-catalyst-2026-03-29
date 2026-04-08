@@ -87,6 +87,7 @@ function renderTeam(state, refreshApp) {
 
       teamGrid.appendChild(create('div', {
         className: 'qfu-member-card',
+        dataset: { memberId: member.id },
         children,
       }));
     });
@@ -99,7 +100,7 @@ function renderTeam(state, refreshApp) {
     const memberQuotes = state.quotes.filter((quote) => quote.owner === member.name);
     const due = memberQuotes.filter((quote) => daysBetween(quote.nextFollowUp) <= 0 && !['Won', 'Lost'].includes(quote.status)).length;
     const wonTotal = memberQuotes.filter((quote) => quote.status === 'Won').reduce((sum, quote) => sum + Number(quote.value || 0), 0);
-    const row = create('tr');
+    const row = create('tr', { dataset: { memberId: member.id } });
     row.appendChild(create('td', { children: [create('strong', { text: member.name }), create('span', { text: member.role })] }));
     row.appendChild(create('td', { text: String(member.activeQuotes) }));
     row.appendChild(create('td', { text: String(due) }));
@@ -113,13 +114,23 @@ function renderTeam(state, refreshApp) {
     button.dataset.bound = 'true';
     button.addEventListener('click', async () => {
       const name = button.dataset.removeTeamName || 'this team member';
+      const memberId = button.dataset.removeTeamId;
       const confirmed = window.confirm(`Remove ${name} from the workspace? Their assigned quotes will be reassigned.`);
       if (!confirmed) return;
+      button.disabled = true;
+      button.textContent = 'Removing…';
+      setNotice($('#qfu-team-notice'), `Removing ${name}...`, 'success');
       try {
-        await api.deleteTeamMember(button.dataset.removeTeamId);
-        setNotice($('#qfu-team-notice'), `${name} removed from the workspace.`, 'success');
+        await api.deleteTeamMember(memberId);
+        const card = document.querySelector(`.qfu-member-card[data-member-id="${memberId}"]`);
+        if (card) card.remove();
+        const row = document.querySelector(`#qfu-team-ownership-body tr[data-member-id="${memberId}"]`);
+        if (row) row.remove();
         await refreshApp();
+        setNotice($('#qfu-team-notice'), `${name} removed from the workspace.`, 'success');
       } catch (error) {
+        button.disabled = false;
+        button.textContent = 'Remove';
         setNotice($('#qfu-team-notice'), error.message, 'error');
       }
     });
