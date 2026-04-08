@@ -11,6 +11,8 @@ const {
   buildQuoteInput,
   ensureQuoteMeta,
   findUserByEmail,
+  getWorkspacePlanTier,
+  isTeamFeatureUnlocked,
   loadStore,
   recordQuoteEvent,
   sanitizeUser,
@@ -20,6 +22,7 @@ const {
   isValidEmail,
   normalizeName,
   normalizeRole,
+  withWorkspaceMeta,
 } = require('./store');
 const {
   clampText,
@@ -210,14 +213,15 @@ async function handleApi(req, res, url) {
 
       let user = findUserByEmail(store, email);
       if (!user) {
+        const createdAt = new Date().toISOString();
         const workspace = {
           id: uid('workspace'),
           name: ensureWorkspaceName(profile),
           replyEmail: email,
           firstFollowupDays: 2,
           secondFollowupDays: 5,
-          notes: 'Keep quote follow ups concise, direct, and easy to reply to.',
-          createdAt: new Date().toISOString(),
+          notes: withWorkspaceMeta({ createdAt }, 'Keep quote follow ups concise, direct, and easy to reply to.', { planTier: 'personal' }),
+          createdAt,
         };
         user = {
           id: uid('user'),
@@ -258,19 +262,21 @@ async function handleApi(req, res, url) {
     const company = clampText(body.company, 160);
     const email = String(body.email || '').trim().toLowerCase();
     const password = String(body.password || '');
+    const planTier = String(body.plan || 'personal').trim().toLowerCase() === 'business' ? 'business' : 'personal';
     if (!name || !company || !email || !password) return badRequest(res, 'Fill in all fields to create your workspace.');
     if (!isValidEmail(email)) return badRequest(res, 'Use a valid email address.');
     if (password.length < 8) return badRequest(res, 'Use at least 8 characters for your password.');
     if (findUserByEmail(store, email)) return badRequest(res, 'An account with this email already exists.');
 
+    const createdAt = new Date().toISOString();
     const workspace = {
       id: uid('workspace'),
       name: company,
       replyEmail: email,
       firstFollowupDays: 2,
       secondFollowupDays: 5,
-      notes: 'Keep quote follow ups concise, direct, and easy to reply to.',
-      createdAt: new Date().toISOString(),
+      notes: withWorkspaceMeta({ createdAt }, 'Keep quote follow ups concise, direct, and easy to reply to.', { planTier }),
+      createdAt,
     };
     const user = {
       id: uid('user'),
@@ -405,7 +411,7 @@ async function handleApi(req, res, url) {
     auth.workspace.replyEmail = isValidEmail(replyEmail) ? replyEmail : (auth.workspace.replyEmail || auth.user.email);
     auth.workspace.firstFollowupDays = Math.max(1, Number(body.firstFollowupDays || auth.workspace.firstFollowupDays || 2));
     auth.workspace.secondFollowupDays = Math.max(1, Number(body.secondFollowupDays || auth.workspace.secondFollowupDays || 5));
-    auth.workspace.notes = clampText(body.notes, 2000);
+    auth.workspace.notes = withWorkspaceMeta(auth.workspace, body.notes, { planTier: getWorkspacePlanTier(auth.workspace) });
     await saveStore(store);
     return sendJson(res, 200, { ok: true, workspace: auth.workspace });
   }
@@ -413,6 +419,9 @@ async function handleApi(req, res, url) {
   if (req.method === 'POST' && pathname === '/api/team') {
     const auth = await withUser(req, res, store, getSessionUser, unauthorized);
     if (!auth) return;
+    if (!isTeamFeatureUnlocked(auth.workspace)) {
+      return badRequest(res, 'Team features unlock after the Business trial ends.');
+    }
     const currentMember = store.teamMembers.find((member) => member.workspaceId === auth.workspace.id && member.email.toLowerCase() === auth.user.email.toLowerCase());
     if (!currentMember || currentMember.role !== 'Owner') return unauthorized(res);
     const body = await readJsonOrReject(req, res, badRequest);
@@ -501,6 +510,9 @@ async function handleApi(req, res, url) {
   if (teamMatch && req.method === 'DELETE') {
     const auth = await withUser(req, res, store, getSessionUser, unauthorized);
     if (!auth) return;
+    if (!isTeamFeatureUnlocked(auth.workspace)) {
+      return badRequest(res, 'Team features unlock after the Business trial ends.');
+    }
     const currentMember = store.teamMembers.find((member) => member.workspaceId === auth.workspace.id && member.email.toLowerCase() === auth.user.email.toLowerCase());
     if (!currentMember || currentMember.role !== 'Owner') return unauthorized(res);
 

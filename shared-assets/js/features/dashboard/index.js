@@ -61,6 +61,23 @@ function renderAnalytics(quotes) {
 }
 
 function renderTeam(state, refreshApp) {
+  const teamTabLink = $('#qfu-team-tab-link');
+  const teamPlanNotice = $('#qfu-team-plan-notice');
+  const businessGrid = $('#qfu-team-business-grid');
+  const teamPanel = $('#team-panel');
+  const teamEnabled = Boolean(state.workspace?.teamEnabled);
+  if (teamTabLink) teamTabLink.style.display = teamEnabled ? '' : 'none';
+  if (teamPlanNotice) {
+    if (teamEnabled) {
+      teamPlanNotice.style.display = 'none';
+    } else {
+      setNotice(teamPlanNotice, 'Team invites are available on the Business workspace plan. Your current trial is using a personal workspace.', 'error');
+    }
+  }
+  if (businessGrid) businessGrid.style.display = teamEnabled ? '' : 'none';
+  const ownershipWrap = teamPanel?.querySelector('.qfu-panel:last-of-type');
+  if (ownershipWrap) ownershipWrap.style.display = teamEnabled ? '' : 'none';
+  if (!teamEnabled) return;
   const currentMember = state.teamMembers.find((member) => member.email?.toLowerCase() === state.user.email?.toLowerCase());
   const isOwner = currentMember?.role === 'Owner';
   const ownerCount = state.teamMembers.filter((member) => member.role === 'Owner').length;
@@ -233,13 +250,13 @@ function setAlert(workspaceId, attentionQuotes, overdueCount, dueTodayCount) {
   return signature;
 }
 
-function setOwnerOptions(state) {
+function setOwnerOptions(state, availableOwners) {
   const ownerSelect = $('#quote-owner');
   if (!ownerSelect) return;
   const current = ownerSelect.value || state.user.name;
   clear(ownerSelect);
-  state.teamMembers.forEach((member) => ownerSelect.appendChild(create('option', { text: member.name, attrs: { value: member.name } })));
-  ownerSelect.value = state.teamMembers.some((member) => member.name === current) ? current : (state.user.name || state.teamMembers[0]?.name || 'Owner');
+  availableOwners.forEach((member) => ownerSelect.appendChild(create('option', { text: member.name, attrs: { value: member.name } })));
+  ownerSelect.value = availableOwners.some((member) => member.name === current) ? current : (state.user.name || availableOwners[0]?.name || 'Owner');
 }
 
 function bindSharedLinks(state, refreshApp, attentionSignature) {
@@ -371,7 +388,7 @@ export function renderDashboard(state, refreshApp) {
     const pendingInvites = state.pendingInvites || [];
     if (!pendingInvites.length) {
       pendingInvitesList.appendChild(create('div', {
-        className: 'qfu-member-card',
+        className: 'qfu-pending-invite-card is-empty',
         children: [
           create('strong', { text: 'No pending invites' }),
           create('span', { text: 'New invites will appear here until they are accepted or declined.' }),
@@ -380,7 +397,7 @@ export function renderDashboard(state, refreshApp) {
     } else {
       pendingInvites.forEach((invite) => {
         pendingInvitesList.appendChild(create('div', {
-          className: 'qfu-member-card',
+          className: 'qfu-pending-invite-card',
           children: [
             create('strong', { text: invite.inviteeName || invite.inviteeEmail }),
             create('span', { text: `${invite.inviteeEmail} · ${invite.role}` }),
@@ -389,8 +406,9 @@ export function renderDashboard(state, refreshApp) {
       });
     }
   }
-  setOwnerOptions(state);
+  setOwnerOptions(state, availableOwners);
 
+  const availableOwners = state.workspace?.teamEnabled ? state.teamMembers : [{ name: state.user.name, role: 'Owner', email: state.user.email, activeQuotes: 0 }];
   const openQuotes = state.quotes.filter((quote) => !quote.archived && !['Won', 'Lost'].includes(quote.status));
   const wonQuotes = state.quotes.filter((quote) => !quote.archived && quote.status === 'Won');
   const lostQuotes = state.quotes.filter((quote) => !quote.archived && quote.status === 'Lost');
@@ -398,7 +416,7 @@ export function renderDashboard(state, refreshApp) {
   const overdueCount = openQuotes.filter((quote) => daysBetween(quote.nextFollowUp) < 0).length;
   const dueTodayCount = openQuotes.filter((quote) => daysBetween(quote.nextFollowUp) === 0).length;
 
-  setMetricCards(openQuotes, wonQuotes, lostQuotes, state.quotes, attentionQuotes, overdueCount, dueTodayCount, state.teamMembers.length);
+  setMetricCards(openQuotes, wonQuotes, lostQuotes, state.quotes, attentionQuotes, overdueCount, dueTodayCount, availableOwners.length);
   const alertSignature = setAlert(state.workspace.id, attentionQuotes, overdueCount, dueTodayCount);
   renderDashboardAttentionTable(attentionQuotes);
   renderAllQuotesTable(state.quotes);

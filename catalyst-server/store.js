@@ -13,6 +13,51 @@ const {
 } = require('./utils');
 const { isSupabaseReady, loadStore: loadSupabaseStore, saveStore: saveSupabaseStore } = require('./supabase');
 
+const WORKSPACE_META_PATTERN = /^<!--qfu:([^>]+)-->/;
+
+function parseWorkspaceMeta(workspace) {
+  const rawNotes = String(workspace?.notes || '');
+  const match = rawNotes.match(WORKSPACE_META_PATTERN);
+  const meta = {
+    planTier: 'personal',
+    trialEndsAt: workspace?.createdAt ? addDays(String(workspace.createdAt).slice(0, 10), 7) : addDays(today(), 7),
+  };
+  if (!match) return meta;
+  for (const part of match[1].split(';')) {
+    const [key, value] = part.split('=').map((item) => String(item || '').trim());
+    if (!key) continue;
+    if (key === 'plan' && (value === 'personal' || value === 'business')) meta.planTier = value;
+    if (key === 'trialEndsAt' && value) meta.trialEndsAt = value;
+  }
+  return meta;
+}
+
+function getVisibleWorkspaceNotes(workspace) {
+  return String(workspace?.notes || '').replace(WORKSPACE_META_PATTERN, '').trim();
+}
+
+function withWorkspaceMeta(workspace, notes, overrides = {}) {
+  const current = parseWorkspaceMeta(workspace);
+  const planTier = overrides.planTier || current.planTier || 'personal';
+  const trialEndsAt = overrides.trialEndsAt || current.trialEndsAt || addDays(today(), 7);
+  const visibleNotes = clampText(notes, 2000);
+  const meta = `<!--qfu:plan=${planTier};trialEndsAt=${trialEndsAt}-->`;
+  return visibleNotes ? `${meta}\n${visibleNotes}` : meta;
+}
+
+function getWorkspacePlanTier(workspace) {
+  return parseWorkspaceMeta(workspace).planTier;
+}
+
+function isWorkspaceTrialActive(workspace) {
+  const meta = parseWorkspaceMeta(workspace);
+  return Boolean(meta.trialEndsAt && meta.trialEndsAt >= today());
+}
+
+function isTeamFeatureUnlocked(workspace) {
+  return getWorkspacePlanTier(workspace) === 'business' && !isWorkspaceTrialActive(workspace);
+}
+
 function findUserByEmail(store, email) {
   return store.users.find((user) => user.email.toLowerCase() === String(email || '').trim().toLowerCase()) || null;
 }
@@ -74,19 +119,27 @@ function recordQuoteEvent(quote, summary, detail) {
 function seedWorkspace(store, workspace, ownerUser) {
   const ownerName = ownerUser.name || 'Owner';
   const ownerEmail = ownerUser.email || 'owner@example.com';
-  const existingTeam = getWorkspaceTeam(store, workspace.id);
-  if (!existingTeam.length) {
-    store.teamMembers.push(
-      { id: uid('team'), workspaceId: workspace.id, name: ownerName, email: ownerEmail, role: 'Owner', activeQuotes: 0, createdAt: new Date().toISOString() },
-      { id: uid('team'), workspaceId: workspace.id, name: 'Ella', email: 'ella@example.com', role: 'Ops', activeQuotes: 0, createdAt: new Date().toISOString() },
-      { id: uid('team'), workspaceId: workspace.id, name: 'Lewis', email: 'lewis@example.com', role: 'Estimator', activeQuotes: 0, createdAt: new Date().toISOString() },
-    );
+  const teamUnlocked = isTeamFeatureUnlocked(workspace);
+  if (teamUnlocked) {
+    const existingTeam = getWorkspaceTeam(store, workspace.id);
+    if (!existingTeam.length) {
+      store.teamMembers.push(
+        { id: uid('team'), workspaceId: workspace.id, name: ownerName, email: ownerEmail, role: 'Owner', activeQuotes: 0, createdAt: new Date().toISOString() },
+        { id: uid('team'), workspaceId: workspace.id, name: 'Ella', email: 'ella@example.com', role: 'Ops', activeQuotes: 0, createdAt: new Date().toISOString() },
+        { id: uid('team'), workspaceId: workspace.id, name: 'Lewis', email: 'lewis@example.com', role: 'Estimator', activeQuotes: 0, createdAt: new Date().toISOString() },
+      );
+    }
   }
   if (getWorkspaceQuotes(store, workspace.id).length) return;
-  const quotes = [
+  const quotes = teamUnlocked ? [
     ['Kitchen rewiring - Harris', 'Harris', ownerName, 'Follow up due', 3250, -4, -2, 'Customer asked for two options and wants a callback after 4pm.'],
     ['Boiler replacement - Ahmed', 'Ahmed', 'Ella', 'Follow up due', 2940, -2, 0, 'Awaiting final confirmation on timing.'],
     ['Office repaint - Carter', 'Carter', 'Lewis', 'Sent', 1780, -1, 1, 'Commercial repaint quote sent yesterday.'],
+    ['Garden wall repair - Patel', 'Patel', ownerName, 'Won', 1150, -7, -1, 'Approved and booked in.'],
+  ] : [
+    ['Kitchen rewiring - Harris', 'Harris', ownerName, 'Follow up due', 3250, -4, -2, 'Customer asked for two options and wants a callback after 4pm.'],
+    ['Boiler replacement - Ahmed', 'Ahmed', ownerName, 'Follow up due', 2940, -2, 0, 'Awaiting final confirmation on timing.'],
+    ['Office repaint - Carter', 'Carter', ownerName, 'Sent', 1780, -1, 1, 'Commercial repaint quote sent yesterday.'],
     ['Garden wall repair - Patel', 'Patel', ownerName, 'Won', 1150, -7, -1, 'Approved and booked in.'],
   ];
   for (const [title, customer, owner, status, value, sentOffset, followOffset, notes] of quotes) {
@@ -135,6 +188,7 @@ function sanitizeUser(user) {
 
 function buildBootstrap(store, user) {
   const workspace = getWorkspace(store, user.workspaceId);
+  const meta = parseWorkspaceMeta(workspace);
   const quotes = getWorkspaceQuotes(store, workspace.id).map((quote) => ensureQuoteMeta({ ...quote }));
   const teamMembers = getWorkspaceTeam(store, workspace.id).map((member) => ({ ...member }));
   const pendingInvites = getWorkspaceInvites(store, workspace.id)
@@ -145,7 +199,21 @@ function buildBootstrap(store, user) {
   teamMembers.forEach((member) => {
     member.activeQuotes = quotes.filter((quote) => quote.owner === member.name && !['Won', 'Lost', 'Archived'].includes(quote.status)).length;
   });
-  return { user: sanitizeUser(user), workspace, quotes, teamMembers, pendingInvites, incomingInvites };
+  return {
+    user: sanitizeUser(user),
+    workspace: {
+      ...workspace,
+      notes: getVisibleWorkspaceNotes(workspace),
+      planTier: meta.planTier,
+      trialEndsAt: meta.trialEndsAt,
+      trialActive: meta.trialEndsAt >= today(),
+      teamEnabled: isTeamFeatureUnlocked(workspace),
+    },
+    quotes,
+    teamMembers,
+    pendingInvites,
+    incomingInvites,
+  };
 }
 
 async function withUser(req, res, store, getSessionUser, unauthorized) {
@@ -169,7 +237,9 @@ module.exports = {
   ensureQuoteMeta,
   findUserByEmail,
   getIncomingInvites,
+  getVisibleWorkspaceNotes,
   getWorkspaceInvites,
+  getWorkspacePlanTier,
   getWorkspace,
   getWorkspaceQuotes,
   getWorkspaceTeam,
@@ -178,8 +248,11 @@ module.exports = {
   sanitizeUser,
   saveStore,
   seedWorkspace,
+  withWorkspaceMeta,
   withUser,
   isValidEmail,
   normalizeName,
   normalizeRole,
+  isWorkspaceTrialActive,
+  isTeamFeatureUnlocked,
 };
