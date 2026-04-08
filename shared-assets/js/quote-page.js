@@ -1,1 +1,2 @@
-export { initQuotePage } from './features/quotes/quote-page.js';
+// Dedicated quote page removed.
+// Quote records now open inside the main dashboard Quotes tab editor.

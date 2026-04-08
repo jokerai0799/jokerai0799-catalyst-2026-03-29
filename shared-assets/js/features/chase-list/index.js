@@ -39,7 +39,12 @@ export function renderChaseList(attentionQuotes, overdueCount, dueTodayCount) {
     actions.appendChild(createActionButton('Mark contacted', 'contacted', quote.id));
     actions.appendChild(createActionButton('Reschedule', 'reschedule', quote.id));
     actions.appendChild(createActionButton('Done for today', 'done-today', quote.id));
-    actions.appendChild(create('a', { text: 'Open quote record', attrs: { href: `./quote.html?id=${encodeURIComponent(quote.id)}` } }));
+    actions.appendChild(create('button', {
+      className: 'qfu-link-button',
+      text: 'Open quote record',
+      attrs: { type: 'button' },
+      dataset: { loadQuoteId: quote.id },
+    }));
     row.appendChild(create('td', { children: [actions] }));
     tbody.appendChild(row);
   });

@@ -2,6 +2,25 @@ import { api } from '../../core/api.js';
 import { $, clear, create, setNotice, text } from '../../core/dom.js';
 import { addDays, daysBetween, formatCurrency, formatEventTime, quoteStatusBadge, relativeFollowUpLabel, today } from '../../core/utils.js';
 
+function openQuotesTab() {
+  const trigger = document.querySelector('.qfu-app-nav-vertical [data-tab="quotes"]');
+  if (trigger) trigger.click();
+}
+
+function scrollQuoteEditorIntoView() {
+  const panel = document.querySelector('.qfu-panel.qfu-panel-editing');
+  if (!panel) return;
+  setTimeout(() => {
+    panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, 80);
+}
+
+export function openQuoteInEditor(quote, options = {}) {
+  loadQuoteIntoEditor(quote);
+  openQuotesTab();
+  if (options.scroll !== false) scrollQuoteEditorIntoView();
+}
+
 function quotePayload(workspace) {
   const title = $('#quote-title')?.value.trim() || '';
   const rawValue = ($('#quote-value')?.value || '').replace(/[^0-9.]/g, '');
@@ -83,10 +102,6 @@ export function loadQuoteIntoEditor(quote) {
   text($('#qfu-quote-form-title'), quote.title);
   text($('#qfu-quote-save-button'), 'Save changes');
   renderQuoteDetail(quote);
-  if (!document.body.classList.contains('qfu-quote-page')) {
-    const trigger = document.querySelector('.qfu-app-nav-vertical [data-tab="quotes"]');
-    if (trigger) trigger.click();
-  }
   setNotice($('#qfu-quote-form-notice'), `Loaded ${quote.title}. Update the fields below and save.`, 'success');
 }
 
@@ -100,9 +115,11 @@ function createActionButton(label, action, quoteId) {
 }
 
 function createOpenLink(quoteId) {
-  return create('a', {
+  return create('button', {
+    className: 'qfu-link-button',
     text: 'Open quote',
-    attrs: { href: `./quote.html?id=${encodeURIComponent(quoteId)}` },
+    attrs: { type: 'button' },
+    dataset: { loadQuoteId: quoteId },
   });
 }
 
@@ -182,7 +199,20 @@ export function bindQuoteInteractions(state, refreshApp) {
     row.dataset.bound = 'true';
     row.addEventListener('click', (event) => {
       if (event.target.closest('a,button')) return;
-      window.location.href = `./quote.html?id=${encodeURIComponent(row.dataset.quoteId)}`;
+      const quote = state.quotes.find((item) => item.id === row.dataset.quoteId);
+      if (!quote) return;
+      openQuoteInEditor(quote);
+    });
+  });
+
+  document.querySelectorAll('[data-load-quote-id]').forEach((button) => {
+    if (button.dataset.bound) return;
+    button.dataset.bound = 'true';
+    button.addEventListener('click', (event) => {
+      event.preventDefault();
+      const quote = state.quotes.find((item) => item.id === button.dataset.loadQuoteId);
+      if (!quote) return;
+      openQuoteInEditor(quote);
     });
   });
 

@@ -1,6 +1,5 @@
 import { ensureLandingLinks, initCheckEmailPage, initForgotPasswordPage, initLoginPage, initResetPasswordPage, initSignupPage, initVerifyPage } from './features/auth/index.js';
 import { renderDashboard } from './features/dashboard/index.js';
-import { initQuotePage } from './features/quotes/quote-page.js';
 import { getState, refreshState } from './core/store.js';
 
 async function initDashboardPage() {
@@ -27,7 +26,6 @@ const pageRegistry = [
   ['qfu-verify-page', initVerifyPage],
   ['qfu-forgot-page', initForgotPasswordPage],
   ['qfu-reset-page', initResetPasswordPage],
-  ['qfu-quote-page', initQuotePage],
   ['qfu-dashboard-page', initDashboardPage],
   ['qfu-landing-page', ensureLandingLinks],
 ];
