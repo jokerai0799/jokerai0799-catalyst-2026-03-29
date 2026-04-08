@@ -2,6 +2,9 @@ import { api } from '../../core/api.js';
 import { $, clear, create, setNotice, text } from '../../core/dom.js';
 import { addDays, daysBetween, formatCurrency, formatEventTime, quoteStatusBadge, relativeFollowUpLabel, today } from '../../core/utils.js';
 
+const QUOTES_PAGE_SIZE = 10;
+let quotesPage = 1;
+
 function openQuotesTab() {
   const trigger = document.querySelector('.qfu-app-nav-vertical [data-tab="quotes"]');
   if (trigger) trigger.click();
@@ -171,17 +174,35 @@ export function renderDashboardAttentionTable(quotes) {
   });
 }
 
+function updateQuotesPagination(totalItems) {
+  const totalPages = Math.max(1, Math.ceil(totalItems / QUOTES_PAGE_SIZE));
+  if (quotesPage > totalPages) quotesPage = totalPages;
+  const start = totalItems ? ((quotesPage - 1) * QUOTES_PAGE_SIZE) + 1 : 0;
+  const end = Math.min(totalItems, quotesPage * QUOTES_PAGE_SIZE);
+
+  text($('#qfu-quotes-pagination-summary'), totalItems ? `Showing ${start}-${end} of ${totalItems} quotes` : 'No quotes yet');
+  text($('#qfu-quotes-page-label'), `Page ${quotesPage} of ${totalPages}`);
+
+  const prev = $('#qfu-quotes-prev');
+  const next = $('#qfu-quotes-next');
+  if (prev) prev.disabled = quotesPage <= 1;
+  if (next) next.disabled = quotesPage >= totalPages;
+}
+
 export function renderAllQuotesTable(quotes) {
   const tbody = $('#qfu-all-quotes-body');
   if (!tbody) return;
   clear(tbody);
   if (!quotes.length) {
+    updateQuotesPagination(0);
     const row = create('tr');
     row.appendChild(create('td', { attrs: { colspan: '5' }, children: [create('strong', { text: 'No quotes yet.' }), create('span', { text: 'Add your first quote to populate the workspace.' })] }));
     tbody.appendChild(row);
     return;
   }
-  quotes.forEach((quote) => {
+  updateQuotesPagination(quotes.length);
+  const visibleQuotes = quotes.slice((quotesPage - 1) * QUOTES_PAGE_SIZE, quotesPage * QUOTES_PAGE_SIZE);
+  visibleQuotes.forEach((quote) => {
     const [label, badgeClass] = quoteStatusBadge(quote.status, quote.nextFollowUp);
     const row = create('tr', { dataset: { quoteId: quote.id }, className: 'qfu-quote-row' });
     row.appendChild(create('td', { children: [create('strong', { text: quote.title }), create('span', { text: quote.customer || 'Customer not set' })] }));
@@ -194,6 +215,31 @@ export function renderAllQuotesTable(quotes) {
 }
 
 export function bindQuoteInteractions(state, refreshApp) {
+  const prev = $('#qfu-quotes-prev');
+  if (prev && !prev.dataset.bound) {
+    prev.dataset.bound = 'true';
+    prev.addEventListener('click', () => {
+      if (quotesPage <= 1) return;
+      quotesPage -= 1;
+      renderAllQuotesTable(state.quotes);
+      bindQuoteInteractions(state, refreshApp);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+  }
+
+  const next = $('#qfu-quotes-next');
+  if (next && !next.dataset.bound) {
+    next.dataset.bound = 'true';
+    next.addEventListener('click', () => {
+      const totalPages = Math.max(1, Math.ceil(state.quotes.length / QUOTES_PAGE_SIZE));
+      if (quotesPage >= totalPages) return;
+      quotesPage += 1;
+      renderAllQuotesTable(state.quotes);
+      bindQuoteInteractions(state, refreshApp);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+  }
+
   document.querySelectorAll('[data-quote-id]').forEach((row) => {
     if (row.dataset.bound) return;
     row.dataset.bound = 'true';
@@ -233,6 +279,7 @@ export function bindQuoteInteractions(state, refreshApp) {
       } else {
         await api.createQuote(payload);
         setNotice($('#qfu-quote-form-notice'), 'Quote added to the workspace.', 'success');
+        quotesPage = 1;
       }
       await refreshApp();
       resetQuoteEditor(state.workspace, state.user.name);
@@ -286,6 +333,9 @@ export function bindQuoteInteractions(state, refreshApp) {
       const confirmed = window.confirm('Delete this quote permanently from the prototype workspace?');
       if (!confirmed) return;
       await api.deleteQuote(quoteId);
+      const remaining = Math.max(0, state.quotes.length - 1);
+      const totalPages = Math.max(1, Math.ceil(remaining / QUOTES_PAGE_SIZE));
+      if (quotesPage > totalPages) quotesPage = totalPages;
       await refreshApp();
       resetQuoteEditor(state.workspace, state.user.name);
       setNotice($('#qfu-quote-form-notice'), 'Quote deleted.', 'success');
