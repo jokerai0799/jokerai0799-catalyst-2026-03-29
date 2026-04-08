@@ -563,6 +563,8 @@
             history.replaceState(null, '', '#' + tabName);
           }
 
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+
           if (focusId) {
             const focusEl = document.getElementById(focusId);
             if (focusEl) {
