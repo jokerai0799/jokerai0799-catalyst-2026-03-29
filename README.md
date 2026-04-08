@@ -36,7 +36,7 @@ This project now runs as a small static frontend + Node backend prototype with:
 - `shared-assets/js/features/dashboard/` owns dashboard rendering
 - `shared-assets/js/features/quotes/` owns quote table/editor/detail flows
 - `shared-assets/js/features/chase-list/` owns follow-up queue rendering/actions
-- top-level files in `shared-assets/js/` are compatibility re-export shims during the refactor
+- `shared-assets/js/` now uses `main.js`, `routes.js`, `core/`, and `features/` directly
 
 ## Run locally
 
