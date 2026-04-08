@@ -60,18 +60,34 @@ function renderAnalytics(quotes) {
   text($('#qfu-analytics-best-owner-note'), `${formatCurrency(bestOwnerEntry[1])} currently owned`);
 }
 
-function renderTeam(state) {
+function renderTeam(state, refreshApp) {
+  const currentMember = state.teamMembers.find((member) => member.email?.toLowerCase() === state.user.email?.toLowerCase());
+  const isOwner = currentMember?.role === 'Owner';
+  const ownerCount = state.teamMembers.filter((member) => member.role === 'Owner').length;
   const teamGrid = document.querySelector('.qfu-member-grid');
   if (teamGrid) {
     clear(teamGrid);
     state.teamMembers.forEach((member) => {
+      const details = create('div', { children: [create('strong', { text: member.name }), create('span', { text: member.role })] });
+      const children = [
+        create('div', { className: 'qfu-member-avatar', text: member.name.charAt(0).toUpperCase() }),
+        details,
+        create('label', { text: `${member.activeQuotes} active quotes` }),
+      ];
+
+      const canRemove = isOwner && !(member.email?.toLowerCase() === state.user.email?.toLowerCase() && ownerCount <= 1);
+      if (canRemove) {
+        children.push(create('button', {
+          className: 'qfu-link-button qfu-link-button-danger',
+          text: 'Remove',
+          attrs: { type: 'button' },
+          dataset: { removeTeamId: member.id, removeTeamName: member.name },
+        }));
+      }
+
       teamGrid.appendChild(create('div', {
         className: 'qfu-member-card',
-        children: [
-          create('div', { className: 'qfu-member-avatar', text: member.name.charAt(0).toUpperCase() }),
-          create('div', { children: [create('strong', { text: member.name }), create('span', { text: member.role })] }),
-          create('label', { text: `${member.activeQuotes} active quotes` }),
-        ],
+        children,
       }));
     });
   }
@@ -90,6 +106,23 @@ function renderTeam(state) {
     row.appendChild(create('td', { text: formatCurrency(wonTotal) }));
     row.appendChild(create('td', { text: memberQuotes.length ? `${Math.max(1, Math.round(memberQuotes.length * 0.7))} days` : '—' }));
     ownershipBody.appendChild(row);
+  });
+
+  document.querySelectorAll('[data-remove-team-id]').forEach((button) => {
+    if (button.dataset.bound) return;
+    button.dataset.bound = 'true';
+    button.addEventListener('click', async () => {
+      const name = button.dataset.removeTeamName || 'this team member';
+      const confirmed = window.confirm(`Remove ${name} from the workspace? Their assigned quotes will be reassigned.`);
+      if (!confirmed) return;
+      try {
+        await api.deleteTeamMember(button.dataset.removeTeamId);
+        setNotice($('#qfu-team-notice'), `${name} removed from the workspace.`, 'success');
+        await refreshApp();
+      } catch (error) {
+        setNotice($('#qfu-team-notice'), error.message, 'error');
+      }
+    });
   });
 }
 
@@ -284,7 +317,7 @@ export function renderDashboard(state, refreshApp) {
   const alertSignature = setAlert(state.workspace.id, attentionQuotes, overdueCount, dueTodayCount);
   renderDashboardAttentionTable(attentionQuotes);
   renderAllQuotesTable(state.quotes);
-  renderTeam(state);
+  renderTeam(state, refreshApp);
   renderRecentActivity(state.quotes);
   renderStaleQuotes(openQuotes);
 

@@ -65,4 +65,7 @@ export const api = {
   addTeamMember(payload) {
     return request('/api/team', { method: 'POST', body: JSON.stringify(payload) });
   },
+  deleteTeamMember(id) {
+    return request(`/api/team/${encodeURIComponent(id)}`, { method: 'DELETE' });
+  },
 };

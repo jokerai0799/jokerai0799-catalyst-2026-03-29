@@ -402,6 +402,8 @@ async function handleApi(req, res, url) {
   if (req.method === 'POST' && pathname === '/api/team') {
     const auth = await withUser(req, res, store, getSessionUser, unauthorized);
     if (!auth) return;
+    const currentMember = store.teamMembers.find((member) => member.workspaceId === auth.workspace.id && member.email.toLowerCase() === auth.user.email.toLowerCase());
+    if (!currentMember || currentMember.role !== 'Owner') return unauthorized(res);
     const body = await readJsonOrReject(req, res, badRequest);
     if (!body) return;
     const name = normalizeName(body.name);
@@ -416,6 +418,36 @@ async function handleApi(req, res, url) {
     store.teamMembers.push(member);
     await saveStore(store);
     return sendJson(res, 201, { ok: true, member });
+  }
+
+  const teamMatch = pathname.match(/^\/api\/team\/([^/]+)$/);
+  if (teamMatch && req.method === 'DELETE') {
+    const auth = await withUser(req, res, store, getSessionUser, unauthorized);
+    if (!auth) return;
+    const currentMember = store.teamMembers.find((member) => member.workspaceId === auth.workspace.id && member.email.toLowerCase() === auth.user.email.toLowerCase());
+    if (!currentMember || currentMember.role !== 'Owner') return unauthorized(res);
+
+    const target = store.teamMembers.find((member) => member.id === teamMatch[1] && member.workspaceId === auth.workspace.id);
+    if (!target) return notFound(res);
+
+    const ownerMembers = store.teamMembers.filter((member) => member.workspaceId === auth.workspace.id && member.role === 'Owner');
+    if (target.email.toLowerCase() === auth.user.email.toLowerCase() && ownerMembers.length <= 1) {
+      return badRequest(res, 'You cannot remove the last owner from the workspace.');
+    }
+
+    const replacementOwner = currentMember.name === target.name
+      ? ownerMembers.find((member) => member.id !== target.id)?.name || auth.user.name
+      : currentMember.name;
+
+    store.teamMembers = store.teamMembers.filter((member) => member.id !== target.id);
+    store.quotes.forEach((quote) => {
+      if (quote.workspaceId === auth.workspace.id && quote.owner === target.name) {
+        quote.owner = replacementOwner;
+        recordQuoteEvent(quote, 'Quote reassigned', `Ownership moved from ${target.name} to ${replacementOwner}.`);
+      }
+    });
+    await saveStore(store);
+    return sendJson(res, 200, { ok: true });
   }
 
   if (req.method === 'POST' && pathname === '/api/quotes') {
