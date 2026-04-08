@@ -1,6 +1,6 @@
 const crypto = require('crypto');
 
-const ALLOWED_QUOTE_STATUSES = new Set(['Draft', 'Sent', 'Follow up due', 'Replied', 'Won', 'Lost', 'Archived']);
+const ALLOWED_QUOTE_STATUSES = new Set(['Draft', 'Sent', 'Due today', 'Follow up due', 'Replied', 'Won', 'Lost', 'Archived']);
 const ALLOWED_QUOTE_ACTIONS = new Set(['archive', 'mark-contacted', 'mark-won', 'mark-lost', 'contacted', 'reschedule', 'done-today']);
 
 function isValidEmail(value) {

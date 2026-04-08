@@ -487,13 +487,14 @@ async function handleApi(req, res, url) {
     if (!auth) return;
     const body = await readJsonOrReject(req, res, badRequest);
     if (!body) return;
-    const { title, customer, owner, status, value, sentDate, nextFollowUp, notes } = buildQuoteInput(body, auth, store);
+    const { title, customer, customerEmail, owner, status, value, sentDate, nextFollowUp, notes } = buildQuoteInput(body, auth, store);
     if (!title || !value) return badRequest(res, 'Add at least a title and value before saving.');
     const quote = {
       id: uid('quote'),
       workspaceId: auth.workspace.id,
       title,
       customer,
+      customerEmail,
       owner,
       status,
       value,
@@ -518,10 +519,11 @@ async function handleApi(req, res, url) {
     if (!quote) return notFound(res);
     const body = await readJsonOrReject(req, res, badRequest);
     if (!body) return;
-    const { title, customer, owner, status, value, sentDate, nextFollowUp, notes } = buildQuoteInput(body, auth, store, quote);
+    const { title, customer, customerEmail, owner, status, value, sentDate, nextFollowUp, notes } = buildQuoteInput(body, auth, store, quote);
     if (!title || !value) return badRequest(res, 'Add at least a title and value before saving.');
     quote.title = title;
     quote.customer = customer;
+    quote.customerEmail = customerEmail;
     quote.owner = owner;
     quote.status = status;
     quote.value = value;

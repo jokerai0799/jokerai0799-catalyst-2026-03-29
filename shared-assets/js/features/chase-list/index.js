@@ -38,7 +38,7 @@ export function renderChaseList(attentionQuotes, overdueCount, dueTodayCount) {
     const actions = create('div', { className: 'qfu-inline-link-actions qfu-inline-link-actions-stack' });
     actions.appendChild(createActionButton('Mark contacted', 'contacted', quote.id));
     actions.appendChild(createActionButton('Reschedule', 'reschedule', quote.id));
-    actions.appendChild(createActionButton('Done for today', 'done-today', quote.id));
+    actions.appendChild(createActionButton('Email client', 'email-client', quote.id));
     actions.appendChild(create('button', {
       className: 'qfu-link-button',
       text: 'Open quote record',
@@ -58,11 +58,23 @@ export function bindChaseActions(refreshApp) {
       event.preventDefault();
       const action = button.dataset.chaseAction;
       const quoteId = button.dataset.quoteActionId;
+      if (action === 'email-client') {
+        const quote = (window.__qfuState?.quotes || []).find((item) => item.id === quoteId);
+        const email = quote?.customerEmail || '';
+        if (!email) {
+          setNotice($('#qfu-chase-action-notice'), 'Add a customer email to this quote first.', 'error');
+          return;
+        }
+        const subject = encodeURIComponent(`Quote follow up: ${quote.title || 'Quote'}`);
+        const body = encodeURIComponent(`Hi ${quote.customer || ''},\n\nJust following up on your quote. Happy to answer any questions or make any changes if helpful.\n`);
+        window.location.href = `mailto:${email}?subject=${subject}&body=${body}`;
+        return;
+      }
       await api.quoteAction(quoteId, action);
       const labels = {
         contacted: 'marked contacted.',
         reschedule: 'rescheduled for tomorrow.',
-        'done-today': 'cleared from today.',
+        'email-client': 'opened in your email client.',
       };
       setNotice($('#qfu-chase-action-notice'), `Quote ${labels[action] || 'updated.'}`, 'success');
       await refreshApp();

@@ -44,11 +44,13 @@ function buildQuoteInput(body, auth, store, existingQuote = null) {
   const value = normalizeCurrency(body.value);
   const sentDate = normalizeDate(body.sentDate, existingQuote?.sentDate || today());
   const nextFollowUp = normalizeDate(body.nextFollowUp, existingQuote?.nextFollowUp || addDays(sentDate, auth.workspace.firstFollowupDays || 2));
+  const customerEmail = String(body.customerEmail || existingQuote?.customerEmail || '').trim().toLowerCase();
   const notes = clampText(body.notes, 4000);
-  return { title, customer, owner, status, value, sentDate, nextFollowUp, notes };
+  return { title, customer, owner, status, value, sentDate, nextFollowUp, notes, customerEmail };
 }
 
 function ensureQuoteMeta(quote) {
+  if (!isValidEmail(quote.customerEmail)) quote.customerEmail = '';
   if (!Array.isArray(quote.history)) quote.history = [];
   if (typeof quote.archived !== 'boolean') quote.archived = false;
   return quote;

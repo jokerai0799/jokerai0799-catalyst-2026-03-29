@@ -302,6 +302,7 @@ function bindSharedLinks(state, refreshApp, attentionSignature) {
 
 export function renderDashboard(state, refreshApp) {
   document.body.classList.remove('is-loading');
+  window.__qfuState = state;
   setTopbar(state.workspace);
   if ($('#business-name')) $('#business-name').value = state.workspace.name;
   if ($('#business-email')) $('#business-email').value = state.workspace.replyEmail || state.user.email;

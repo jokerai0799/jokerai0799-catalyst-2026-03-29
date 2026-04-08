@@ -36,6 +36,7 @@ function quotePayload(workspace) {
     owner: $('#quote-owner')?.value || '',
     sentDate,
     nextFollowUp: $('#quote-followup')?.value || addDays(sentDate, workspace.firstFollowupDays || 2),
+    customerEmail: $('#quote-customer-email')?.value.trim().toLowerCase() || '',
     notes: $('#quote-notes')?.value.trim() || '',
   };
 }
@@ -47,6 +48,7 @@ export function resetQuoteEditor(workspace, ownerName) {
   $('#quote-id').value = '';
   $('#quote-date').value = today();
   $('#quote-followup').value = addDays(today(), workspace.firstFollowupDays || 2);
+  if ($('#quote-customer-email')) $('#quote-customer-email').value = '';
   if ($('#quote-owner') && ownerName) $('#quote-owner').value = ownerName;
   text($('#qfu-quote-form-kicker'), 'New quote');
   text($('#qfu-quote-form-title'), 'Add a quote quickly');
@@ -95,6 +97,7 @@ export function loadQuoteIntoEditor(quote) {
     'quote-owner': quote.owner,
     'quote-date': quote.sentDate,
     'quote-followup': quote.nextFollowUp,
+    'quote-customer-email': quote.customerEmail || '',
     'quote-notes': quote.notes || '',
   };
   Object.entries(values).forEach(([id, value]) => {
@@ -123,6 +126,20 @@ function createOpenLink(quoteId) {
     text: 'Open quote',
     attrs: { type: 'button' },
     dataset: { loadQuoteId: quoteId },
+  });
+}
+
+function createEmailClientButton(quote) {
+  return create('button', {
+    className: 'qfu-link-button',
+    text: 'Email client',
+    attrs: { type: 'button' },
+    dataset: {
+      emailClientId: quote.id,
+      emailClientAddress: quote.customerEmail || '',
+      emailClientTitle: quote.title || '',
+      emailClientCustomer: quote.customer || '',
+    },
   });
 }
 
@@ -167,7 +184,7 @@ export function renderDashboardAttentionTable(quotes) {
     actions.appendChild(create('span', { className: 'qfu-next-step-label', text: recommendedNextStep(quote) }));
     const links = create('div', { className: 'qfu-inline-link-actions' });
     links.appendChild(createOpenLink(quote.id));
-    links.appendChild(createActionButton('Done today', 'done-today', quote.id));
+    links.appendChild(createEmailClientButton(quote));
     actions.appendChild(links);
     row.appendChild(create('td', { children: [actions] }));
     tbody.appendChild(row);
@@ -259,6 +276,24 @@ export function bindQuoteInteractions(state, refreshApp) {
       const quote = state.quotes.find((item) => item.id === button.dataset.loadQuoteId);
       if (!quote) return;
       openQuoteInEditor(quote);
+    });
+  });
+
+  document.querySelectorAll('[data-email-client-id]').forEach((button) => {
+    if (button.dataset.bound) return;
+    button.dataset.bound = 'true';
+    button.addEventListener('click', (event) => {
+      event.preventDefault();
+      const email = button.dataset.emailClientAddress || '';
+      const quote = state.quotes.find((item) => item.id === button.dataset.emailClientId);
+      if (!email) {
+        if (quote) openQuoteInEditor(quote);
+        setNotice($('#qfu-quote-form-notice'), 'Add a customer email to this quote first.', 'error');
+        return;
+      }
+      const subject = encodeURIComponent(`Quote follow up: ${button.dataset.emailClientTitle || 'Quote'}`);
+      const body = encodeURIComponent(`Hi ${button.dataset.emailClientCustomer || ''},\n\nJust following up on your quote. Happy to answer any questions or make any changes if helpful.\n`);
+      window.location.href = `mailto:${email}?subject=${subject}&body=${body}`;
     });
   });
 
