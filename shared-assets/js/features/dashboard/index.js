@@ -64,16 +64,25 @@ function renderLockedTeamPreview(state) {
   const teamGrid = document.querySelector('.qfu-member-grid');
   if (teamGrid) {
     clear(teamGrid);
-    ['You', 'Estimator', 'Ops'].forEach((name, index) => {
+    [
+      ['Greg', 'Owner', '6 active quotes'],
+      ['Ella', 'Ops', '4 active quotes'],
+      ['Lewis', 'Estimator', '3 active quotes'],
+    ].forEach(([name, role, activeQuotes]) => {
       teamGrid.appendChild(create('div', {
         className: 'qfu-member-card',
         children: [
           create('div', { className: 'qfu-member-avatar', text: name.charAt(0).toUpperCase() }),
-          create('div', { children: [create('strong', { text: name }), create('span', { text: ['Owner', 'Estimator', 'Ops'][index] || 'Member' })] }),
-          create('label', { text: `${index === 0 ? 6 : index === 1 ? 4 : 3} active quotes` }),
+          create('div', { children: [create('strong', { text: name }), create('span', { text: role })] }),
+          create('label', { text: activeQuotes }),
         ],
       }));
     });
+  }
+
+  const teamNotice = $('#qfu-team-notice');
+  if (teamNotice) {
+    setNotice(teamNotice, 'Preview only — add teammates, send invites, and share ownership after upgrading to Business.', 'error');
   }
 
   const pendingInvitesList = $('#qfu-pending-invites-list');

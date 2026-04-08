@@ -4056,14 +4056,23 @@ p {
   position: relative;
 }
 
+.qfu-team-preview-shell.is-locked {
+  min-height: 760px;
+}
+
 .qfu-team-preview-shell.is-locked .qfu-panel,
 .qfu-team-preview-shell.is-locked .qfu-member-grid,
 .qfu-team-preview-shell.is-locked .qfu-table-wrap,
 .qfu-team-preview-shell.is-locked #qfu-pending-invites-list,
-.qfu-team-preview-shell.is-locked #qfu-team-form {
-  filter: blur(4px);
+.qfu-team-preview-shell.is-locked #qfu-team-form,
+.qfu-team-preview-shell.is-locked #qfu-team-notice {
+  filter: blur(5px) saturate(0.92);
   pointer-events: none;
   user-select: none;
+}
+
+.qfu-team-preview-shell.is-locked .qfu-panel {
+  opacity: 0.72;
 }
 
 .qfu-team-lock-overlay {
@@ -4074,18 +4083,18 @@ p {
   align-items: center;
   justify-content: center;
   padding: 24px;
-  background: rgba(237, 243, 255, 0.22);
+  background: linear-gradient(180deg, rgba(237, 243, 255, 0.12) 0%, rgba(237, 243, 255, 0.46) 38%, rgba(237, 243, 255, 0.70) 100%);
 }
 
 .qfu-team-lock-card {
-  max-width: 420px;
-  padding: 24px;
+  max-width: 440px;
+  padding: 26px;
   border-radius: 22px;
   text-align: center;
-  border: 1px solid rgba(48, 86, 211, 0.14);
-  background: rgba(255, 255, 255, 0.92);
-  box-shadow: 0 18px 42px rgba(19, 33, 68, 0.10);
-  backdrop-filter: blur(10px);
+  border: 1px solid rgba(48, 86, 211, 0.16);
+  background: rgba(255, 255, 255, 0.97);
+  box-shadow: 0 24px 56px rgba(19, 33, 68, 0.14);
+  backdrop-filter: blur(12px);
 }
 
 .qfu-team-lock-kicker {
@@ -4107,6 +4116,15 @@ p {
 .qfu-team-lock-card p {
   margin: 0 0 18px;
   color: #667085;
+}
+
+.qfu-team-preview-shell.is-locked .qfu-link-button,
+.qfu-team-preview-shell.is-locked .ud-main-btn,
+.qfu-team-preview-shell.is-locked input,
+.qfu-team-preview-shell.is-locked select,
+.qfu-team-preview-shell.is-locked textarea,
+.qfu-team-preview-shell.is-locked button {
+  cursor: not-allowed !important;
 }
 
 .qfu-pending-invite-card {
