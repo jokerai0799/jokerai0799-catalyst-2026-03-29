@@ -416,7 +416,7 @@ async function handleApi(req, res, url) {
     }
     const existingUser = findUserByEmail(store, email);
     if (!existingUser) {
-      return badRequest(res, 'This teammate needs a Catalyst account before they can be added to a workspace.');
+      return badRequest(res, 'This teammate needs an account before they can be added to a workspace.');
     }
     if (existingUser.workspaceId !== auth.workspace.id) {
       return badRequest(res, 'Multi-workspace access is not live yet, so this existing account cannot join another workspace yet.');
