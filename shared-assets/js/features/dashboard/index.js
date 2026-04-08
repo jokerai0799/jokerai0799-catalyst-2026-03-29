@@ -2,7 +2,7 @@ import { api } from '../../core/api.js';
 import { $, $all, clear, create, show, text } from '../../core/dom.js';
 import { dismissWorkspaceAlert, getAttentionSignature, isWorkspaceAlertDismissed } from '../../core/store.js';
 import { daysBetween, formatCurrency, formatEventTime, relativeFollowUpLabel, statusSortValue } from '../../core/utils.js';
-import { bindChaseActions, renderChaseList } from '../chase-list/index.js';
+import { bindChaseActions } from '../chase-list/index.js';
 import { bindQuoteInteractions, loadQuoteIntoEditor, renderAllQuotesTable, renderDashboardAttentionTable, renderQuoteDetail, resetQuoteEditor } from '../quotes/index.js';
 
 function renderAnalytics(quotes) {
@@ -158,42 +158,20 @@ function renderStaleQuotes(openQuotes) {
 
 function setTopbar(workspace) {
   text(document.querySelector('.qfu-workspace-panel strong'), workspace.name);
-  text(document.querySelector('.qfu-dashboard-kicker'), 'Workspace dashboard');
-  text(document.querySelector('.qfu-app-topbar h1'), `Good morning, ${workspace.name}`);
-  text(document.querySelector('.qfu-app-topbar p'), 'Start with what needs action today, then review pipeline health and recent movement.');
+  text(document.querySelector('.qfu-dashboard-kicker'), 'Today');
+  text(document.querySelector('.qfu-app-topbar h1'), `What needs action in ${workspace.name}`);
+  text(document.querySelector('.qfu-app-topbar p'), 'Start with overdue follow ups, then update quotes and keep the pipeline moving.');
 }
 
-function setMetricCards(openQuotes, wonQuotes, lostQuotes, allQuotes, attentionQuotes, overdueCount, _dueTodayCount, teamCount) {
+function setMetricCards(openQuotes, wonQuotes, lostQuotes, _allQuotes, attentionQuotes, _overdueCount, _dueTodayCount, teamCount) {
   const metricCards = $all('.qfu-dashboard-metrics .qfu-metric-card');
-  const quoteHealthCards = $all('.qfu-stat-stack .qfu-stat-card');
   const openValue = openQuotes.reduce((sum, quote) => sum + Number(quote.value || 0), 0);
   const wonValue = wonQuotes.reduce((sum, quote) => sum + Number(quote.value || 0), 0);
-  const trackedCount = allQuotes.length;
-  const winRate = trackedCount ? Math.round((wonQuotes.length / trackedCount) * 100) : 0;
-  const sentQuoteItems = openQuotes.filter((quote) => quote.status === 'Sent');
-  const draftQuoteItems = allQuotes.filter((quote) => quote.status === 'Draft' && !quote.archived);
-  const followUpDueItems = allQuotes.filter((quote) => !quote.archived && !['Won', 'Lost'].includes(quote.status) && daysBetween(quote.nextFollowUp) <= 0);
-  const sentQuotes = sentQuoteItems.length;
-  const draftQuotes = draftQuoteItems.length;
-  const followUpDueQuotes = followUpDueItems.length;
-  const draftValue = draftQuoteItems.reduce((sum, quote) => sum + Number(quote.value || 0), 0);
-  const sentValue = sentQuoteItems.reduce((sum, quote) => sum + Number(quote.value || 0), 0);
-  const dueValue = followUpDueItems.reduce((sum, quote) => sum + Number(quote.value || 0), 0);
+  const sentQuotes = openQuotes.filter((quote) => quote.status === 'Sent').length;
 
   if (metricCards[0]) text(metricCards[0].querySelector('h3'), formatCurrency(openValue));
-  if (metricCards[1]) text(metricCards[1].querySelector('h3'), formatCurrency(wonValue));
-  if (metricCards[2]) text(metricCards[2].querySelector('h3'), String(trackedCount));
-  if (metricCards[3]) text(metricCards[3].querySelector('h3'), `${winRate}%`);
-  if (metricCards[4]) text(metricCards[4].querySelector('h3'), String(attentionQuotes.length));
-
-  text($('#qfu-pipeline-draft-count'), String(draftQuotes));
-  text($('#qfu-pipeline-sent-count'), String(sentQuotes));
-  text($('#qfu-pipeline-due-count'), String(followUpDueQuotes));
-  text($('#qfu-pipeline-won-count'), String(wonQuotes.length));
-  text($('#qfu-pipeline-draft-value'), `${formatCurrency(draftValue)} waiting to send`);
-  text($('#qfu-pipeline-sent-value'), `${formatCurrency(sentValue)} waiting first reply`);
-  text($('#qfu-pipeline-due-value'), `${formatCurrency(dueValue)} needs action now`);
-  text($('#qfu-pipeline-won-value'), `${formatCurrency(wonValue)} booked work`);
+  if (metricCards[1]) text(metricCards[1].querySelector('h3'), String(attentionQuotes.length));
+  if (metricCards[2]) text(metricCards[2].querySelector('h3'), formatCurrency(wonValue));
 
   text($('#qfu-dashboard-team-count'), `${teamCount || 0} active`);
   text($('#qfu-dashboard-sent-total'), String(sentQuotes));
@@ -201,19 +179,6 @@ function setMetricCards(openQuotes, wonQuotes, lostQuotes, allQuotes, attentionQ
   text($('#qfu-dashboard-won-total'), String(wonQuotes.length));
   text($('#qfu-dashboard-lost-total'), String(lostQuotes.length));
   text($('#qfu-dashboard-booked-total'), formatCurrency(wonValue));
-
-  if (quoteHealthCards[0]) {
-    text(quoteHealthCards[0].querySelector('strong'), `${sentQuotes} quotes`);
-    text(quoteHealthCards[0].querySelector('span'), `Average age: ${openQuotes.length ? Math.max(1, Math.round(openQuotes.length * 0.7)) : 0} days`);
-  }
-  if (quoteHealthCards[1]) {
-    text(quoteHealthCards[1].querySelector('strong'), `${overdueCount} quotes`);
-    text(quoteHealthCards[1].querySelector('span'), `Worth ${formatCurrency(attentionQuotes.reduce((sum, quote) => sum + Number(quote.value || 0), 0))} combined`);
-  }
-  if (quoteHealthCards[2]) {
-    text(quoteHealthCards[2].querySelector('strong'), formatCurrency(wonValue));
-    text(quoteHealthCards[2].querySelector('span'), `${wonQuotes.length} jobs booked`);
-  }
 }
 
 function setAlert(workspaceId, attentionQuotes, overdueCount, dueTodayCount) {
@@ -258,7 +223,7 @@ function bindSharedLinks(state, refreshApp, attentionSignature) {
     });
   }
 
-  document.querySelectorAll('[data-tab="chase-list"], .qfu-alert-link').forEach((node) => {
+  document.querySelectorAll('.qfu-alert-link').forEach((node) => {
     if (node.dataset.dismissBound) return;
     node.dataset.dismissBound = 'true';
     node.addEventListener('click', () => {
@@ -266,12 +231,6 @@ function bindSharedLinks(state, refreshApp, attentionSignature) {
       show(document.querySelector('.qfu-alert-strip'), false);
     });
   });
-
-  const activeHash = window.location.hash.replace('#', '');
-  if (activeHash === 'chase-list') {
-    dismissWorkspaceAlert(state.workspace.id, attentionSignature);
-    show(document.querySelector('.qfu-alert-strip'), false);
-  }
 
   const teamForm = $('#qfu-team-form');
   if (teamForm && !teamForm.dataset.bound) {
@@ -325,11 +284,9 @@ export function renderDashboard(state, refreshApp) {
   const alertSignature = setAlert(state.workspace.id, attentionQuotes, overdueCount, dueTodayCount);
   renderDashboardAttentionTable(attentionQuotes);
   renderAllQuotesTable(state.quotes);
-  renderChaseList(attentionQuotes, overdueCount, dueTodayCount);
   renderTeam(state);
   renderRecentActivity(state.quotes);
   renderStaleQuotes(openQuotes);
-  renderAnalytics(state.quotes);
 
   const selectedQuoteId = $('#quote-id')?.value || state.quotes[0]?.id;
   renderQuoteDetail(state.quotes.find((quote) => quote.id === selectedQuoteId) || null);
