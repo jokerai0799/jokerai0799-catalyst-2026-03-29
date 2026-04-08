@@ -112,23 +112,12 @@ function renderTeam(state, refreshApp) {
   document.querySelectorAll('[data-remove-team-id]').forEach((button) => {
     if (button.dataset.bound) return;
     button.dataset.bound = 'true';
-    button.addEventListener('click', async () => {
+    button.addEventListener('click', () => {
       const name = button.dataset.removeTeamName || 'this team member';
       const memberId = button.dataset.removeTeamId;
       const confirmed = window.confirm(`Remove ${name} from the workspace? Their assigned quotes will be reassigned.`);
       if (!confirmed) return;
-      button.disabled = true;
-      button.textContent = 'Removing…';
-      setNotice($('#qfu-team-notice'), `Removing ${name}...`, 'success');
-      try {
-        await api.deleteTeamMember(memberId);
-        window.location.reload();
-        return;
-      } catch (error) {
-        button.disabled = false;
-        button.textContent = 'Remove';
-        setNotice($('#qfu-team-notice'), error.message, 'error');
-      }
+      window.location.href = `/api/team/${encodeURIComponent(memberId)}/remove`;
     });
   });
 }

@@ -421,6 +421,7 @@ async function handleApi(req, res, url) {
   }
 
   const teamMatch = pathname.match(/^\/api\/team\/([^/]+)$/);
+  const teamRemoveMatch = pathname.match(/^\/api\/team\/([^/]+)\/remove$/);
   if (teamMatch && req.method === 'DELETE') {
     const auth = await withUser(req, res, store, getSessionUser, unauthorized);
     if (!auth) return;
@@ -448,6 +449,37 @@ async function handleApi(req, res, url) {
     });
     await saveStore(store);
     return sendJson(res, 200, { ok: true });
+  }
+
+  if (teamRemoveMatch && req.method === 'GET') {
+    const auth = await withUser(req, res, store, getSessionUser, unauthorized);
+    if (!auth) return;
+    const currentMember = store.teamMembers.find((member) => member.workspaceId === auth.workspace.id && member.email.toLowerCase() === auth.user.email.toLowerCase());
+    if (!currentMember || currentMember.role !== 'Owner') return unauthorized(res);
+
+    const target = store.teamMembers.find((member) => member.id === teamRemoveMatch[1] && member.workspaceId === auth.workspace.id);
+    if (!target) return notFound(res);
+
+    const ownerMembers = store.teamMembers.filter((member) => member.workspaceId === auth.workspace.id && member.role === 'Owner');
+    if (target.email.toLowerCase() === auth.user.email.toLowerCase() && ownerMembers.length <= 1) {
+      return badRequest(res, 'You cannot remove the last owner from the workspace.');
+    }
+
+    const replacementOwner = currentMember.name === target.name
+      ? ownerMembers.find((member) => member.id !== target.id)?.name || auth.user.name
+      : currentMember.name;
+
+    store.teamMembers = store.teamMembers.filter((member) => member.id !== target.id);
+    store.quotes.forEach((quote) => {
+      if (quote.workspaceId === auth.workspace.id && quote.owner === target.name) {
+        quote.owner = replacementOwner;
+        recordQuoteEvent(quote, 'Quote reassigned', `Ownership moved from ${target.name} to ${replacementOwner}.`);
+      }
+    });
+    await saveStore(store);
+    res.writeHead(302, { Location: '/dashboard/dashboard.html#team' });
+    res.end();
+    return;
   }
 
   if (req.method === 'POST' && pathname === '/api/quotes') {
