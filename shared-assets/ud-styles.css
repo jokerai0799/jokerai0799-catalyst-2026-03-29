@@ -1220,14 +1220,16 @@ p {
   }
 }
 
-@media (max-width: 767px) {
+@media (max-width: 1100px) {
   .qfu-hero-demo {
-    max-width: 420px;
+    max-width: 520px;
     margin: 0 auto;
   }
-}
 
-@media (max-width: 767px) {
+  .qfu-demo-sidebar {
+    display: none;
+  }
+
   .qfu-demo-toolbar {
     -webkit-box-orient: vertical;
     -webkit-box-direction: normal;
@@ -1249,6 +1251,22 @@ p {
     display: block;
   }
 
+  .qfu-demo-mobile-item-top,
+  .qfu-demo-mobile-item-meta {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .qfu-demo-mobile-item-meta small {
+    text-align: left;
+  }
+}
+
+@media (max-width: 767px) {
+  .qfu-hero-demo {
+    max-width: 420px;
+  }
+
   .qfu-demo-metric-card {
     padding: 12px;
   }
@@ -1259,16 +1277,6 @@ p {
 
   .qfu-demo-panel {
     padding: 13px;
-  }
-
-  .qfu-demo-mobile-item-top,
-  .qfu-demo-mobile-item-meta {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .qfu-demo-mobile-item-meta small {
-    text-align: left;
   }
 
   .qfu-demo-panel-head span {
