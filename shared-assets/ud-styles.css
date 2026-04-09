@@ -380,8 +380,22 @@ p {
 
   .qfu-mobile-nav-actions .ud-main-btn {
     width: 100%;
+    display: flex;
+    align-items: center;
     justify-content: center;
     text-align: center;
+  }
+
+  .qfu-mobile-nav-actions .ud-login-btn {
+    background: #eff6ff;
+    border: 1px solid #bfdbfe;
+    color: #1d4ed8;
+  }
+
+  .qfu-mobile-nav-actions .ud-white-btn {
+    background: #3056d3;
+    border-color: #3056d3;
+    color: #ffffff;
   }
 }
 
