@@ -366,6 +366,10 @@ p {
   }
 }
 
+.qfu-mobile-nav-actions {
+  display: none;
+}
+
 @media only screen and (min-width: 768px) and (max-width: 991px), (max-width: 767px) {
   .navbar-nav {
     padding: 20px 30px 10px;
@@ -397,10 +401,6 @@ p {
     border-color: #3056d3;
     color: #ffffff;
   }
-}
-
-.qfu-mobile-nav-actions {
-  display: none;
 }
 
 .navbar-nav .nav-item {
