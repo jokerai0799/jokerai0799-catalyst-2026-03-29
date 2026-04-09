@@ -944,7 +944,7 @@ p {
 
 .qfu-demo-content-grid {
   display: grid;
-  grid-template-columns: minmax(0, 1.5fr) minmax(250px, 0.8fr);
+  grid-template-columns: minmax(0, 1fr);
   gap: 14px;
 }
 
@@ -976,6 +976,7 @@ p {
 
 .qfu-demo-table-wrap {
   overflow-x: auto;
+  max-width: 100%;
 }
 
 .qfu-demo-table {
@@ -1130,8 +1131,20 @@ p {
             flex-direction: column;
   }
 
+  .qfu-demo-main {
+    padding: 16px;
+  }
+
+  .qfu-demo-metric-card {
+    padding: 12px;
+  }
+
   .qfu-demo-metric-card strong {
     font-size: 22px;
+  }
+
+  .qfu-demo-panel {
+    padding: 13px;
   }
 
   .qfu-demo-panel-head span {
