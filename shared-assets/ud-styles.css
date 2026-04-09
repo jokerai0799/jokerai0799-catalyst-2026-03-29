@@ -368,8 +368,25 @@ p {
 
 @media only screen and (min-width: 768px) and (max-width: 991px), (max-width: 767px) {
   .navbar-nav {
-    padding: 20px 30px;
+    padding: 20px 30px 10px;
   }
+
+  .qfu-mobile-nav-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 0 30px 24px;
+  }
+
+  .qfu-mobile-nav-actions .ud-main-btn {
+    width: 100%;
+    justify-content: center;
+    text-align: center;
+  }
+}
+
+.qfu-mobile-nav-actions {
+  display: none;
 }
 
 .navbar-nav .nav-item {
