@@ -2284,9 +2284,72 @@ p {
 }
 
 @media (max-width: 767px) {
+  .ud-footer {
+    padding-top: 56px;
+  }
+
+  .ud-footer .shape {
+    opacity: 0.28;
+  }
+
+  .ud-widget {
+    margin-bottom: 24px;
+  }
+
+  .ud-widget .ud-footer-logo {
+    max-width: 138px;
+    margin-bottom: 8px;
+  }
+
+  .ud-widget .ud-widget-desc {
+    margin-bottom: 18px;
+    font-size: 14px;
+    line-height: 22px;
+    max-width: none;
+  }
+
+  .ud-widget .ud-widget-socials a {
+    margin-right: 16px;
+  }
+
+  .ud-widget .ud-widget-title {
+    font-size: 16px;
+    margin-bottom: 14px;
+  }
+
+  .ud-widget .ud-widget-links a {
+    margin-bottom: 6px;
+    font-size: 14px;
+    line-height: 24px;
+  }
+
+  .ud-widget .ud-widget-brands {
+    display: none;
+  }
+
+  .ud-footer-bottom {
+    padding: 20px 0;
+    margin-top: 6px;
+  }
+
+  .ud-footer-bottom .ud-footer-bottom-left {
+    -webkit-box-pack: center;
+        -ms-flex-pack: center;
+            justify-content: center;
+    -ms-flex-wrap: wrap;
+        flex-wrap: wrap;
+    row-gap: 4px;
+  }
+
+  .ud-footer-bottom .ud-footer-bottom-left a {
+    margin: 0 8px 4px;
+    font-size: 14px;
+  }
+
   .ud-footer-bottom .ud-footer-bottom-right {
     text-align: center;
-    margin-top: 10px;
+    margin-top: 8px;
+    font-size: 14px;
   }
 }
 
