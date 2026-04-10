@@ -328,7 +328,6 @@ function renderBillingPanel(state) {
   text($('#qfu-billing-plan-name'), titleCase(billing.planTier || state.workspace?.planTier || 'personal'));
   text($('#qfu-billing-status'), titleCase(billing.billingStatus || 'inactive'));
   text($('#qfu-billing-currency'), billing.billingCurrency || 'GBP');
-  text($('#qfu-billing-price-id'), billing.stripePriceId || '—');
   const periodRow = $('#qfu-billing-period-row');
   const hasPeriodEnd = Boolean(billing.stripeCurrentPeriodEnd);
   if (periodRow) periodRow.hidden = !hasPeriodEnd;
