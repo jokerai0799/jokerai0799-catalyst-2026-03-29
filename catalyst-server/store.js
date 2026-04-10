@@ -62,8 +62,17 @@ function isWorkspaceTrialActive(workspace) {
   return Boolean(meta.trialEndsAt && meta.trialEndsAt >= today());
 }
 
+function isWorkspacePaid(workspace) {
+  const status = String(workspace?.billingStatus || '').toLowerCase();
+  return ['active', 'trialing'].includes(status);
+}
+
+function isWorkspaceReadOnly(workspace) {
+  return !isWorkspaceTrialActive(workspace) && !isWorkspacePaid(workspace);
+}
+
 function isTeamFeatureUnlocked(workspace) {
-  return getWorkspacePlanTier(workspace) === 'business' && !isWorkspaceTrialActive(workspace);
+  return getWorkspacePlanTier(workspace) === 'business' && !isWorkspaceTrialActive(workspace) && !isWorkspaceReadOnly(workspace);
 }
 
 function getWorkspaceBilling(workspace) {
@@ -228,6 +237,8 @@ function buildBootstrap(store, user) {
     member.activeQuotes = quotes.filter((quote) => quote.owner === member.name && !['Won', 'Lost', 'Archived'].includes(quote.status)).length;
   });
   const billing = getWorkspaceBilling(workspace);
+  const trialActive = meta.trialEndsAt >= today();
+  const readOnly = isWorkspaceReadOnly(workspace);
   return {
     user: sanitizeUser(user),
     workspace: {
@@ -235,7 +246,9 @@ function buildBootstrap(store, user) {
       notes: getVisibleWorkspaceNotes(workspace),
       planTier: billing.planTier,
       trialEndsAt: meta.trialEndsAt,
-      trialActive: meta.trialEndsAt >= today(),
+      trialActive,
+      readOnly,
+      readOnlyReason: readOnly ? 'Your 7 day trial has ended. Choose Personal or Business to unlock editing again.' : '',
       teamEnabled: isTeamFeatureUnlocked(workspace),
       billing,
     },
@@ -284,6 +297,8 @@ module.exports = {
   normalizeName,
   normalizeRole,
   isWorkspaceTrialActive,
+  isWorkspacePaid,
+  isWorkspaceReadOnly,
   isTeamFeatureUnlocked,
   getWorkspaceBilling,
 };

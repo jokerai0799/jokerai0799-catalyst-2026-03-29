@@ -13,6 +13,7 @@ const {
   findUserByEmail,
   getWorkspacePlanTier,
   isTeamFeatureUnlocked,
+  isWorkspaceReadOnly,
   loadStore,
   recordQuoteEvent,
   sanitizeUser,
@@ -133,6 +134,12 @@ function inviteForUser(store, inviteId, email) {
   if (!invite) return null;
   const inviteeEmail = String(invite.inviteeEmail || '').trim().toLowerCase();
   return invite.status === 'pending' && inviteeEmail === String(email || '').trim().toLowerCase() ? invite : null;
+}
+
+function ensureWorkspaceWritable(res, workspace) {
+  if (!isWorkspaceReadOnly(workspace)) return true;
+  sendJson(res, 402, { error: 'Your 7 day trial has ended. This workspace is now read-only until you choose Personal or Business.' });
+  return false;
 }
 
 async function handleApi(req, res, url) {
@@ -420,6 +427,7 @@ async function handleApi(req, res, url) {
     if (!auth) return;
     const body = await readJsonOrReject(req, res, badRequest);
     if (!body) return;
+    if (!ensureWorkspaceWritable(res, auth.workspace)) return;
     auth.workspace.name = clampText(body.name, 160) || auth.workspace.name;
     const replyEmail = String(body.replyEmail || '').trim().toLowerCase();
     auth.workspace.replyEmail = isValidEmail(replyEmail) ? replyEmail : (auth.workspace.replyEmail || auth.user.email);
@@ -433,6 +441,7 @@ async function handleApi(req, res, url) {
   if (req.method === 'POST' && pathname === '/api/team') {
     const auth = await withUser(req, res, store, getSessionUser, unauthorized);
     if (!auth) return;
+    if (!ensureWorkspaceWritable(res, auth.workspace)) return;
     if (!isTeamFeatureUnlocked(auth.workspace)) {
       return badRequest(res, 'Team features unlock after the Business trial ends.');
     }
@@ -524,6 +533,7 @@ async function handleApi(req, res, url) {
   if (teamMatch && req.method === 'DELETE') {
     const auth = await withUser(req, res, store, getSessionUser, unauthorized);
     if (!auth) return;
+    if (!ensureWorkspaceWritable(res, auth.workspace)) return;
     if (!isTeamFeatureUnlocked(auth.workspace)) {
       return badRequest(res, 'Team features unlock after the Business trial ends.');
     }
@@ -558,6 +568,7 @@ async function handleApi(req, res, url) {
     if (!auth) return;
     const body = await readJsonOrReject(req, res, badRequest);
     if (!body) return;
+    if (!ensureWorkspaceWritable(res, auth.workspace)) return;
     const { title, customer, customerEmail, owner, status, value, sentDate, nextFollowUp, notes } = buildQuoteInput(body, auth, store);
     if (!title || !value) return badRequest(res, 'Add at least a title and value before saving.');
     const quote = {
@@ -590,6 +601,7 @@ async function handleApi(req, res, url) {
     if (!quote) return notFound(res);
     const body = await readJsonOrReject(req, res, badRequest);
     if (!body) return;
+    if (!ensureWorkspaceWritable(res, auth.workspace)) return;
     const { title, customer, customerEmail, owner, status, value, sentDate, nextFollowUp, notes } = buildQuoteInput(body, auth, store, quote);
     if (!title || !value) return badRequest(res, 'Add at least a title and value before saving.');
     quote.title = title;
@@ -610,6 +622,7 @@ async function handleApi(req, res, url) {
   if (quoteMatch && req.method === 'DELETE') {
     const auth = await withUser(req, res, store, getSessionUser, unauthorized);
     if (!auth) return;
+    if (!ensureWorkspaceWritable(res, auth.workspace)) return;
     const index = store.quotes.findIndex((item) => item.id === quoteMatch[1] && item.workspaceId === auth.workspace.id);
     if (index === -1) return notFound(res);
     store.quotes.splice(index, 1);
@@ -621,6 +634,7 @@ async function handleApi(req, res, url) {
   if (quoteEmailMatch && req.method === 'POST') {
     const auth = await withUser(req, res, store, getSessionUser, unauthorized);
     if (!auth) return;
+    if (!ensureWorkspaceWritable(res, auth.workspace)) return;
     const quote = store.quotes.find((item) => item.id === quoteEmailMatch[1] && item.workspaceId === auth.workspace.id);
     if (!quote) return notFound(res);
     ensureQuoteMeta(quote);
@@ -644,6 +658,7 @@ async function handleApi(req, res, url) {
   if (quoteActionMatch && req.method === 'POST') {
     const auth = await withUser(req, res, store, getSessionUser, unauthorized);
     if (!auth) return;
+    if (!ensureWorkspaceWritable(res, auth.workspace)) return;
     const body = await readJsonOrReject(req, res, badRequest);
     if (!body) return;
     const action = String(body.action || '').trim();

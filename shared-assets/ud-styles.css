@@ -4824,6 +4824,13 @@ p {
   color: #b42318;
 }
 
+.qfu-inline-notice-warning {
+  margin-top: 0;
+  background: #fffaeb;
+  border: 1px solid #fedf89;
+  color: #b54708;
+}
+
 .qfu-team-plan-notice {
   max-width: 760px;
 }
@@ -4878,7 +4885,9 @@ p {
 }
 
 .ud-main-btn.is-disabled,
-.ud-main-btn[aria-disabled="true"] {
+.ud-main-btn[aria-disabled="true"],
+.qfu-link-button.is-disabled,
+button.is-disabled {
   pointer-events: none;
   opacity: 0.6;
 }

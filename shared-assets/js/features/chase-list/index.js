@@ -51,6 +51,7 @@ export function renderChaseList(attentionQuotes, overdueCount, dueTodayCount) {
 }
 
 export function bindChaseActions(refreshApp) {
+  const readOnly = Boolean(window.__qfuState?.workspace?.readOnly);
   document.querySelectorAll('[data-chase-action][data-quote-action-id]').forEach((button) => {
     if (button.dataset.bound) return;
     button.dataset.bound = 'true';
@@ -58,6 +59,10 @@ export function bindChaseActions(refreshApp) {
       event.preventDefault();
       const action = button.dataset.chaseAction;
       const quoteId = button.dataset.quoteActionId;
+      if (readOnly) {
+        setNotice($('#qfu-chase-action-notice'), window.__qfuState?.workspace?.readOnlyReason || 'This workspace is read-only right now.', 'error');
+        return;
+      }
       if (action === 'email-client') {
         try {
           await api.sendQuoteEmail(quoteId);

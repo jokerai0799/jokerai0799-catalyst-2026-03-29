@@ -232,6 +232,7 @@ export function renderAllQuotesTable(quotes) {
 }
 
 export function bindQuoteInteractions(state, refreshApp) {
+  const readOnly = Boolean(state.workspace?.readOnly);
   const prev = $('#qfu-quotes-prev');
   if (prev && !prev.dataset.bound) {
     prev.dataset.bound = 'true';
@@ -292,6 +293,10 @@ export function bindQuoteInteractions(state, refreshApp) {
         return;
       }
       const quoteId = button.dataset.emailClientId;
+      if (readOnly) {
+        setNotice($('#qfu-quote-form-notice'), state.workspace?.readOnlyReason || 'This workspace is read-only right now.', 'error');
+        return;
+      }
       api.sendQuoteEmail(quoteId)
         .then(async () => {
           setNotice($('#qfu-quote-form-notice'), 'Follow-up email sent.', 'success');
@@ -311,6 +316,10 @@ export function bindQuoteInteractions(state, refreshApp) {
     form.dataset.bound = 'true';
     form.addEventListener('submit', async (event) => {
       event.preventDefault();
+      if (readOnly) {
+        setNotice($('#qfu-quote-form-notice'), state.workspace?.readOnlyReason || 'This workspace is read-only right now.', 'error');
+        return;
+      }
       const payload = quotePayload(state.workspace);
       if (!payload.title || !payload.value) {
         setNotice($('#qfu-quote-form-notice'), 'Add at least a title and value before saving.', 'error');
@@ -334,6 +343,10 @@ export function bindQuoteInteractions(state, refreshApp) {
   if (scheduleButton && !scheduleButton.dataset.bound) {
     scheduleButton.dataset.bound = 'true';
     scheduleButton.addEventListener('click', () => {
+      if (readOnly) {
+        setNotice($('#qfu-quote-form-notice'), state.workspace?.readOnlyReason || 'This workspace is read-only right now.', 'error');
+        return;
+      }
       const sentDate = $('#quote-date').value || today();
       $('#quote-followup').value = addDays(sentDate, state.workspace.firstFollowupDays || 2);
       $('#quote-status').value = 'Follow up due';
@@ -345,6 +358,10 @@ export function bindQuoteInteractions(state, refreshApp) {
   if (clearButton && !clearButton.dataset.bound) {
     clearButton.dataset.bound = 'true';
     clearButton.addEventListener('click', () => {
+      if (readOnly) {
+        setNotice($('#qfu-quote-form-notice'), state.workspace?.readOnlyReason || 'This workspace is read-only right now.', 'error');
+        return;
+      }
       resetQuoteEditor(state.workspace, state.user.name);
       setNotice($('#qfu-quote-form-notice'), 'Quote form cleared.', 'success');
     });
@@ -360,6 +377,10 @@ export function bindQuoteInteractions(state, refreshApp) {
     if (!button || button.dataset.bound) return;
     button.dataset.bound = 'true';
     button.addEventListener('click', async () => {
+      if (readOnly) {
+        setNotice($('#qfu-quote-form-notice'), state.workspace?.readOnlyReason || 'This workspace is read-only right now.', 'error');
+        return;
+      }
       const quoteId = $('#quote-id').value;
       if (!quoteId) return setNotice($('#qfu-quote-form-notice'), 'Load a quote into the editor first.', 'error');
       await api.quoteAction(quoteId, action);
@@ -372,6 +393,10 @@ export function bindQuoteInteractions(state, refreshApp) {
   if (deleteButton && !deleteButton.dataset.bound) {
     deleteButton.dataset.bound = 'true';
     deleteButton.addEventListener('click', async () => {
+      if (readOnly) {
+        setNotice($('#qfu-quote-form-notice'), state.workspace?.readOnlyReason || 'This workspace is read-only right now.', 'error');
+        return;
+      }
       const quoteId = $('#quote-id').value;
       if (!quoteId) return setNotice($('#qfu-quote-form-notice'), 'Load a quote into the editor first.', 'error');
       const confirmed = window.confirm('Delete this quote permanently from the prototype workspace?');

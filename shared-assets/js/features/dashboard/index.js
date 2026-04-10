@@ -284,6 +284,41 @@ function renderStaleQuotes(openQuotes) {
   });
 }
 
+function applyReadOnlyState(state) {
+  const readOnly = Boolean(state.workspace?.readOnly);
+  const strip = $('#qfu-readonly-strip');
+  if (strip) {
+    strip.hidden = !readOnly;
+    strip.textContent = state.workspace?.readOnlyReason || 'This workspace is read-only right now.';
+  }
+
+  const lockedSelectors = [
+    '#qfu-quote-form input',
+    '#qfu-quote-form select',
+    '#qfu-quote-form textarea',
+    '#qfu-settings-form input',
+    '#qfu-settings-form select',
+    '#qfu-settings-form textarea',
+    '#qfu-team-form input',
+    '#qfu-team-form select',
+    '#qfu-team-form textarea',
+  ];
+
+  lockedSelectors.forEach((selector) => {
+    document.querySelectorAll(selector).forEach((node) => {
+      node.disabled = readOnly;
+    });
+  });
+
+  document.querySelectorAll('#qfu-quote-form button, #qfu-settings-form button, #qfu-team-form button, [data-chase-action], #qfu-quote-delete, #qfu-quote-mark-contacted, #qfu-quote-mark-won, #qfu-quote-mark-lost, #qfu-quote-archive').forEach((node) => {
+    if (node.id === 'qfu-manage-billing-link' || node.id === 'qfu-upgrade-plan-link') return;
+    node.disabled = readOnly;
+    node.classList.toggle('is-disabled', readOnly);
+    if (readOnly) node.setAttribute('aria-disabled', 'true');
+    else node.removeAttribute('aria-disabled');
+  });
+}
+
 function renderBillingPanel(state) {
   const billing = state.workspace?.billing || {};
   text($('#qfu-billing-plan-name'), titleCase(billing.planTier || state.workspace?.planTier || 'personal'));
@@ -530,6 +565,7 @@ export function renderDashboard(state, refreshApp) {
   bindChaseActions(refreshApp);
   bindSharedLinks(state, refreshApp, alertSignature);
   renderBillingPanel(state);
+  applyReadOnlyState(state);
 
   if (!$('#quote-id')?.value) resetQuoteEditor(state.workspace, state.user.name);
   else {
