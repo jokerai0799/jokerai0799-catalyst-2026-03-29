@@ -1689,7 +1689,8 @@ p {
 }
 
 .ud-single-pricing.active .ud-pricing-header h3,
-.ud-single-pricing.active .ud-pricing-header h4 {
+.ud-single-pricing.active .ud-pricing-header h4,
+.ud-single-pricing.active .ud-pricing-note {
   color: var(--white);
 }
 
@@ -1739,7 +1740,14 @@ p {
   font-weight: 600;
   font-size: 26px;
   color: var(--primary-color);
-  margin-bottom: 40px;
+  margin-bottom: 12px;
+}
+
+.ud-single-pricing .ud-pricing-note {
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--body-color);
+  margin-bottom: 32px;
 }
 
 .ud-single-pricing .ud-pricing-body {
