@@ -545,7 +545,8 @@ export function renderDashboard(state, refreshApp) {
   if (pendingInvitesList) {
     clear(pendingInvitesList);
     const pendingInvites = state.pendingInvites || [];
-    if (!pendingInvites.length) {
+    const incomingInvites = state.incomingInvites || [];
+    if (!pendingInvites.length && !incomingInvites.length) {
       pendingInvitesList.appendChild(create('div', {
         className: 'qfu-pending-invite-card is-empty',
         children: [
@@ -559,7 +560,16 @@ export function renderDashboard(state, refreshApp) {
           className: 'qfu-pending-invite-card',
           children: [
             create('strong', { text: invite.inviteeName || invite.inviteeEmail }),
-            create('span', { text: `${invite.inviteeEmail} · ${invite.role}` }),
+            create('span', { text: `Sent to ${invite.inviteeEmail} · ${invite.role}` }),
+          ],
+        }));
+      });
+      incomingInvites.forEach((invite) => {
+        pendingInvitesList.appendChild(create('div', {
+          className: 'qfu-pending-invite-card',
+          children: [
+            create('strong', { text: invite.workspaceName || 'Workspace invite' }),
+            create('span', { text: `Invited by ${invite.inviterName || 'owner'} · ${invite.role}` }),
           ],
         }));
       });
