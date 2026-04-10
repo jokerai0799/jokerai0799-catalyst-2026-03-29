@@ -51,7 +51,6 @@ const {
 const GOOGLE_STATE_COOKIE = 'catalyst_google_state';
 const VERIFY_TOKEN_HOURS = 72;
 const RESET_TOKEN_HOURS = 2;
-const LAST_SEEN_REFRESH_MS = 15 * 60 * 1000;
 const AUTH_RATE_LIMITS = {
   signup: { windowMs: 15 * 60 * 1000, max: 10 },
   login: { windowMs: 15 * 60 * 1000, max: 20 },
@@ -170,9 +169,12 @@ function clearExpiredAuthTokens(user) {
 function shouldRefreshLastSeen(user) {
   if (!user) return false;
   if (!user.lastSeenAt) return true;
-  const lastSeenMs = new Date(user.lastSeenAt).getTime();
-  if (!Number.isFinite(lastSeenMs)) return true;
-  return Date.now() - lastSeenMs >= LAST_SEEN_REFRESH_MS;
+  const lastSeen = new Date(user.lastSeenAt);
+  if (Number.isNaN(lastSeen.getTime())) return true;
+  const now = new Date();
+  return lastSeen.getUTCFullYear() !== now.getUTCFullYear()
+    || lastSeen.getUTCMonth() !== now.getUTCMonth()
+    || lastSeen.getUTCDate() !== now.getUTCDate();
 }
 
 async function refreshLastSeen(store, user) {
