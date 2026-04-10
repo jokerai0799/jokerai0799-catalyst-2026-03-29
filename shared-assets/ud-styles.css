@@ -201,7 +201,7 @@ p {
   background: var(--heading-color);
 }
 
-@media (max-width: 991px) {
+@media (max-width: 1199px) {
   .back-to-top {
     display: none !important;
   }
@@ -4716,9 +4716,24 @@ p {
 }
 
 @media (max-width: 767px) {
+  .qfu-workspace-footer .row {
+    row-gap: 10px;
+  }
+
+  .qfu-workspace-footer-links {
+    justify-content: center;
+    text-align: center;
+  }
+
   .qfu-workspace-footer-copy {
-    margin-top: 10px;
-    text-align: left;
+    margin-top: 6px;
+    text-align: center;
+  }
+
+  .ud-widget .ud-footer-logo {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
   }
 
   .qfu-team-lock-overlay {
