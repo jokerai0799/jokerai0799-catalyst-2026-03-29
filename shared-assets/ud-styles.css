@@ -4100,6 +4100,18 @@ p {
   line-height: 1.35;
 }
 
+.qfu-workspace-switcher {
+  width: 100%;
+  margin-top: 10px;
+  min-height: 38px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: rgba(10, 18, 44, 0.24);
+  color: #ffffff;
+  padding: 0 12px;
+  font-size: 13px;
+}
+
 .qfu-app-nav-vertical {
   display: flex;
   flex-direction: column;

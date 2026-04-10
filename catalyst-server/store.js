@@ -103,6 +103,10 @@ function getWorkspace(store, workspaceId) {
   return store.workspaces.find((workspace) => workspace.id === workspaceId) || null;
 }
 
+function getActiveWorkspace(store, user) {
+  return getWorkspace(store, store.activeWorkspaceId || user.workspaceId);
+}
+
 function getWorkspaceQuotes(store, workspaceId) {
   return store.quotes.filter((quote) => quote.workspaceId === workspaceId);
 }
@@ -213,10 +217,11 @@ async function saveStore(store) {
   return saveSupabaseStore(store);
 }
 
-function sanitizeUser(user) {
+function sanitizeUser(user, store = null) {
   return {
     id: user.id,
     workspaceId: user.workspaceId,
+    activeWorkspaceId: store?.activeWorkspaceId || user.workspaceId,
     name: user.name,
     email: user.email,
     verified: Boolean(user.verified),
@@ -231,7 +236,7 @@ function queueStoreDelete(store, table, id) {
 }
 
 function buildBootstrap(store, user) {
-  const workspace = getWorkspace(store, user.workspaceId);
+  const workspace = getActiveWorkspace(store, user);
   const meta = parseWorkspaceMeta(workspace);
   const quotes = getWorkspaceQuotes(store, workspace.id).map((quote) => ensureQuoteMeta({ ...quote }));
   const teamMembers = getWorkspaceTeam(store, workspace.id).map((member) => ({ ...member }));
@@ -247,7 +252,7 @@ function buildBootstrap(store, user) {
   const trialActive = meta.trialEndsAt >= today();
   const readOnly = isWorkspaceReadOnly(workspace);
   return {
-    user: sanitizeUser(user),
+    user: sanitizeUser(user, store),
     workspace: {
       ...workspace,
       notes: getVisibleWorkspaceNotes(workspace),
@@ -263,6 +268,7 @@ function buildBootstrap(store, user) {
     teamMembers,
     pendingInvites,
     incomingInvites,
+    accessibleWorkspaces: (store.accessibleWorkspaces || []).map((workspaceAccess) => ({ ...workspaceAccess })),
   };
 }
 
@@ -272,7 +278,7 @@ async function withUser(req, res, store, getSessionUser, unauthorized) {
     unauthorized(res);
     return null;
   }
-  const workspace = getWorkspace(store, user.workspaceId);
+  const workspace = getActiveWorkspace(store, user);
   if (!workspace) {
     unauthorized(res);
     return null;
@@ -290,6 +296,7 @@ module.exports = {
   getVisibleWorkspaceNotes,
   getWorkspaceInvites,
   getWorkspacePlanTier,
+  getActiveWorkspace,
   getWorkspace,
   getWorkspaceQuotes,
   getWorkspaceTeam,

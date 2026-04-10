@@ -151,6 +151,14 @@ function renderTeam(state, refreshApp) {
   const currentMember = state.teamMembers.find((member) => member.email?.toLowerCase() === state.user.email?.toLowerCase());
   const isOwner = currentMember?.role === 'Owner';
   const ownerCount = state.teamMembers.filter((member) => member.role === 'Owner').length;
+  const teamForm = $('#qfu-team-form');
+  if (teamForm) {
+    teamForm.style.display = isOwner ? '' : 'none';
+  }
+  const teamNotice = $('#qfu-team-notice');
+  if (teamNotice && !isOwner) {
+    setNotice(teamNotice, 'Only workspace owners can invite additional team members.', 'info');
+  }
   const teamGrid = document.querySelector('.qfu-member-grid');
   if (teamGrid) {
     clear(teamGrid);
@@ -325,6 +333,7 @@ function applyReadOnlyState(state) {
 
 function renderBillingPanel(state) {
   const billing = state.workspace?.billing || {};
+  const currentWorkspaceAccess = (state.accessibleWorkspaces || []).find((workspaceAccess) => workspaceAccess.id === state.workspace?.id);
   text($('#qfu-billing-plan-name'), titleCase(billing.planTier || state.workspace?.planTier || 'personal'));
   text($('#qfu-billing-status'), titleCase(billing.billingStatus || 'inactive'));
   text($('#qfu-billing-currency'), billing.billingCurrency || 'GBP');
@@ -333,7 +342,7 @@ function renderBillingPanel(state) {
   if (periodRow) periodRow.hidden = !hasPeriodEnd;
   text($('#qfu-billing-period-end'), formatBillingDate(billing.stripeCurrentPeriodEnd));
 
-  const canManageBilling = Boolean(billing.stripeCustomerId && billing.billingStatus && billing.billingStatus !== 'inactive');
+  const canManageBilling = Boolean(currentWorkspaceAccess?.role === 'Owner' && billing.stripeCustomerId && billing.billingStatus && billing.billingStatus !== 'inactive');
   const manageLink = $('#qfu-manage-billing-link');
   if (manageLink) {
     manageLink.setAttribute('href', '#');
@@ -345,8 +354,8 @@ function renderBillingPanel(state) {
   const upgradeLink = $('#qfu-upgrade-plan-link');
   if (upgradeLink) {
     const upgradeHref = billing.checkoutLinks?.business || '#';
-    const hasUpgradeLink = Boolean(billing.checkoutLinks?.business);
-    upgradeLink.setAttribute('href', upgradeHref);
+    const hasUpgradeLink = Boolean(currentWorkspaceAccess?.role === 'Owner' && billing.checkoutLinks?.business);
+    upgradeLink.setAttribute('href', hasUpgradeLink ? upgradeHref : '#');
     upgradeLink.classList.toggle('is-disabled', !hasUpgradeLink);
     upgradeLink.setAttribute('aria-disabled', hasUpgradeLink ? 'false' : 'true');
     const isBusiness = (billing.planTier || state.workspace?.planTier) === 'business';
@@ -358,8 +367,24 @@ function renderBillingPanel(state) {
   if (teamUpgradeLink) teamUpgradeLink.setAttribute('href', billing.checkoutLinks?.business || '../landing-page/index.html#pricing');
 }
 
-function setTopbar(workspace) {
+function setTopbar(workspace, accessibleWorkspaces = []) {
   text(document.querySelector('.qfu-workspace-panel strong'), workspace.name);
+  const workspaceSwitcher = $('#qfu-workspace-switcher');
+  if (workspaceSwitcher) {
+    clear(workspaceSwitcher);
+    if ((accessibleWorkspaces || []).length > 1) {
+      accessibleWorkspaces.forEach((workspaceAccess) => {
+        workspaceSwitcher.appendChild(create('option', {
+          text: workspaceAccess.name,
+          attrs: { value: workspaceAccess.id },
+        }));
+      });
+      workspaceSwitcher.value = workspace.id;
+      workspaceSwitcher.hidden = false;
+    } else {
+      workspaceSwitcher.hidden = true;
+    }
+  }
   text(document.querySelector('.qfu-dashboard-kicker'), 'Today');
   text(document.querySelector('.qfu-app-topbar h1'), `What needs action in ${workspace.name}`);
   text(document.querySelector('.qfu-app-topbar p'), 'Start with overdue follow ups, then update quotes and keep the pipeline moving.');
@@ -449,6 +474,20 @@ function bindSharedLinks(state, refreshApp, attentionSignature) {
     });
   });
 
+  const workspaceSwitcher = $('#qfu-workspace-switcher');
+  if (workspaceSwitcher && !workspaceSwitcher.dataset.bound) {
+    workspaceSwitcher.dataset.bound = 'true';
+    workspaceSwitcher.addEventListener('change', async () => {
+      try {
+        await api.selectWorkspace(workspaceSwitcher.value);
+        window.localStorage.setItem('qfu-active-workspace-id', workspaceSwitcher.value);
+        await refreshApp();
+      } catch (error) {
+        setNotice($('#qfu-team-notice'), error.message, 'error');
+      }
+    });
+  }
+
   const teamForm = $('#qfu-team-form');
   if (teamForm && !teamForm.dataset.bound) {
     teamForm.dataset.bound = 'true';
@@ -461,9 +500,11 @@ function bindSharedLinks(state, refreshApp, attentionSignature) {
           role: $('#team-role').value,
         });
         teamForm.reset();
-        const message = result.delivery === 'account-notification'
-          ? 'Invite sent. They will see it inside their account.'
-          : 'Invite saved. They will see it when they sign up or log in with that email.';
+        const message = result.joined
+          ? 'Team member added. They can switch into this workspace from their account.'
+          : (result.needsAccount
+            ? 'That email needs an account before it can join this workspace.'
+            : 'Team member added.');
         setNotice($('#qfu-team-notice'), message, 'success');
         await refreshApp();
       } catch (error) {
@@ -520,7 +561,10 @@ function bindSharedLinks(state, refreshApp, attentionSignature) {
 export function renderDashboard(state, refreshApp) {
   document.body.classList.remove('is-loading');
   window.__qfuState = state;
-  setTopbar(state.workspace);
+  try {
+    window.localStorage.setItem('qfu-active-workspace-id', state.workspace.id);
+  } catch {}
+  setTopbar(state.workspace, state.accessibleWorkspaces || []);
   if ($('#business-name')) $('#business-name').value = state.workspace.name;
   if ($('#business-email')) $('#business-email').value = state.workspace.replyEmail || state.user.email;
   if ($('#first-followup')) $('#first-followup').value = `${state.workspace.firstFollowupDays || 2} days after sent`;

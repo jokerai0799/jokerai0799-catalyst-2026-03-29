@@ -1,7 +1,20 @@
+function getActiveWorkspaceId() {
+  try {
+    return window.localStorage.getItem('qfu-active-workspace-id') || '';
+  } catch {
+    return '';
+  }
+}
+
 async function request(path, options = {}) {
+  const activeWorkspaceId = getActiveWorkspaceId();
   const response = await fetch(path, {
     credentials: 'same-origin',
-    headers: { 'Content-Type': 'application/json', ...(options.headers || {}) },
+    headers: {
+      'Content-Type': 'application/json',
+      ...(activeWorkspaceId ? { 'X-Workspace-Id': activeWorkspaceId } : {}),
+      ...(options.headers || {}),
+    },
     ...options,
   });
 
@@ -43,6 +56,9 @@ export const api = {
   },
   createBillingPortalSession() {
     return request('/api/billing/portal-session', { method: 'POST', body: JSON.stringify({}) });
+  },
+  selectWorkspace(workspaceId) {
+    return request('/api/workspace/select', { method: 'POST', body: JSON.stringify({ workspaceId }) });
   },
   forgotPassword(email) {
     return request('/api/auth/forgot-password', { method: 'POST', body: JSON.stringify({ email }) });

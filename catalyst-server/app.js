@@ -332,7 +332,8 @@ async function loadAuthenticatedStore(req, res) {
     unauthorized(res);
     return null;
   }
-  return loadStore({ userId });
+  const requestedWorkspaceId = String(req.headers['x-workspace-id'] || '').trim();
+  return loadStore({ userId, workspaceId: requestedWorkspaceId || undefined });
 }
 
 async function handleApi(req, res, url) {
@@ -681,12 +682,28 @@ async function handleApi(req, res, url) {
     return sendJson(res, 200, { ok: true });
   }
 
+  if (req.method === 'POST' && pathname === '/api/workspace/select') {
+    if (!ensureSameOrigin(req, res)) return;
+    const store = await loadAuthenticatedStore(req, res);
+    if (!store) return;
+    const auth = await withUser(req, res, store, getSessionUser, unauthorized);
+    if (!auth) return;
+    const body = await readJsonOrReject(req, res, badRequest);
+    if (!body) return;
+    const workspaceId = String(body.workspaceId || '').trim();
+    const allowed = new Set((store.accessibleWorkspaces || []).map((workspaceAccess) => workspaceAccess.id));
+    if (!allowed.has(workspaceId)) return badRequest(res, 'You do not have access to that workspace.');
+    return sendJson(res, 200, { ok: true, workspaceId });
+  }
+
   if (req.method === 'POST' && pathname === '/api/billing/portal-session') {
     if (!ensureSameOrigin(req, res)) return;
     const store = await loadAuthenticatedStore(req, res);
     if (!store) return;
     const auth = await withUser(req, res, store, getSessionUser, unauthorized);
     if (!auth) return;
+    const currentWorkspaceAccess = (store.accessibleWorkspaces || []).find((workspaceAccess) => workspaceAccess.id === auth.workspace.id);
+    if (currentWorkspaceAccess && currentWorkspaceAccess.role !== 'Owner') return unauthorized(res);
     const billing = auth.workspace || {};
     if (!billing.stripeCustomerId || !STRIPE_SECRET_KEY) {
       return sendJson(res, 400, { error: 'No active billing profile is available for this workspace yet.' });
@@ -720,6 +737,8 @@ async function handleApi(req, res, url) {
     if (!store) return;
     const auth = await withUser(req, res, store, getSessionUser, unauthorized);
     if (!auth) return;
+    const currentWorkspaceAccess = (store.accessibleWorkspaces || []).find((workspaceAccess) => workspaceAccess.id === auth.workspace.id);
+    if (currentWorkspaceAccess && currentWorkspaceAccess.role !== 'Owner') return unauthorized(res);
     const body = await readJsonOrReject(req, res, badRequest);
     if (!body) return;
     if (!ensureWorkspaceWritable(res, auth.workspace)) return;
@@ -758,32 +777,45 @@ async function handleApi(req, res, url) {
     const existingPendingInvite = (store.invites || []).find(
       (invite) => invite.workspaceId === auth.workspace.id && invite.status === 'pending' && String(invite.inviteeEmail || '').trim().toLowerCase() === email,
     );
-    if (existingPendingInvite) {
-      return badRequest(res, 'There is already a pending invite for that email.');
-    }
     const existingUserStore = await loadStore({ email });
     const existingUser = findUserByEmail(existingUserStore, email);
-    const invite = {
-      id: uid('invite'),
-      workspaceId: auth.workspace.id,
-      inviterUserId: auth.user.id,
-      inviterName: auth.user.name || 'Owner',
-      workspaceName: auth.workspace.name,
-      inviteeName: name,
-      inviteeEmail: email,
-      role,
-      status: 'pending',
-      createdAt: new Date().toISOString(),
-      respondedAt: null,
-    };
-    store.invites = Array.isArray(store.invites) ? store.invites : [];
-    store.invites.push(invite);
+    if (existingPendingInvite && !existingUser) {
+      return badRequest(res, 'There is already a pending invite for that email.');
+    }
+    if (!existingUser) {
+      return sendJson(res, 200, {
+        ok: false,
+        needsAccount: true,
+        message: 'That member needs an account before they can join this workspace.',
+      });
+    }
+    const existingMembership = existingUserStore.teamMembers.some(
+      (member) => member.workspaceId === auth.workspace.id && member.email.toLowerCase() === email,
+    ) || store.teamMembers.some((member) => member.workspaceId === auth.workspace.id && member.email.toLowerCase() === email);
+    if (existingPendingInvite) {
+      store.invites = (store.invites || []).filter((invite) => invite.id !== existingPendingInvite.id);
+      queueStoreDelete(store, 'workspace_invites', existingPendingInvite.id);
+    }
+    if (!existingMembership) {
+      store.teamMembers.push({
+        id: uid('team'),
+        workspaceId: auth.workspace.id,
+        name,
+        email,
+        role,
+        activeQuotes: 0,
+        createdAt: new Date().toISOString(),
+      });
+    }
     await saveStore(store);
     return sendJson(res, 201, {
       ok: true,
-      invite,
-      delivery: existingUser ? 'account-notification' : 'pending-until-signup',
-      joinAvailableNow: Boolean(existingUser && existingUser.workspaceId === auth.workspace.id),
+      joined: true,
+      member: {
+        name,
+        email,
+        role,
+      },
     });
   }
 

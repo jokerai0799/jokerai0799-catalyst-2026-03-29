@@ -245,7 +245,7 @@ function dedupeById(rows) {
   return Array.from(seen.values());
 }
 
-async function loadWorkspaceScope(workspaceRow, { usersRows, incomingInviteEmail } = {}) {
+async function loadWorkspaceScope(workspaceRow, { usersRows, incomingInviteEmail, accessibleWorkspaces = [], activeWorkspaceId = null } = {}) {
   if (!workspaceRow?.id) return emptyStore();
   const [resolvedUsers, quotesRows, teamRows, inviteRows, incomingInviteRows, eventRows] = await Promise.all([
     usersRows ? Promise.resolve(usersRows) : supabaseRequest(`users?workspace_id=eq.${encodeURIComponent(workspaceRow.id)}&select=*`),
@@ -277,12 +277,44 @@ async function loadWorkspaceScope(workspaceRow, { usersRows, incomingInviteEmail
     quotes: (quotesRows || []).map((row) => mapQuoteFromDb(row, eventsByQuote)),
     teamMembers: (teamRows || []).map(mapTeamMemberFromDb),
     invites: dedupeById([...(inviteRows || []), ...(incomingInviteRows || [])]).map(mapInviteFromDb),
+    accessibleWorkspaces,
+    activeWorkspaceId: activeWorkspaceId || workspaceRow.id,
     __deletes: {},
   };
 }
 
+async function loadUserScopedStore(userRow, requestedWorkspaceId) {
+  if (!userRow) return emptyStore();
+  const membershipRows = await supabaseRequest(`team_members?email=eq.${encodeURIComponent(userRow.email)}&select=*`);
+  const workspaceIds = Array.from(new Set([userRow.workspace_id, ...(membershipRows || []).map((row) => row.workspace_id).filter(Boolean)]));
+  const workspaceRows = (await Promise.all(workspaceIds.map((workspaceId) => supabaseRequest(`workspaces?id=eq.${encodeURIComponent(workspaceId)}&select=*`))))
+    .map((rows) => rows?.[0] || null)
+    .filter(Boolean);
+  const membershipByWorkspace = new Map((membershipRows || []).map((row) => [row.workspace_id, row]));
+  const accessibleWorkspaces = workspaceRows.map((workspaceRow) => {
+    const membership = membershipByWorkspace.get(workspaceRow.id);
+    const isPrimary = workspaceRow.id === userRow.workspace_id;
+    return {
+      id: workspaceRow.id,
+      name: workspaceRow.name,
+      role: isPrimary ? 'Owner' : (membership?.role || 'Member'),
+      isPrimary,
+      billingPlanTier: workspaceRow.billing_plan_tier || 'personal',
+      billingStatus: workspaceRow.billing_status || 'inactive',
+    };
+  });
+  const activeWorkspaceRow = workspaceRows.find((row) => row.id === requestedWorkspaceId) || workspaceRows.find((row) => row.id === userRow.workspace_id) || workspaceRows[0] || null;
+  if (!activeWorkspaceRow) return { ...emptyStore(), users: [mapUserFromDb(userRow)], accessibleWorkspaces: [] };
+  return loadWorkspaceScope(activeWorkspaceRow, {
+    usersRows: [userRow],
+    incomingInviteEmail: userRow.email,
+    accessibleWorkspaces,
+    activeWorkspaceId: activeWorkspaceRow.id,
+  });
+}
+
 async function loadStore(scope = {}) {
-  if (scope?.workspaceId) {
+  if (scope?.workspaceId && !scope?.userId && !scope?.email) {
     const workspaceRows = await supabaseRequest(`workspaces?id=eq.${encodeURIComponent(scope.workspaceId)}&select=*`);
     const workspaceRow = workspaceRows?.[0] || null;
     if (!workspaceRow) return emptyStore();
@@ -292,41 +324,25 @@ async function loadStore(scope = {}) {
   if (scope?.userId) {
     const userRows = await supabaseRequest(`users?id=eq.${encodeURIComponent(scope.userId)}&select=*`);
     const userRow = userRows?.[0] || null;
-    if (!userRow) return emptyStore();
-    const workspaceRows = await supabaseRequest(`workspaces?id=eq.${encodeURIComponent(userRow.workspace_id)}&select=*`);
-    const workspaceRow = workspaceRows?.[0] || null;
-    if (!workspaceRow) return { ...emptyStore(), users: [mapUserFromDb(userRow)] };
-    return loadWorkspaceScope(workspaceRow, { usersRows: [userRow], incomingInviteEmail: userRow.email });
+    return loadUserScopedStore(userRow, scope.workspaceId);
   }
 
   if (scope?.email) {
     const userRows = await supabaseRequest(`users?email=eq.${encodeURIComponent(scope.email)}&select=*`);
     const userRow = userRows?.[0] || null;
-    if (!userRow) return emptyStore();
-    const workspaceRows = await supabaseRequest(`workspaces?id=eq.${encodeURIComponent(userRow.workspace_id)}&select=*`);
-    const workspaceRow = workspaceRows?.[0] || null;
-    if (!workspaceRow) return { ...emptyStore(), users: [mapUserFromDb(userRow)] };
-    return loadWorkspaceScope(workspaceRow, { usersRows: [userRow], incomingInviteEmail: userRow.email });
+    return loadUserScopedStore(userRow, scope.workspaceId);
   }
 
   if (scope?.verificationToken) {
     const userRows = await supabaseRequest(`users?verification_token=eq.${encodeURIComponent(scope.verificationToken)}&select=*`);
     const userRow = userRows?.[0] || null;
-    if (!userRow) return emptyStore();
-    const workspaceRows = await supabaseRequest(`workspaces?id=eq.${encodeURIComponent(userRow.workspace_id)}&select=*`);
-    const workspaceRow = workspaceRows?.[0] || null;
-    if (!workspaceRow) return { ...emptyStore(), users: [mapUserFromDb(userRow)] };
-    return loadWorkspaceScope(workspaceRow, { usersRows: [userRow], incomingInviteEmail: userRow.email });
+    return loadUserScopedStore(userRow, scope.workspaceId);
   }
 
   if (scope?.resetToken) {
     const userRows = await supabaseRequest(`users?reset_token=eq.${encodeURIComponent(scope.resetToken)}&select=*`);
     const userRow = userRows?.[0] || null;
-    if (!userRow) return emptyStore();
-    const workspaceRows = await supabaseRequest(`workspaces?id=eq.${encodeURIComponent(userRow.workspace_id)}&select=*`);
-    const workspaceRow = workspaceRows?.[0] || null;
-    if (!workspaceRow) return { ...emptyStore(), users: [mapUserFromDb(userRow)] };
-    return loadWorkspaceScope(workspaceRow, { usersRows: [userRow], incomingInviteEmail: userRow.email });
+    return loadUserScopedStore(userRow, scope.workspaceId);
   }
 
   const [workspacesRows, usersRows, quotesRows, teamRows, eventRows, inviteRows] = await Promise.all([
