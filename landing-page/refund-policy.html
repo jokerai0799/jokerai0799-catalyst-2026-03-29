@@ -18,14 +18,39 @@
     <link rel="stylesheet" href="../shared-assets/ud-styles.css" />
   </head>
   <body class="qfu-landing-page">
-    <div style="padding:20px 0; background:#fff; border-bottom:1px solid #e5e7eb;">
+    <header class="ud-header">
       <div class="container">
-        <a href="/landing-page/index.html" aria-label="Quote Chaser home" style="display:inline-flex; align-items:center; gap:12px; text-decoration:none; color:#111827; font-weight:800; font-size:18px; letter-spacing:-0.01em;">
-          <img src="../shared-assets/images/logo/icon.svg" alt="" style="width:38px; height:38px;" />
-          <span>Quote Chaser</span>
-        </a>
+        <div class="row">
+          <div class="col-lg-12">
+            <nav class="navbar navbar-expand-lg">
+              <a class="navbar-brand" href="/landing-page/index.html" aria-label="Quote Chaser home">
+                <span class="qfu-brand-lockup">
+                  <img src="../shared-assets/images/logo/icon.svg" alt="" class="qfu-brand-icon" />
+                  <span class="qfu-brand-wordmark">
+                    <span class="qfu-brand-quote">Quote</span>
+                    <span class="qfu-brand-followup">Chaser</span>
+                  </span>
+                </span>
+              </a>
+
+              <div class="navbar-collapse" style="display:flex; align-items:center; justify-content:space-between; gap:20px; width:100%;">
+                <ul id="nav" class="navbar-nav mx-auto" style="flex-direction:row; gap:24px;">
+                  <li class="nav-item"><a class="ud-menu-scroll" href="/#home">Home</a></li>
+                  <li class="nav-item"><a class="ud-menu-scroll" href="/#about">About</a></li>
+                  <li class="nav-item"><a class="ud-menu-scroll" href="/#pricing">Pricing</a></li>
+                  <li class="nav-item"><a class="ud-menu-scroll" href="/#contact">Contact</a></li>
+                </ul>
+
+                <div class="navbar-btn d-none d-sm-inline-block">
+                  <a href="/landing-page/login.html" class="ud-main-btn ud-login-btn">Sign In</a>
+                  <a class="ud-main-btn ud-white-btn" href="/landing-page/signup.html">Sign Up</a>
+                </div>
+              </div>
+            </nav>
+          </div>
+        </div>
       </div>
-    </div>
+    </header>
     <section class="ud-page-banner"><div class="container"><div class="row"><div class="col-lg-12"><div class="ud-banner-content"><h1>Refund Policy</h1></div></div></div></div></section>
     <section class="ud-about" style="padding-top:70px; padding-bottom:70px;">
       <div class="container"><div class="ud-about-wrapper"><div class="ud-about-content-wrapper" style="max-width:100%; flex:1 1 auto;"><div class="ud-about-content" style="max-width:100%;">
