@@ -641,6 +641,39 @@ async function handleApi(req, res, url) {
     return sendJson(res, 200, { ok: true });
   }
 
+  if (req.method === 'POST' && pathname === '/api/billing/portal-session') {
+    if (!ensureSameOrigin(req, res)) return;
+    const store = await loadAuthenticatedStore(req, res);
+    if (!store) return;
+    const auth = await withUser(req, res, store, getSessionUser, unauthorized);
+    if (!auth) return;
+    const billing = auth.workspace || {};
+    if (!billing.stripeCustomerId || !STRIPE_SECRET_KEY) {
+      return sendJson(res, 400, { error: 'No active billing profile is available for this workspace yet.' });
+    }
+
+    const body = new URLSearchParams({
+      customer: billing.stripeCustomerId,
+      return_url: `${getAppBaseUrl(req)}/dashboard/dashboard.html#settings`,
+    });
+
+    const response = await fetch('https://api.stripe.com/v1/billing_portal/sessions', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${STRIPE_SECRET_KEY}`,
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body,
+    });
+
+    const data = await response.json();
+    if (!response.ok || !data?.url) {
+      return sendJson(res, 502, { error: 'Could not create a Stripe billing portal session right now.' });
+    }
+
+    return sendJson(res, 200, { url: data.url });
+  }
+
   if (req.method === 'PATCH' && pathname === '/api/workspace') {
     if (!ensureSameOrigin(req, res)) return;
     const store = await loadAuthenticatedStore(req, res);

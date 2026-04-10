@@ -333,11 +333,13 @@ function renderBillingPanel(state) {
   if (periodRow) periodRow.hidden = !hasPeriodEnd;
   text($('#qfu-billing-period-end'), formatBillingDate(billing.stripeCurrentPeriodEnd));
 
+  const canManageBilling = Boolean(billing.stripeCustomerId && billing.billingStatus && billing.billingStatus !== 'inactive');
   const manageLink = $('#qfu-manage-billing-link');
   if (manageLink) {
-    manageLink.setAttribute('href', billing.portalUrl || '#');
-    manageLink.classList.toggle('is-disabled', !billing.portalUrl);
-    manageLink.setAttribute('aria-disabled', billing.portalUrl ? 'false' : 'true');
+    manageLink.setAttribute('href', '#');
+    manageLink.classList.toggle('is-disabled', !canManageBilling);
+    manageLink.setAttribute('aria-disabled', canManageBilling ? 'false' : 'true');
+    manageLink.dataset.manageEnabled = canManageBilling ? 'true' : 'false';
   }
 
   const upgradeLink = $('#qfu-upgrade-plan-link');
@@ -407,6 +409,21 @@ function bindSharedLinks(state, refreshApp, attentionSignature) {
       const activeTab = document.querySelector('.qfu-tab-panel.is-active')?.dataset.panel;
       const trigger = activeTab ? document.querySelector(`.qfu-app-nav-vertical [data-tab="${activeTab}"]`) : null;
       if (trigger) trigger.click();
+    });
+  }
+
+  const manageBilling = $('#qfu-manage-billing-link');
+  if (manageBilling && !manageBilling.dataset.bound) {
+    manageBilling.dataset.bound = 'true';
+    manageBilling.addEventListener('click', async (event) => {
+      event.preventDefault();
+      if (manageBilling.dataset.manageEnabled !== 'true') return;
+      try {
+        const result = await api.createBillingPortalSession();
+        if (result?.url) window.location.href = result.url;
+      } catch (error) {
+        setNotice($('#qfu-billing-notice'), error.message, 'error');
+      }
     });
   }
 

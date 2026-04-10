@@ -41,6 +41,9 @@ export const api = {
   logout() {
     return request('/api/auth/logout', { method: 'POST', body: JSON.stringify({}) });
   },
+  createBillingPortalSession() {
+    return request('/api/billing/portal-session', { method: 'POST', body: JSON.stringify({}) });
+  },
   forgotPassword(email) {
     return request('/api/auth/forgot-password', { method: 'POST', body: JSON.stringify({ email }) });
   },
