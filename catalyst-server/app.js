@@ -51,6 +51,7 @@ const {
 const GOOGLE_STATE_COOKIE = 'catalyst_google_state';
 const VERIFY_TOKEN_HOURS = 72;
 const RESET_TOKEN_HOURS = 2;
+const LAST_SEEN_REFRESH_MS = 15 * 60 * 1000;
 const AUTH_RATE_LIMITS = {
   signup: { windowMs: 15 * 60 * 1000, max: 10 },
   login: { windowMs: 15 * 60 * 1000, max: 20 },
@@ -164,6 +165,21 @@ function clearExpiredAuthTokens(user) {
     delete user.resetToken;
     user.resetTokenExpiresAt = null;
   }
+}
+
+function shouldRefreshLastSeen(user) {
+  if (!user) return false;
+  if (!user.lastSeenAt) return true;
+  const lastSeenMs = new Date(user.lastSeenAt).getTime();
+  if (!Number.isFinite(lastSeenMs)) return true;
+  return Date.now() - lastSeenMs >= LAST_SEEN_REFRESH_MS;
+}
+
+async function refreshLastSeen(store, user) {
+  if (!shouldRefreshLastSeen(user)) return false;
+  user.lastSeenAt = new Date().toISOString();
+  await saveStore(store);
+  return true;
 }
 
 function enforceRateLimit(req, res, key) {
@@ -365,6 +381,7 @@ async function handleApi(req, res, url) {
     if (!store) return;
     const user = await getSessionUser(req, store);
     if (!user) return unauthorized(res);
+    await refreshLastSeen(store, user);
     return sendJson(res, 200, buildBootstrap(store, user));
   }
 
@@ -373,6 +390,7 @@ async function handleApi(req, res, url) {
     if (!userId) return sendJson(res, 200, { user: null });
     const store = await loadStore({ userId });
     const user = await getSessionUser(req, store);
+    await refreshLastSeen(store, user);
     return sendJson(res, 200, { user: user ? sanitizeUser(user) : null });
   }
 
@@ -438,6 +456,7 @@ async function handleApi(req, res, url) {
           email,
           passwordHash: '',
           verified: true,
+          lastSeenAt: new Date().toISOString(),
           createdAt: new Date().toISOString(),
         };
         store.workspaces.push(workspace);
@@ -446,6 +465,7 @@ async function handleApi(req, res, url) {
         await saveStore(store);
       } else {
         user.verified = true;
+        user.lastSeenAt = new Date().toISOString();
         if (!user.name && profile.name) user.name = normalizeName(profile.name);
         await saveStore(store);
       }
@@ -506,6 +526,7 @@ async function handleApi(req, res, url) {
       verificationTokenExpiresAt: null,
       resetToken: '',
       resetTokenExpiresAt: null,
+      lastSeenAt: new Date().toISOString(),
       createdAt: new Date().toISOString(),
     };
     setVerificationToken(user);
@@ -574,6 +595,8 @@ async function handleApi(req, res, url) {
     if (!user.passwordHash) return badRequest(res, 'Use Google sign-in for this account.');
     if (!verifyPassword(password, user.passwordHash)) return badRequest(res, 'Invalid email or password.');
     if (!user.verified) return badRequest(res, 'Check your email page and verify your account before logging in.');
+    user.lastSeenAt = new Date().toISOString();
+    await saveStore(store);
     await createSession(res, user.id);
     return sendJson(res, 200, { ok: true, user: sanitizeUser(user) });
   }

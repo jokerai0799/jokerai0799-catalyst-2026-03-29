@@ -26,6 +26,7 @@ create table if not exists users (
   verification_token_expires_at timestamptz,
   reset_token text,
   reset_token_expires_at timestamptz,
+  last_seen_at timestamptz,
   created_at timestamptz not null default now()
 );
 
@@ -116,6 +117,7 @@ revoke all on table sessions from anon, authenticated;
 alter table if exists quotes add column if not exists customer_email text;
 alter table if exists users add column if not exists verification_token_expires_at timestamptz;
 alter table if exists users add column if not exists reset_token_expires_at timestamptz;
+alter table if exists users add column if not exists last_seen_at timestamptz;
 alter table if exists workspaces add column if not exists billing_plan_tier text;
 alter table if exists workspaces add column if not exists billing_status text;
 alter table if exists workspaces add column if not exists billing_currency text;
@@ -126,6 +128,7 @@ alter table if exists workspaces add column if not exists stripe_current_period_
 
 create index if not exists users_verification_token_idx on users (verification_token);
 create index if not exists users_reset_token_idx on users (reset_token);
+create index if not exists users_last_seen_at_idx on users (last_seen_at);
 create index if not exists workspaces_reply_email_idx on workspaces (reply_email);
 create index if not exists workspaces_stripe_customer_id_idx on workspaces (stripe_customer_id);
 
@@ -139,3 +142,7 @@ where billing_plan_tier is null;
 update workspaces
 set billing_status = coalesce(billing_status, 'inactive'),
     billing_currency = coalesce(billing_currency, 'GBP');
+
+update users
+set last_seen_at = coalesce(last_seen_at, created_at)
+where last_seen_at is null;

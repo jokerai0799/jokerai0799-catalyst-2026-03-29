@@ -79,6 +79,7 @@ function mapUserFromDb(row) {
     verificationTokenExpiresAt: row.verification_token_expires_at ? isoDate(row.verification_token_expires_at) : null,
     resetToken: row.reset_token || undefined,
     resetTokenExpiresAt: row.reset_token_expires_at ? isoDate(row.reset_token_expires_at) : null,
+    lastSeenAt: row.last_seen_at ? isoDate(row.last_seen_at) : null,
     createdAt: isoDate(row.created_at),
   };
 }
@@ -161,6 +162,7 @@ function mapUserToDb(row) {
     verification_token_expires_at: row.verificationTokenExpiresAt ? isoDate(row.verificationTokenExpiresAt) : null,
     reset_token: row.resetToken || null,
     reset_token_expires_at: row.resetTokenExpiresAt ? isoDate(row.resetTokenExpiresAt) : null,
+    last_seen_at: row.lastSeenAt ? isoDate(row.lastSeenAt) : null,
     created_at: isoDate(row.createdAt),
   };
 }
@@ -385,8 +387,8 @@ async function syncTable(table, rows, mapper, { allowMissing = false } = {}) {
       headers: { Prefer: 'resolution=merge-duplicates,return=minimal' },
     });
   } catch (error) {
-    if (table === 'users' && (isMissingColumnError(error, 'verification_token_expires_at') || isMissingColumnError(error, 'reset_token_expires_at'))) {
-      const legacyDesired = desired.map(({ verification_token_expires_at, reset_token_expires_at, ...row }) => row);
+    if (table === 'users' && (isMissingColumnError(error, 'verification_token_expires_at') || isMissingColumnError(error, 'reset_token_expires_at') || isMissingColumnError(error, 'last_seen_at'))) {
+      const legacyDesired = desired.map(({ verification_token_expires_at, reset_token_expires_at, last_seen_at, ...row }) => row);
       await supabaseRequest(table, {
         method: 'POST',
         body: legacyDesired,
