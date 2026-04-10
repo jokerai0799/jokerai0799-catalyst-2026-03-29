@@ -8,8 +8,67 @@ export function addDays(dateString, days) {
   return date.toISOString().slice(0, 10);
 }
 
+const REGION_CURRENCY_MAP = {
+  GB: 'GBP',
+  US: 'USD',
+  CA: 'CAD',
+  AU: 'AUD',
+  NZ: 'NZD',
+  IE: 'EUR',
+  FR: 'EUR',
+  DE: 'EUR',
+  ES: 'EUR',
+  IT: 'EUR',
+  NL: 'EUR',
+  BE: 'EUR',
+  PT: 'EUR',
+  AT: 'EUR',
+  FI: 'EUR',
+  GR: 'EUR',
+  LU: 'EUR',
+  MT: 'EUR',
+  CY: 'EUR',
+  SI: 'EUR',
+  SK: 'EUR',
+  EE: 'EUR',
+  LV: 'EUR',
+  LT: 'EUR'
+};
+
+let cachedCurrencyConfig;
+
+function getLocaleCandidates() {
+  if (typeof navigator === 'undefined') return ['en-GB'];
+  const locales = [];
+  if (Array.isArray(navigator.languages)) locales.push(...navigator.languages.filter(Boolean));
+  if (navigator.language) locales.push(navigator.language);
+  return locales.length ? locales : ['en-GB'];
+}
+
+function getRegionFromLocale(locale) {
+  if (!locale) return '';
+  try {
+    if (typeof Intl !== 'undefined' && typeof Intl.Locale === 'function') {
+      return new Intl.Locale(locale).region || '';
+    }
+  } catch {}
+  const match = String(locale).match(/-([A-Za-z]{2})\b/);
+  return match ? match[1].toUpperCase() : '';
+}
+
+export function getCurrencyConfig() {
+  if (cachedCurrencyConfig) return cachedCurrencyConfig;
+  const locales = getLocaleCandidates();
+  const locale = locales[0] || 'en-GB';
+  const region = locales.map(getRegionFromLocale).find(Boolean) || 'GB';
+  const currency = REGION_CURRENCY_MAP[region] || 'GBP';
+  cachedCurrencyConfig = { locale, currency, region };
+  return cachedCurrencyConfig;
+}
+
 export function formatCurrency(value) {
-  return new Intl.NumberFormat('en-GB', { style: 'currency', currency: 'GBP', maximumFractionDigits: 0 }).format(Number(value || 0));
+  const { locale, currency } = getCurrencyConfig();
+  return new Intl.NumberFormat(locale, { style: 'currency', currency, maximumFractionDigits: 0 }).format(Number(value || 0));
 }
 
 export function daysBetween(targetDate) {

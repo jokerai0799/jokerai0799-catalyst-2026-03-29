@@ -1228,10 +1228,6 @@ p {
     aspect-ratio: auto;
   }
 
-  .qfu-demo-sidebar {
-    display: none;
-  }
-
   .qfu-demo-main {
     padding: 20px;
   }
@@ -1253,12 +1249,31 @@ p {
 
 @media (max-width: 1100px) {
   .qfu-hero-demo {
-    max-width: 520px;
+    max-width: 100%;
     margin: 0 auto;
+    flex-direction: column;
   }
 
   .qfu-demo-sidebar {
-    display: none;
+    display: block;
+    width: 100%;
+    padding: 16px 16px 12px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  .qfu-demo-sidebar-brand {
+    margin-bottom: 14px;
+  }
+
+  .qfu-demo-nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .qfu-demo-nav li {
+    margin-bottom: 0;
+    padding: 8px 10px;
   }
 
   .qfu-demo-toolbar {
@@ -1266,52 +1281,89 @@ p {
     -webkit-box-direction: normal;
         -ms-flex-direction: column;
             flex-direction: column;
+    align-items: flex-start;
   }
 
   .qfu-demo-main {
     padding: 16px;
   }
 
-  .qfu-demo-metrics,
-  .qfu-demo-tracking-bar,
-  .qfu-demo-content-grid {
-    display: none;
-  }
-
   .qfu-demo-mobile-story {
-    display: block;
-  }
-
-  .qfu-demo-mobile-item-top,
-  .qfu-demo-mobile-item-meta {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .qfu-demo-mobile-item-meta small {
-    text-align: left;
+    display: none;
   }
 }
 
 @media (max-width: 767px) {
   .qfu-hero-demo {
-    max-width: 420px;
+    max-width: 100%;
+    border-radius: 18px;
+  }
+
+  .qfu-demo-sidebar {
+    padding: 14px 14px 10px;
+  }
+
+  .qfu-demo-sidebar-brand span {
+    font-size: 12px;
+  }
+
+  .qfu-demo-nav {
+    gap: 6px;
+  }
+
+  .qfu-demo-nav li {
+    font-size: 12px;
+    border-radius: 10px;
+  }
+
+  .qfu-demo-main {
+    padding: 14px;
+  }
+
+  .qfu-demo-toolbar {
+    margin-bottom: 14px;
+  }
+
+  .qfu-demo-toolbar h3 {
+    font-size: 20px;
+  }
+
+  .qfu-demo-badge {
+    padding: 7px 10px;
+    font-size: 11px;
   }
 
   .qfu-demo-metric-card {
     padding: 12px;
+    border-radius: 16px;
   }
 
   .qfu-demo-metric-card strong {
-    font-size: 22px;
+    font-size: 20px;
+  }
+
+  .qfu-demo-track-item {
+    padding: 10px;
+    border-radius: 14px;
+  }
+
+  .qfu-demo-track-item strong {
+    font-size: 16px;
   }
 
   .qfu-demo-panel {
     padding: 13px;
+    border-radius: 18px;
   }
 
   .qfu-demo-panel-head span {
-    font-size: 18px;
+    font-size: 16px;
+  }
+
+  .qfu-demo-table th,
+  .qfu-demo-table td {
+    padding: 9px 7px;
+    font-size: 11px;
   }
 }
 

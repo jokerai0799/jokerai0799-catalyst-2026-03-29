@@ -1,5 +1,6 @@
-import { ensureLandingLinks, initCheckEmailPage, initForgotPasswordPage, initLoginPage, initResetPasswordPage, initSignupPage, initVerifyPage } from './features/auth/index.js';
+import { initCheckEmailPage, initForgotPasswordPage, initLoginPage, initResetPasswordPage, initSignupPage, initVerifyPage } from './features/auth/index.js';
 import { renderDashboard } from './features/dashboard/index.js';
+import { initLandingPage } from './features/landing/index.js';
 import { getState, refreshState } from './core/store.js';
 
 async function initDashboardPage() {
@@ -27,7 +28,7 @@ const pageRegistry = [
   ['qfu-forgot-page', initForgotPasswordPage],
   ['qfu-reset-page', initResetPasswordPage],
   ['qfu-dashboard-page', initDashboardPage],
-  ['qfu-landing-page', ensureLandingLinks],
+  ['qfu-landing-page', initLandingPage],
 ];
 
 export function resolvePageInitializer(body = document.body) {
