@@ -1321,7 +1321,7 @@ p {
   }
 
   .qfu-demo-toolbar {
-    margin-bottom: 14px;
+    margin-bottom: 12px;
   }
 
   .qfu-demo-toolbar h3 {
@@ -1333,27 +1333,41 @@ p {
     font-size: 11px;
   }
 
+  .qfu-demo-metrics {
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+
   .qfu-demo-metric-card {
-    padding: 12px;
+    padding: 11px;
     border-radius: 16px;
   }
 
+  .qfu-demo-metric-card span {
+    font-size: 10px;
+  }
+
   .qfu-demo-metric-card strong {
-    font-size: 20px;
+    margin-top: 7px;
+    font-size: 18px;
   }
 
-  .qfu-demo-track-item {
-    padding: 10px;
-    border-radius: 14px;
+  .qfu-demo-metric-card small {
+    margin-top: 8px;
+    font-size: 12px;
   }
 
-  .qfu-demo-track-item strong {
-    font-size: 16px;
+  .qfu-demo-tracking-bar {
+    display: none;
   }
 
   .qfu-demo-panel {
     padding: 13px;
     border-radius: 18px;
+  }
+
+  .qfu-demo-panel-head {
+    margin-bottom: 8px;
   }
 
   .qfu-demo-panel-head span {
