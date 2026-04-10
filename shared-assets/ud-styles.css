@@ -1282,10 +1282,36 @@ p {
         -ms-flex-direction: column;
             flex-direction: column;
     align-items: flex-start;
+    margin-bottom: 12px;
   }
 
   .qfu-demo-main {
     padding: 16px;
+  }
+
+  .qfu-demo-metrics {
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+
+  .qfu-demo-metric-card {
+    padding: 12px;
+  }
+
+  .qfu-demo-metric-card strong {
+    font-size: 20px;
+  }
+
+  .qfu-demo-metric-card small {
+    font-size: 12px;
+  }
+
+  .qfu-demo-tracking-bar {
+    display: none;
+  }
+
+  .qfu-demo-panel-head {
+    margin-bottom: 8px;
   }
 
   .qfu-demo-mobile-story {
