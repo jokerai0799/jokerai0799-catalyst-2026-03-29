@@ -1,6 +1,6 @@
 # Catalyst
 
-Catalyst is an active standalone Quote Follow Up-style prototype.
+Catalyst is an active standalone Quote Chaser prototype.
 
 ## Current state
 

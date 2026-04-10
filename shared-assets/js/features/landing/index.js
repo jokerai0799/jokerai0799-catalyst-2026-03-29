@@ -6,11 +6,6 @@ const PLAN_BASELINES_GBP = {
   business: 59.99,
 };
 
-const PLAN_CHECKOUT_LINKS = {
-  personal: 'https://buy.stripe.com/5kQ5kF0K21r7gXR2n38Ra03',
-  business: 'https://buy.stripe.com/6oUfZjboGgm1fTNbXD8Ra02',
-};
-
 const CURRENCY_RATES = {
   GBP: 1,
   USD: 1.27,
@@ -42,7 +37,18 @@ function formatLocalizedPrice(amount, locale, currency) {
   }).format(amount);
 }
 
-function localizePricing() {
+async function fetchBillingConfig() {
+  try {
+    const response = await fetch('/api/public-config', { credentials: 'same-origin' });
+    if (!response.ok) return null;
+    const data = await response.json();
+    return data?.billing || null;
+  } catch {
+    return null;
+  }
+}
+
+function localizePricing(billingConfig = {}) {
   const { locale, currency } = getCurrencyConfig();
   const rate = CURRENCY_RATES[currency] || 1;
 
@@ -54,10 +60,23 @@ function localizePricing() {
     node.textContent = `${formatLocalizedPrice(localizedAmount, locale, currency)}/mo`;
   });
 
+  const checkoutLinks = {
+    personal: billingConfig.personalCheckoutLink || '',
+    business: billingConfig.businessCheckoutLink || '',
+  };
+
   document.querySelectorAll('[data-plan-checkout]').forEach((node) => {
     const plan = node.getAttribute('data-plan-checkout');
-    const stripeLink = node.getAttribute('data-stripe-link') || PLAN_CHECKOUT_LINKS[plan] || '';
-    if (stripeLink) node.setAttribute('href', stripeLink);
+    const stripeLink = node.getAttribute('data-stripe-link') || checkoutLinks[plan] || '';
+    if (stripeLink) {
+      node.setAttribute('href', stripeLink);
+      node.classList.remove('is-disabled');
+      node.setAttribute('aria-disabled', 'false');
+    } else {
+      node.setAttribute('href', '#pricing');
+      node.classList.add('is-disabled');
+      node.setAttribute('aria-disabled', 'true');
+    }
   });
 
   document.querySelectorAll('[data-pricing-anchor]').forEach((node) => {
@@ -67,7 +86,8 @@ function localizePricing() {
 
 export async function initLandingPage() {
   localizeDemoCurrency();
-  localizePricing();
+  const billingConfig = await fetchBillingConfig();
+  localizePricing(billingConfig || {});
   try {
     await ensureLandingLinks();
   } catch (error) {

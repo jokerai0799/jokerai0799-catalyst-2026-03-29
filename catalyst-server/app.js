@@ -5,7 +5,10 @@ const {
   GOOGLE_CLIENT_ID,
   GOOGLE_CLIENT_SECRET,
   RESEND_API_KEY,
+  STRIPE_BUSINESS_PAYMENT_LINK,
   STRIPE_BUSINESS_PRICE_ID,
+  STRIPE_CUSTOMER_PORTAL_URL,
+  STRIPE_PERSONAL_PAYMENT_LINK,
   STRIPE_PERSONAL_PRICE_ID,
   STRIPE_SECRET_KEY,
   STRIPE_WEBHOOK_SECRET,
@@ -358,6 +361,18 @@ async function handleApi(req, res, url) {
 
   if (!(await isSupabaseReady())) {
     return sendJson(res, 503, { error: 'Supabase is not configured or not ready.' });
+  }
+
+  if (req.method === 'GET' && pathname === '/api/public-config') {
+    return sendJson(res, 200, {
+      billing: {
+        personalCheckoutLink: STRIPE_PERSONAL_PAYMENT_LINK || '',
+        businessCheckoutLink: STRIPE_BUSINESS_PAYMENT_LINK || '',
+        customerPortalUrl: STRIPE_CUSTOMER_PORTAL_URL || '',
+        personalPriceId: STRIPE_PERSONAL_PRICE_ID || '',
+        businessPriceId: STRIPE_BUSINESS_PRICE_ID || '',
+      },
+    });
   }
 
   if (req.method === 'POST' && pathname === '/api/stripe/webhook') {
@@ -954,7 +969,7 @@ async function handleApi(req, res, url) {
       return sendJson(res, 503, { error: errorMessage, delivery });
     }
     quote.archived = false;
-    quote.status = 'Replied';
+    if (!['Won', 'Lost', 'Archived', 'Replied'].includes(quote.status)) quote.status = 'Sent';
     quote.nextFollowUp = addDays(today(), auth.workspace.secondFollowupDays || auth.workspace.firstFollowupDays || 2);
     recordQuoteEvent(quote, 'Follow-up email sent', `Sent to ${quote.customerEmail} and queued next follow up for ${quote.nextFollowUp}.`);
     await saveStore(store);

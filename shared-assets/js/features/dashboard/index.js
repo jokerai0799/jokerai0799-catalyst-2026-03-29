@@ -345,7 +345,10 @@ function renderBillingPanel(state) {
   const upgradeLink = $('#qfu-upgrade-plan-link');
   if (upgradeLink) {
     const upgradeHref = billing.checkoutLinks?.business || '#';
+    const hasUpgradeLink = Boolean(billing.checkoutLinks?.business);
     upgradeLink.setAttribute('href', upgradeHref);
+    upgradeLink.classList.toggle('is-disabled', !hasUpgradeLink);
+    upgradeLink.setAttribute('aria-disabled', hasUpgradeLink ? 'false' : 'true');
     const isBusiness = (billing.planTier || state.workspace?.planTier) === 'business';
     upgradeLink.textContent = isBusiness ? 'Open Business checkout' : 'Upgrade to Business';
     upgradeLink.hidden = false;
