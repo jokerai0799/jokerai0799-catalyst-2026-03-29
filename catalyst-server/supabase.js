@@ -76,7 +76,9 @@ function mapUserFromDb(row) {
     passwordHash: row.password_hash,
     verified: Boolean(row.verified),
     verificationToken: row.verification_token || undefined,
+    verificationTokenExpiresAt: row.verification_token_expires_at ? isoDate(row.verification_token_expires_at) : null,
     resetToken: row.reset_token || undefined,
+    resetTokenExpiresAt: row.reset_token_expires_at ? isoDate(row.reset_token_expires_at) : null,
     createdAt: isoDate(row.created_at),
   };
 }
@@ -156,7 +158,9 @@ function mapUserToDb(row) {
     password_hash: row.passwordHash,
     verified: Boolean(row.verified),
     verification_token: row.verificationToken || null,
+    verification_token_expires_at: row.verificationTokenExpiresAt ? isoDate(row.verificationTokenExpiresAt) : null,
     reset_token: row.resetToken || null,
+    reset_token_expires_at: row.resetTokenExpiresAt ? isoDate(row.resetTokenExpiresAt) : null,
     created_at: isoDate(row.createdAt),
   };
 }
@@ -257,6 +261,10 @@ async function deleteMissingRows(table, existingIds, desiredIds) {
   }
 }
 
+function isMissingColumnError(error, columnName) {
+  return error?.status === 400 && String(error?.body || '').includes(`Could not find the '${columnName}' column`);
+}
+
 async function syncTable(table, rows, mapper, { allowMissing = false } = {}) {
   const existing = await supabaseRequest(`${table}?select=id`, { allow404: allowMissing });
   if (allowMissing && existing == null) {
@@ -272,11 +280,24 @@ async function syncTable(table, rows, mapper, { allowMissing = false } = {}) {
   const desiredIds = new Set(desired.map((row) => row.id));
 
   if (desired.length) {
-    await supabaseRequest(table, {
-      method: 'POST',
-      body: desired,
-      headers: { Prefer: 'resolution=merge-duplicates,return=minimal' },
-    });
+    try {
+      await supabaseRequest(table, {
+        method: 'POST',
+        body: desired,
+        headers: { Prefer: 'resolution=merge-duplicates,return=minimal' },
+      });
+    } catch (error) {
+      if (table === 'users' && (isMissingColumnError(error, 'verification_token_expires_at') || isMissingColumnError(error, 'reset_token_expires_at'))) {
+        const legacyDesired = desired.map(({ verification_token_expires_at, reset_token_expires_at, ...row }) => row);
+        await supabaseRequest(table, {
+          method: 'POST',
+          body: legacyDesired,
+          headers: { Prefer: 'resolution=merge-duplicates,return=minimal' },
+        });
+      } else {
+        throw error;
+      }
+    }
   }
 
   await deleteMissingRows(table, existingIds, desiredIds);

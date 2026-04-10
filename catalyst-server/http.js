@@ -1,6 +1,6 @@
 const fs = require('fs');
 const path = require('path');
-const { ROOT } = require('./config');
+const { APP_URL, ROOT } = require('./config');
 
 function readJson(req) {
   return new Promise((resolve, reject) => {
@@ -36,8 +36,19 @@ async function readJsonOrReject(req, res, badRequest) {
   }
 }
 
+function securityHeaders(extra = {}) {
+  const headers = {
+    'X-Content-Type-Options': 'nosniff',
+    'Referrer-Policy': 'strict-origin-when-cross-origin',
+    'X-Frame-Options': 'SAMEORIGIN',
+    ...extra,
+  };
+  if (APP_URL) headers['Content-Security-Policy'] = `frame-ancestors 'self' ${APP_URL.replace(/\/$/, '')}`;
+  return headers;
+}
+
 function sendJson(res, status, data) {
-  res.writeHead(status, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' });
+  res.writeHead(status, securityHeaders({ 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' }));
   res.end(JSON.stringify(data));
 }
 
@@ -51,6 +62,10 @@ function unauthorized(res) {
 
 function badRequest(res, message) {
   sendJson(res, 400, { error: message });
+}
+
+function tooManyRequests(res, message = 'Too many requests. Try again shortly.') {
+  sendJson(res, 429, { error: message });
 }
 
 function contentType(filePath) {
@@ -70,6 +85,22 @@ function contentType(filePath) {
   }[ext] || 'application/octet-stream');
 }
 
+function cacheControlFor(filePath) {
+  const ext = path.extname(filePath).toLowerCase();
+  if (ext === '.html') return 'no-store';
+  if (['.css', '.js'].includes(ext)) return 'public, max-age=3600, stale-while-revalidate=86400';
+  if (['.svg', '.png', '.jpg', '.jpeg', '.ico', '.webp', '.gif', '.woff', '.woff2'].includes(ext)) return 'public, max-age=86400, stale-while-revalidate=604800';
+  return 'public, max-age=600';
+}
+
+function sendStaticFile(res, status, finalPath, buffer) {
+  res.writeHead(status, securityHeaders({
+    'Content-Type': contentType(finalPath),
+    'Cache-Control': cacheControlFor(finalPath),
+  }));
+  res.end(buffer);
+}
+
 function serveStatic(req, res, pathname) {
   const target = pathname === '/' ? '/landing-page/index.html' : pathname;
   const filePath = path.normalize(path.join(ROOT, decodeURIComponent(target)));
@@ -80,19 +111,32 @@ function serveStatic(req, res, pathname) {
   }
   fs.stat(filePath, (err, stats) => {
     if (err) {
-      res.writeHead(404);
-      res.end('Not found');
+      const notFoundPath = path.join(ROOT, '404.html');
+      fs.readFile(notFoundPath, (missingErr, buffer) => {
+        if (missingErr) {
+          res.writeHead(404, securityHeaders({ 'Content-Type': 'text/plain; charset=utf-8', 'Cache-Control': 'no-store' }));
+          res.end('Not found');
+          return;
+        }
+        sendStaticFile(res, 404, notFoundPath, buffer);
+      });
       return;
     }
     const finalPath = stats.isDirectory() ? path.join(filePath, 'index.html') : filePath;
     fs.readFile(finalPath, (readErr, buffer) => {
       if (readErr) {
-        res.writeHead(404);
-        res.end('Not found');
+        const notFoundPath = path.join(ROOT, '404.html');
+        fs.readFile(notFoundPath, (missingErr, notFoundBuffer) => {
+          if (missingErr) {
+            res.writeHead(404, securityHeaders({ 'Content-Type': 'text/plain; charset=utf-8', 'Cache-Control': 'no-store' }));
+            res.end('Not found');
+            return;
+          }
+          sendStaticFile(res, 404, notFoundPath, notFoundBuffer);
+        });
         return;
       }
-      res.writeHead(200, { 'Content-Type': contentType(finalPath), 'Cache-Control': 'no-store' });
-      res.end(buffer);
+      sendStaticFile(res, 200, finalPath, buffer);
     });
   });
 }
@@ -103,5 +147,6 @@ module.exports = {
   readJsonOrReject,
   sendJson,
   serveStatic,
+  tooManyRequests,
   unauthorized,
 };

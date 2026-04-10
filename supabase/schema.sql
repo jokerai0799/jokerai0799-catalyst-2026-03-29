@@ -23,7 +23,9 @@ create table if not exists users (
   password_hash text not null,
   verified boolean not null default false,
   verification_token text,
+  verification_token_expires_at timestamptz,
   reset_token text,
+  reset_token_expires_at timestamptz,
   created_at timestamptz not null default now()
 );
 
@@ -112,6 +114,8 @@ revoke all on table quote_events from anon, authenticated;
 revoke all on table sessions from anon, authenticated;
 
 alter table if exists quotes add column if not exists customer_email text;
+alter table if exists users add column if not exists verification_token_expires_at timestamptz;
+alter table if exists users add column if not exists reset_token_expires_at timestamptz;
 alter table if exists workspaces add column if not exists billing_plan_tier text;
 alter table if exists workspaces add column if not exists billing_status text;
 alter table if exists workspaces add column if not exists billing_currency text;

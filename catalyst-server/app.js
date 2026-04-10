@@ -1,9 +1,10 @@
 const crypto = require('crypto');
 const { URL } = require('url');
-const { APP_URL, GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET } = require('./config');
+const { APP_URL, GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, RESEND_API_KEY } = require('./config');
 const { attemptEmail, sendPasswordResetEmail, sendQuoteFollowupEmail, sendVerificationEmail } = require('./email');
-const { badRequest, notFound, readJsonOrReject, sendJson, serveStatic, unauthorized } = require('./http');
+const { badRequest, notFound, readJsonOrReject, sendJson, serveStatic, tooManyRequests, unauthorized } = require('./http');
 const { clearSession, createSession, getSessionUser } = require('./session');
+const { checkRateLimit } = require('./rate-limit');
 const { isSupabaseReady } = require('./supabase');
 const {
   ALLOWED_QUOTE_ACTIONS,
@@ -26,16 +27,28 @@ const {
   withWorkspaceMeta,
 } = require('./store');
 const {
+  addDays,
+  addHours,
   clampText,
   hashPassword,
+  isFutureIsoDate,
   normalizeQuoteStatus,
   today,
   uid,
   verifyPassword,
-  addDays,
 } = require('./utils');
 
 const GOOGLE_STATE_COOKIE = 'catalyst_google_state';
+const VERIFY_TOKEN_HOURS = 72;
+const RESET_TOKEN_HOURS = 2;
+const AUTH_RATE_LIMITS = {
+  signup: { windowMs: 15 * 60 * 1000, max: 10 },
+  login: { windowMs: 15 * 60 * 1000, max: 20 },
+  verify: { windowMs: 15 * 60 * 1000, max: 30 },
+  resendVerification: { windowMs: 15 * 60 * 1000, max: 10 },
+  forgotPassword: { windowMs: 15 * 60 * 1000, max: 10 },
+  resetPassword: { windowMs: 15 * 60 * 1000, max: 10 },
+};
 
 function getAppBaseUrl(req) {
   if (APP_URL) return APP_URL.replace(/\/$/, '');
@@ -134,6 +147,45 @@ function inviteForUser(store, inviteId, email) {
   if (!invite) return null;
   const inviteeEmail = String(invite.inviteeEmail || '').trim().toLowerCase();
   return invite.status === 'pending' && inviteeEmail === String(email || '').trim().toLowerCase() ? invite : null;
+}
+
+function setVerificationToken(user) {
+  user.verificationToken = uid('verify');
+  user.verificationTokenExpiresAt = addHours(Date.now(), VERIFY_TOKEN_HOURS);
+}
+
+function setResetToken(user) {
+  user.resetToken = uid('reset');
+  user.resetTokenExpiresAt = addHours(Date.now(), RESET_TOKEN_HOURS);
+}
+
+function clearExpiredAuthTokens(user) {
+  if (user?.verificationToken && user?.verificationTokenExpiresAt && !isFutureIsoDate(user.verificationTokenExpiresAt)) {
+    delete user.verificationToken;
+    user.verificationTokenExpiresAt = null;
+  }
+  if (user?.resetToken && user?.resetTokenExpiresAt && !isFutureIsoDate(user.resetTokenExpiresAt)) {
+    delete user.resetToken;
+    user.resetTokenExpiresAt = null;
+  }
+}
+
+function enforceRateLimit(req, res, key) {
+  const policy = AUTH_RATE_LIMITS[key];
+  if (!policy) return true;
+  const result = checkRateLimit(req, `auth:${key}`, policy);
+  if (result.allowed) return true;
+  tooManyRequests(res, 'Too many requests for that action. Please wait a few minutes and try again.');
+  return false;
+}
+
+function ensureSameOrigin(req, res) {
+  const origin = req.headers.origin;
+  if (!origin) return true;
+  const currentOrigin = getAppBaseUrl(req);
+  if (origin === currentOrigin) return true;
+  sendJson(res, 403, { error: 'Origin check failed.' });
+  return false;
 }
 
 function ensureWorkspaceWritable(res, workspace) {
@@ -270,6 +322,7 @@ async function handleApi(req, res, url) {
   }
 
   if (req.method === 'POST' && pathname === '/api/auth/signup') {
+    if (!enforceRateLimit(req, res, 'signup')) return;
     const body = await readJsonOrReject(req, res, badRequest);
     if (!body) return;
     const name = normalizeName(body.name);
@@ -306,9 +359,13 @@ async function handleApi(req, res, url) {
       email,
       passwordHash: hashPassword(password),
       verified: false,
-      verificationToken: uid('verify'),
+      verificationToken: '',
+      verificationTokenExpiresAt: null,
+      resetToken: '',
+      resetTokenExpiresAt: null,
       createdAt: new Date().toISOString(),
     };
+    setVerificationToken(user);
     store.workspaces.push(workspace);
     store.users.push(user);
     seedWorkspace(store, workspace, user);
@@ -327,6 +384,7 @@ async function handleApi(req, res, url) {
     if (!isValidEmail(email)) return sendJson(res, 200, { email, exists: false, verified: false, verifyUrl: '/landing-page/login.html?verified=invalid' });
     const user = findUserByEmail(store, email);
     if (!user) return sendJson(res, 200, { email, exists: false, verified: false, verifyUrl: '/landing-page/login.html?verified=invalid' });
+    clearExpiredAuthTokens(user);
     return sendJson(res, 200, {
       email,
       exists: true,
@@ -337,14 +395,16 @@ async function handleApi(req, res, url) {
   }
 
   if (req.method === 'POST' && pathname === '/api/auth/resend-verification') {
+    if (!enforceRateLimit(req, res, 'resendVerification')) return;
     const body = await readJsonOrReject(req, res, badRequest);
     if (!body) return;
     const email = String(body.email || '').trim().toLowerCase();
     if (!isValidEmail(email)) return badRequest(res, 'Enter a valid email address.');
     const user = findUserByEmail(store, email);
     if (!user) return sendJson(res, 200, { ok: true, sent: false, emailDeliveryAvailable: Boolean(RESEND_API_KEY) });
+    clearExpiredAuthTokens(user);
     if (user.verified) return sendJson(res, 200, { ok: true, sent: false, verified: true, emailDeliveryAvailable: Boolean(RESEND_API_KEY) });
-    if (!user.verificationToken) user.verificationToken = uid('verify');
+    if (!user.verificationToken) setVerificationToken(user);
     await saveStore(store);
     const delivery = await attemptEmail(() => sendVerificationEmail(req, user));
     return sendJson(res, 200, {
@@ -357,6 +417,7 @@ async function handleApi(req, res, url) {
   }
 
   if (req.method === 'POST' && pathname === '/api/auth/login') {
+    if (!enforceRateLimit(req, res, 'login')) return;
     const body = await readJsonOrReject(req, res, badRequest);
     if (!body) return;
     const email = String(body.email || '').trim().toLowerCase();
@@ -372,30 +433,36 @@ async function handleApi(req, res, url) {
   }
 
   if (req.method === 'POST' && pathname === '/api/auth/logout') {
+    if (!ensureSameOrigin(req, res)) return;
     await clearSession(req, res);
     return sendJson(res, 200, { ok: true });
   }
 
   if (req.method === 'POST' && pathname === '/api/auth/verify') {
+    if (!enforceRateLimit(req, res, 'verify')) return;
     const body = await readJsonOrReject(req, res, badRequest);
     if (!body) return;
     const token = String(body.token || '').trim();
     const user = store.users.find((item) => item.verificationToken === token);
-    if (!user) return badRequest(res, 'That verification link is invalid or expired.');
+    const tokenValid = user && (!user.verificationTokenExpiresAt || isFutureIsoDate(user.verificationTokenExpiresAt));
+    if (!tokenValid) return badRequest(res, 'That verification link is invalid or expired.');
     user.verified = true;
     delete user.verificationToken;
+    user.verificationTokenExpiresAt = null;
     await saveStore(store);
     return sendJson(res, 200, { ok: true, email: user.email });
   }
 
   if (req.method === 'POST' && pathname === '/api/auth/forgot-password') {
+    if (!enforceRateLimit(req, res, 'forgotPassword')) return;
     const body = await readJsonOrReject(req, res, badRequest);
     if (!body) return;
     const email = String(body.email || '').trim().toLowerCase();
     if (!isValidEmail(email)) return badRequest(res, 'Enter a valid email address.');
     const user = findUserByEmail(store, email);
     if (!user) return sendJson(res, 200, { ok: true, sent: false, emailDeliveryAvailable: Boolean(RESEND_API_KEY) });
-    user.resetToken = uid('reset');
+    clearExpiredAuthTokens(user);
+    setResetToken(user);
     await saveStore(store);
     const delivery = await attemptEmail(() => sendPasswordResetEmail(req, user));
     return sendJson(res, 200, {
@@ -407,22 +474,26 @@ async function handleApi(req, res, url) {
   }
 
   if (req.method === 'POST' && pathname === '/api/auth/reset-password') {
+    if (!enforceRateLimit(req, res, 'resetPassword')) return;
     const body = await readJsonOrReject(req, res, badRequest);
     if (!body) return;
     const token = String(body.token || '').trim();
     const password = String(body.password || '');
     const confirmPassword = String(body.confirmPassword || '');
     const user = store.users.find((item) => item.resetToken === token);
-    if (!user) return badRequest(res, 'That reset link is invalid or expired.');
+    const tokenValid = user && (!user.resetTokenExpiresAt || isFutureIsoDate(user.resetTokenExpiresAt));
+    if (!tokenValid) return badRequest(res, 'That reset link is invalid or expired.');
     if (password.length < 8) return badRequest(res, 'Use at least 8 characters for your new password.');
     if (password !== confirmPassword) return badRequest(res, 'Passwords do not match.');
     user.passwordHash = hashPassword(password);
     delete user.resetToken;
+    user.resetTokenExpiresAt = null;
     await saveStore(store);
     return sendJson(res, 200, { ok: true });
   }
 
   if (req.method === 'PATCH' && pathname === '/api/workspace') {
+    if (!ensureSameOrigin(req, res)) return;
     const auth = await withUser(req, res, store, getSessionUser, unauthorized);
     if (!auth) return;
     const body = await readJsonOrReject(req, res, badRequest);
@@ -439,6 +510,7 @@ async function handleApi(req, res, url) {
   }
 
   if (req.method === 'POST' && pathname === '/api/team') {
+    if (!ensureSameOrigin(req, res)) return;
     const auth = await withUser(req, res, store, getSessionUser, unauthorized);
     if (!auth) return;
     if (!ensureWorkspaceWritable(res, auth.workspace)) return;
@@ -490,6 +562,7 @@ async function handleApi(req, res, url) {
 
   const inviteAcceptMatch = pathname.match(/^\/api\/invites\/([^/]+)\/accept$/);
   if (inviteAcceptMatch && req.method === 'POST') {
+    if (!ensureSameOrigin(req, res)) return;
     const auth = await withUser(req, res, store, getSessionUser, unauthorized);
     if (!auth) return;
     const invite = inviteForUser(store, inviteAcceptMatch[1], auth.user.email);
@@ -519,6 +592,7 @@ async function handleApi(req, res, url) {
 
   const inviteDeclineMatch = pathname.match(/^\/api\/invites\/([^/]+)\/decline$/);
   if (inviteDeclineMatch && req.method === 'POST') {
+    if (!ensureSameOrigin(req, res)) return;
     const auth = await withUser(req, res, store, getSessionUser, unauthorized);
     if (!auth) return;
     const invite = inviteForUser(store, inviteDeclineMatch[1], auth.user.email);
@@ -531,6 +605,7 @@ async function handleApi(req, res, url) {
 
   const teamMatch = pathname.match(/^\/api\/team\/([^/]+)$/);
   if (teamMatch && req.method === 'DELETE') {
+    if (!ensureSameOrigin(req, res)) return;
     const auth = await withUser(req, res, store, getSessionUser, unauthorized);
     if (!auth) return;
     if (!ensureWorkspaceWritable(res, auth.workspace)) return;
@@ -564,6 +639,7 @@ async function handleApi(req, res, url) {
   }
 
   if (req.method === 'POST' && pathname === '/api/quotes') {
+    if (!ensureSameOrigin(req, res)) return;
     const auth = await withUser(req, res, store, getSessionUser, unauthorized);
     if (!auth) return;
     const body = await readJsonOrReject(req, res, badRequest);
@@ -595,6 +671,7 @@ async function handleApi(req, res, url) {
 
   const quoteMatch = pathname.match(/^\/api\/quotes\/([^/]+)$/);
   if (quoteMatch && req.method === 'PATCH') {
+    if (!ensureSameOrigin(req, res)) return;
     const auth = await withUser(req, res, store, getSessionUser, unauthorized);
     if (!auth) return;
     const quote = store.quotes.find((item) => item.id === quoteMatch[1] && item.workspaceId === auth.workspace.id);
@@ -620,6 +697,7 @@ async function handleApi(req, res, url) {
   }
 
   if (quoteMatch && req.method === 'DELETE') {
+    if (!ensureSameOrigin(req, res)) return;
     const auth = await withUser(req, res, store, getSessionUser, unauthorized);
     if (!auth) return;
     if (!ensureWorkspaceWritable(res, auth.workspace)) return;
@@ -632,6 +710,7 @@ async function handleApi(req, res, url) {
 
   const quoteEmailMatch = pathname.match(/^\/api\/quotes\/([^/]+)\/send-email$/);
   if (quoteEmailMatch && req.method === 'POST') {
+    if (!ensureSameOrigin(req, res)) return;
     const auth = await withUser(req, res, store, getSessionUser, unauthorized);
     if (!auth) return;
     if (!ensureWorkspaceWritable(res, auth.workspace)) return;
@@ -656,6 +735,7 @@ async function handleApi(req, res, url) {
 
   const quoteActionMatch = pathname.match(/^\/api\/quotes\/([^/]+)\/actions$/);
   if (quoteActionMatch && req.method === 'POST') {
+    if (!ensureSameOrigin(req, res)) return;
     const auth = await withUser(req, res, store, getSessionUser, unauthorized);
     if (!auth) return;
     if (!ensureWorkspaceWritable(res, auth.workspace)) return;

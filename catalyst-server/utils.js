@@ -65,6 +65,18 @@ function isoDate(value) {
   return value || new Date().toISOString();
 }
 
+function addHours(value, hours) {
+  const date = new Date(value || Date.now());
+  date.setTime(date.getTime() + (hours * 60 * 60 * 1000));
+  return date.toISOString();
+}
+
+function isFutureIsoDate(value) {
+  if (!value) return false;
+  const time = new Date(value).getTime();
+  return Number.isFinite(time) && time > Date.now();
+}
+
 function hashPassword(password, salt = crypto.randomBytes(16).toString('hex')) {
   const hash = crypto.scryptSync(String(password), salt, 64).toString('hex');
   return `${salt}:${hash}`;
@@ -81,9 +93,11 @@ module.exports = {
   ALLOWED_QUOTE_ACTIONS,
   ALLOWED_QUOTE_STATUSES,
   addDays,
+  addHours,
   clampText,
   escapeHtml,
   hashPassword,
+  isFutureIsoDate,
   isIsoDate,
   isValidEmail,
   isoDate,
