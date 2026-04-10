@@ -46,12 +46,17 @@ function parseCookies(req) {
   );
 }
 
-async function getSessionUser(req, store) {
+async function getSessionUserId(req) {
   const sid = parseCookies(req)[SESSION_COOKIE];
   if (!sid) return null;
   const session = await getSessionRecord(sid);
-  if (!session) return null;
-  return store.users.find((user) => user.id === session.userId) || null;
+  return session?.userId || null;
+}
+
+async function getSessionUser(req, store) {
+  const userId = await getSessionUserId(req);
+  if (!userId) return null;
+  return store.users.find((user) => user.id === userId) || null;
 }
 
 function appendSetCookie(res, value) {
@@ -79,5 +84,6 @@ module.exports = {
   clearSession,
   createSession,
   getSessionUser,
+  getSessionUserId,
   parseCookies,
 };

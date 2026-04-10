@@ -1,11 +1,20 @@
 const crypto = require('crypto');
 const { URL } = require('url');
-const { APP_URL, GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, RESEND_API_KEY } = require('./config');
+const {
+  APP_URL,
+  GOOGLE_CLIENT_ID,
+  GOOGLE_CLIENT_SECRET,
+  RESEND_API_KEY,
+  STRIPE_BUSINESS_PRICE_ID,
+  STRIPE_PERSONAL_PRICE_ID,
+  STRIPE_SECRET_KEY,
+  STRIPE_WEBHOOK_SECRET,
+} = require('./config');
 const { attemptEmail, sendPasswordResetEmail, sendQuoteFollowupEmail, sendVerificationEmail } = require('./email');
 const { badRequest, notFound, readJsonOrReject, sendJson, serveStatic, tooManyRequests, unauthorized } = require('./http');
-const { clearSession, createSession, getSessionUser } = require('./session');
+const { clearSession, createSession, getSessionUser, getSessionUserId, parseCookies } = require('./session');
 const { checkRateLimit } = require('./rate-limit');
-const { isSupabaseReady } = require('./supabase');
+const { isSupabaseReady, supabaseRequest } = require('./supabase');
 const {
   ALLOWED_QUOTE_ACTIONS,
   buildBootstrap,
@@ -16,6 +25,7 @@ const {
   isTeamFeatureUnlocked,
   isWorkspaceReadOnly,
   loadStore,
+  queueStoreDelete,
   recordQuoteEvent,
   sanitizeUser,
   saveStore,
@@ -59,20 +69,6 @@ function getAppBaseUrl(req) {
 
 function getGoogleRedirectUri(req) {
   return `${getAppBaseUrl(req)}/api/auth/google/callback`;
-}
-
-function parseCookieMap(req) {
-  const header = req.headers.cookie || '';
-  return Object.fromEntries(
-    header
-      .split(';')
-      .map((part) => part.trim())
-      .filter(Boolean)
-      .map((part) => {
-        const index = part.indexOf('=');
-        return [part.slice(0, index), decodeURIComponent(part.slice(index + 1))];
-      }),
-  );
 }
 
 function appendSetCookie(res, value) {
@@ -194,6 +190,130 @@ function ensureWorkspaceWritable(res, workspace) {
   return false;
 }
 
+function stripePlanTierFromPriceId(priceId) {
+  if (priceId === STRIPE_BUSINESS_PRICE_ID) return 'business';
+  return 'personal';
+}
+
+async function readRawBody(req) {
+  return new Promise((resolve, reject) => {
+    const chunks = [];
+    let size = 0;
+    req.on('data', (chunk) => {
+      size += chunk.length;
+      if (size > 2_000_000) {
+        reject(new Error('Payload too large'));
+        req.destroy();
+        return;
+      }
+      chunks.push(chunk);
+    });
+    req.on('end', () => resolve(Buffer.concat(chunks)));
+    req.on('error', reject);
+  });
+}
+
+function verifyStripeSignature(rawBody, signatureHeader) {
+  if (!STRIPE_WEBHOOK_SECRET || !signatureHeader) return false;
+  const parts = Object.fromEntries(
+    String(signatureHeader)
+      .split(',')
+      .map((part) => part.trim().split('='))
+      .filter(([key, value]) => key && value),
+  );
+  const timestamp = parts.t;
+  const signature = parts.v1;
+  if (!timestamp || !signature) return false;
+  const payload = `${timestamp}.${rawBody.toString('utf8')}`;
+  const expected = crypto.createHmac('sha256', STRIPE_WEBHOOK_SECRET).update(payload).digest('hex');
+  try {
+    return crypto.timingSafeEqual(Buffer.from(expected), Buffer.from(signature));
+  } catch {
+    return false;
+  }
+}
+
+async function stripeRequest(pathname) {
+  if (!STRIPE_SECRET_KEY) return null;
+  const response = await fetch(`https://api.stripe.com/v1${pathname}`, {
+    headers: { Authorization: `Bearer ${STRIPE_SECRET_KEY}` },
+  });
+  if (!response.ok) return null;
+  return response.json();
+}
+
+async function findWorkspaceForStripeEvent(eventObject) {
+  const customerId = String(eventObject?.customer || '').trim();
+  if (customerId) {
+    const rows = await supabaseRequest(`workspaces?stripe_customer_id=eq.${encodeURIComponent(customerId)}&select=*`);
+    if (rows?.[0]) return rows[0];
+  }
+
+  const emailCandidates = [
+    eventObject?.customer_details?.email,
+    eventObject?.customer_email,
+    eventObject?.receipt_email,
+  ].filter(Boolean).map((value) => String(value).trim().toLowerCase());
+
+  if (!emailCandidates.length && customerId && STRIPE_SECRET_KEY) {
+    const customer = await stripeRequest(`/customers/${encodeURIComponent(customerId)}`);
+    if (customer?.email) emailCandidates.push(String(customer.email).trim().toLowerCase());
+  }
+
+  for (const email of emailCandidates) {
+    const userRows = await supabaseRequest(`users?email=eq.${encodeURIComponent(email)}&select=workspace_id&limit=1`);
+    if (userRows?.[0]?.workspace_id) {
+      const workspaceRows = await supabaseRequest(`workspaces?id=eq.${encodeURIComponent(userRows[0].workspace_id)}&select=*`);
+      if (workspaceRows?.[0]) return workspaceRows[0];
+    }
+    const workspaceRows = await supabaseRequest(`workspaces?reply_email=eq.${encodeURIComponent(email)}&select=*&limit=1`);
+    if (workspaceRows?.[0]) return workspaceRows[0];
+  }
+
+  return null;
+}
+
+async function syncStripeBillingFromEvent(event) {
+  const eventObject = event?.data?.object || {};
+  const workspace = await findWorkspaceForStripeEvent(eventObject);
+  if (!workspace) return false;
+
+  const subscription = eventObject?.object === 'subscription'
+    ? eventObject
+    : (eventObject?.subscription && STRIPE_SECRET_KEY ? await stripeRequest(`/subscriptions/${encodeURIComponent(eventObject.subscription)}`) : null);
+
+  const priceId = subscription?.items?.data?.[0]?.price?.id || eventObject?.metadata?.price_id || workspace.stripe_price_id || null;
+  const billingStatus = subscription?.status || (event.type === 'checkout.session.completed' ? 'active' : workspace.billing_status || 'inactive');
+  const billingCurrency = (subscription?.currency || eventObject?.currency || workspace.billing_currency || 'GBP').toUpperCase();
+  const nextPeriod = subscription?.current_period_end ? new Date(subscription.current_period_end * 1000).toISOString() : null;
+  const planTier = stripePlanTierFromPriceId(priceId || workspace.stripe_price_id || STRIPE_PERSONAL_PRICE_ID);
+
+  await supabaseRequest(`workspaces?id=eq.${encodeURIComponent(workspace.id)}`, {
+    method: 'PATCH',
+    body: {
+      billing_plan_tier: planTier,
+      billing_status: billingStatus,
+      billing_currency: billingCurrency,
+      stripe_customer_id: String(subscription?.customer || eventObject?.customer || workspace.stripe_customer_id || ''),
+      stripe_subscription_id: String(subscription?.id || eventObject?.subscription || workspace.stripe_subscription_id || ''),
+      stripe_price_id: priceId || workspace.stripe_price_id || null,
+      stripe_current_period_end: nextPeriod,
+    },
+    headers: { Prefer: 'return=minimal' },
+  });
+
+  return true;
+}
+
+async function loadAuthenticatedStore(req, res) {
+  const userId = await getSessionUserId(req);
+  if (!userId) {
+    unauthorized(res);
+    return null;
+  }
+  return loadStore({ userId });
+}
+
 async function handleApi(req, res, url) {
   const pathname = url.pathname;
 
@@ -222,15 +342,36 @@ async function handleApi(req, res, url) {
     return sendJson(res, 503, { error: 'Supabase is not configured or not ready.' });
   }
 
-  const store = await loadStore();
+  if (req.method === 'POST' && pathname === '/api/stripe/webhook') {
+    const rawBody = await readRawBody(req);
+    if (!verifyStripeSignature(rawBody, req.headers['stripe-signature'])) {
+      return sendJson(res, 400, { error: 'Invalid Stripe signature.' });
+    }
+    const event = JSON.parse(rawBody.toString('utf8') || '{}');
+    const handledEvents = new Set([
+      'checkout.session.completed',
+      'customer.subscription.created',
+      'customer.subscription.updated',
+      'customer.subscription.deleted',
+    ]);
+    if (handledEvents.has(event.type)) {
+      await syncStripeBillingFromEvent(event);
+    }
+    return sendJson(res, 200, { received: true });
+  }
 
   if (req.method === 'GET' && pathname === '/api/app/bootstrap') {
+    const store = await loadAuthenticatedStore(req, res);
+    if (!store) return;
     const user = await getSessionUser(req, store);
     if (!user) return unauthorized(res);
     return sendJson(res, 200, buildBootstrap(store, user));
   }
 
   if (req.method === 'GET' && pathname === '/api/auth/me') {
+    const userId = await getSessionUserId(req);
+    if (!userId) return sendJson(res, 200, { user: null });
+    const store = await loadStore({ userId });
     const user = await getSessionUser(req, store);
     return sendJson(res, 200, { user: user ? sanitizeUser(user) : null });
   }
@@ -242,7 +383,7 @@ async function handleApi(req, res, url) {
       return;
     }
 
-    const cookies = parseCookieMap(req);
+    const cookies = parseCookies(req);
     const state = String(url.searchParams.get('state') || '');
     const code = String(url.searchParams.get('code') || '');
     const error = String(url.searchParams.get('error') || '');
@@ -270,6 +411,7 @@ async function handleApi(req, res, url) {
         throw new Error('Google account email is missing or not verified.');
       }
 
+      const store = await loadStore({ email });
       let user = findUserByEmail(store, email);
       if (!user) {
         const createdAt = new Date().toISOString();
@@ -333,6 +475,7 @@ async function handleApi(req, res, url) {
     if (!name || !company || !email || !password) return badRequest(res, 'Fill in all fields to create your workspace.');
     if (!isValidEmail(email)) return badRequest(res, 'Use a valid email address.');
     if (password.length < 8) return badRequest(res, 'Use at least 8 characters for your password.');
+    const store = await loadStore({ email });
     if (findUserByEmail(store, email)) return badRequest(res, 'An account with this email already exists.');
 
     const createdAt = new Date().toISOString();
@@ -382,6 +525,7 @@ async function handleApi(req, res, url) {
   if (req.method === 'GET' && pathname === '/api/auth/check-email') {
     const email = String(url.searchParams.get('email') || '').trim().toLowerCase();
     if (!isValidEmail(email)) return sendJson(res, 200, { email, exists: false, verified: false, verifyUrl: '/landing-page/login.html?verified=invalid' });
+    const store = await loadStore({ email });
     const user = findUserByEmail(store, email);
     if (!user) return sendJson(res, 200, { email, exists: false, verified: false, verifyUrl: '/landing-page/login.html?verified=invalid' });
     clearExpiredAuthTokens(user);
@@ -400,6 +544,7 @@ async function handleApi(req, res, url) {
     if (!body) return;
     const email = String(body.email || '').trim().toLowerCase();
     if (!isValidEmail(email)) return badRequest(res, 'Enter a valid email address.');
+    const store = await loadStore({ email });
     const user = findUserByEmail(store, email);
     if (!user) return sendJson(res, 200, { ok: true, sent: false, emailDeliveryAvailable: Boolean(RESEND_API_KEY) });
     clearExpiredAuthTokens(user);
@@ -423,6 +568,7 @@ async function handleApi(req, res, url) {
     const email = String(body.email || '').trim().toLowerCase();
     const password = String(body.password || '');
     if (!isValidEmail(email)) return badRequest(res, 'Invalid email or password.');
+    const store = await loadStore({ email });
     const user = findUserByEmail(store, email);
     if (!user) return badRequest(res, 'Invalid email or password.');
     if (!user.passwordHash) return badRequest(res, 'Use Google sign-in for this account.');
@@ -443,6 +589,7 @@ async function handleApi(req, res, url) {
     const body = await readJsonOrReject(req, res, badRequest);
     if (!body) return;
     const token = String(body.token || '').trim();
+    const store = await loadStore({ verificationToken: token });
     const user = store.users.find((item) => item.verificationToken === token);
     const tokenValid = user && (!user.verificationTokenExpiresAt || isFutureIsoDate(user.verificationTokenExpiresAt));
     if (!tokenValid) return badRequest(res, 'That verification link is invalid or expired.');
@@ -459,6 +606,7 @@ async function handleApi(req, res, url) {
     if (!body) return;
     const email = String(body.email || '').trim().toLowerCase();
     if (!isValidEmail(email)) return badRequest(res, 'Enter a valid email address.');
+    const store = await loadStore({ email });
     const user = findUserByEmail(store, email);
     if (!user) return sendJson(res, 200, { ok: true, sent: false, emailDeliveryAvailable: Boolean(RESEND_API_KEY) });
     clearExpiredAuthTokens(user);
@@ -480,6 +628,7 @@ async function handleApi(req, res, url) {
     const token = String(body.token || '').trim();
     const password = String(body.password || '');
     const confirmPassword = String(body.confirmPassword || '');
+    const store = await loadStore({ resetToken: token });
     const user = store.users.find((item) => item.resetToken === token);
     const tokenValid = user && (!user.resetTokenExpiresAt || isFutureIsoDate(user.resetTokenExpiresAt));
     if (!tokenValid) return badRequest(res, 'That reset link is invalid or expired.');
@@ -494,6 +643,8 @@ async function handleApi(req, res, url) {
 
   if (req.method === 'PATCH' && pathname === '/api/workspace') {
     if (!ensureSameOrigin(req, res)) return;
+    const store = await loadAuthenticatedStore(req, res);
+    if (!store) return;
     const auth = await withUser(req, res, store, getSessionUser, unauthorized);
     if (!auth) return;
     const body = await readJsonOrReject(req, res, badRequest);
@@ -511,6 +662,8 @@ async function handleApi(req, res, url) {
 
   if (req.method === 'POST' && pathname === '/api/team') {
     if (!ensureSameOrigin(req, res)) return;
+    const store = await loadAuthenticatedStore(req, res);
+    if (!store) return;
     const auth = await withUser(req, res, store, getSessionUser, unauthorized);
     if (!auth) return;
     if (!ensureWorkspaceWritable(res, auth.workspace)) return;
@@ -535,7 +688,8 @@ async function handleApi(req, res, url) {
     if (existingPendingInvite) {
       return badRequest(res, 'There is already a pending invite for that email.');
     }
-    const existingUser = findUserByEmail(store, email);
+    const existingUserStore = await loadStore({ email });
+    const existingUser = findUserByEmail(existingUserStore, email);
     const invite = {
       id: uid('invite'),
       workspaceId: auth.workspace.id,
@@ -563,6 +717,8 @@ async function handleApi(req, res, url) {
   const inviteAcceptMatch = pathname.match(/^\/api\/invites\/([^/]+)\/accept$/);
   if (inviteAcceptMatch && req.method === 'POST') {
     if (!ensureSameOrigin(req, res)) return;
+    const store = await loadAuthenticatedStore(req, res);
+    if (!store) return;
     const auth = await withUser(req, res, store, getSessionUser, unauthorized);
     if (!auth) return;
     const invite = inviteForUser(store, inviteAcceptMatch[1], auth.user.email);
@@ -593,6 +749,8 @@ async function handleApi(req, res, url) {
   const inviteDeclineMatch = pathname.match(/^\/api\/invites\/([^/]+)\/decline$/);
   if (inviteDeclineMatch && req.method === 'POST') {
     if (!ensureSameOrigin(req, res)) return;
+    const store = await loadAuthenticatedStore(req, res);
+    if (!store) return;
     const auth = await withUser(req, res, store, getSessionUser, unauthorized);
     if (!auth) return;
     const invite = inviteForUser(store, inviteDeclineMatch[1], auth.user.email);
@@ -606,6 +764,8 @@ async function handleApi(req, res, url) {
   const teamMatch = pathname.match(/^\/api\/team\/([^/]+)$/);
   if (teamMatch && req.method === 'DELETE') {
     if (!ensureSameOrigin(req, res)) return;
+    const store = await loadAuthenticatedStore(req, res);
+    if (!store) return;
     const auth = await withUser(req, res, store, getSessionUser, unauthorized);
     if (!auth) return;
     if (!ensureWorkspaceWritable(res, auth.workspace)) return;
@@ -628,6 +788,7 @@ async function handleApi(req, res, url) {
       : currentMember.name;
 
     store.teamMembers = store.teamMembers.filter((member) => member.id !== target.id);
+    queueStoreDelete(store, 'team_members', target.id);
     store.quotes.forEach((quote) => {
       if (quote.workspaceId === auth.workspace.id && quote.owner === target.name) {
         quote.owner = replacementOwner;
@@ -640,6 +801,8 @@ async function handleApi(req, res, url) {
 
   if (req.method === 'POST' && pathname === '/api/quotes') {
     if (!ensureSameOrigin(req, res)) return;
+    const store = await loadAuthenticatedStore(req, res);
+    if (!store) return;
     const auth = await withUser(req, res, store, getSessionUser, unauthorized);
     if (!auth) return;
     const body = await readJsonOrReject(req, res, badRequest);
@@ -672,6 +835,8 @@ async function handleApi(req, res, url) {
   const quoteMatch = pathname.match(/^\/api\/quotes\/([^/]+)$/);
   if (quoteMatch && req.method === 'PATCH') {
     if (!ensureSameOrigin(req, res)) return;
+    const store = await loadAuthenticatedStore(req, res);
+    if (!store) return;
     const auth = await withUser(req, res, store, getSessionUser, unauthorized);
     if (!auth) return;
     const quote = store.quotes.find((item) => item.id === quoteMatch[1] && item.workspaceId === auth.workspace.id);
@@ -698,12 +863,15 @@ async function handleApi(req, res, url) {
 
   if (quoteMatch && req.method === 'DELETE') {
     if (!ensureSameOrigin(req, res)) return;
+    const store = await loadAuthenticatedStore(req, res);
+    if (!store) return;
     const auth = await withUser(req, res, store, getSessionUser, unauthorized);
     if (!auth) return;
     if (!ensureWorkspaceWritable(res, auth.workspace)) return;
     const index = store.quotes.findIndex((item) => item.id === quoteMatch[1] && item.workspaceId === auth.workspace.id);
     if (index === -1) return notFound(res);
-    store.quotes.splice(index, 1);
+    const [deletedQuote] = store.quotes.splice(index, 1);
+    queueStoreDelete(store, 'quotes', deletedQuote?.id);
     await saveStore(store);
     return sendJson(res, 200, { ok: true });
   }
@@ -711,6 +879,8 @@ async function handleApi(req, res, url) {
   const quoteEmailMatch = pathname.match(/^\/api\/quotes\/([^/]+)\/send-email$/);
   if (quoteEmailMatch && req.method === 'POST') {
     if (!ensureSameOrigin(req, res)) return;
+    const store = await loadAuthenticatedStore(req, res);
+    if (!store) return;
     const auth = await withUser(req, res, store, getSessionUser, unauthorized);
     if (!auth) return;
     if (!ensureWorkspaceWritable(res, auth.workspace)) return;
@@ -736,6 +906,8 @@ async function handleApi(req, res, url) {
   const quoteActionMatch = pathname.match(/^\/api\/quotes\/([^/]+)\/actions$/);
   if (quoteActionMatch && req.method === 'POST') {
     if (!ensureSameOrigin(req, res)) return;
+    const store = await loadAuthenticatedStore(req, res);
+    if (!store) return;
     const auth = await withUser(req, res, store, getSessionUser, unauthorized);
     if (!auth) return;
     if (!ensureWorkspaceWritable(res, auth.workspace)) return;

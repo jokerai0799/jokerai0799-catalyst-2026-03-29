@@ -223,7 +223,110 @@ function flattenQuoteEvents(quotes) {
   );
 }
 
-async function loadStore() {
+function emptyStore() {
+  return {
+    users: [],
+    workspaces: [],
+    quotes: [],
+    teamMembers: [],
+    invites: [],
+    __deletes: {},
+  };
+}
+
+function dedupeById(rows) {
+  const seen = new Map();
+  for (const row of rows || []) {
+    if (!row?.id) continue;
+    seen.set(row.id, row);
+  }
+  return Array.from(seen.values());
+}
+
+async function loadWorkspaceScope(workspaceRow, { usersRows, incomingInviteEmail } = {}) {
+  if (!workspaceRow?.id) return emptyStore();
+  const [resolvedUsers, quotesRows, teamRows, inviteRows, incomingInviteRows, eventRows] = await Promise.all([
+    usersRows ? Promise.resolve(usersRows) : supabaseRequest(`users?workspace_id=eq.${encodeURIComponent(workspaceRow.id)}&select=*`),
+    supabaseRequest(`quotes?workspace_id=eq.${encodeURIComponent(workspaceRow.id)}&select=*`),
+    supabaseRequest(`team_members?workspace_id=eq.${encodeURIComponent(workspaceRow.id)}&select=*`),
+    supabaseRequest(`workspace_invites?workspace_id=eq.${encodeURIComponent(workspaceRow.id)}&select=*`, { allow404: true }),
+    incomingInviteEmail
+      ? supabaseRequest(`workspace_invites?invitee_email=eq.${encodeURIComponent(incomingInviteEmail)}&status=eq.pending&select=*`, { allow404: true })
+      : Promise.resolve([]),
+    supabaseRequest('quote_events?select=*'),
+  ]);
+
+  const quoteIds = new Set((quotesRows || []).map((row) => row.id));
+  const eventsByQuote = new Map();
+  for (const row of eventRows || []) {
+    if (!quoteIds.has(row.quote_id)) continue;
+    if (!eventsByQuote.has(row.quote_id)) eventsByQuote.set(row.quote_id, []);
+    eventsByQuote.get(row.quote_id).push({
+      id: row.id,
+      summary: row.summary,
+      detail: row.detail,
+      createdAt: isoDate(row.created_at),
+    });
+  }
+
+  return {
+    users: (resolvedUsers || []).map(mapUserFromDb),
+    workspaces: [mapWorkspaceFromDb(workspaceRow)],
+    quotes: (quotesRows || []).map((row) => mapQuoteFromDb(row, eventsByQuote)),
+    teamMembers: (teamRows || []).map(mapTeamMemberFromDb),
+    invites: dedupeById([...(inviteRows || []), ...(incomingInviteRows || [])]).map(mapInviteFromDb),
+    __deletes: {},
+  };
+}
+
+async function loadStore(scope = {}) {
+  if (scope?.workspaceId) {
+    const workspaceRows = await supabaseRequest(`workspaces?id=eq.${encodeURIComponent(scope.workspaceId)}&select=*`);
+    const workspaceRow = workspaceRows?.[0] || null;
+    if (!workspaceRow) return emptyStore();
+    return loadWorkspaceScope(workspaceRow, { incomingInviteEmail: scope.incomingInviteEmail });
+  }
+
+  if (scope?.userId) {
+    const userRows = await supabaseRequest(`users?id=eq.${encodeURIComponent(scope.userId)}&select=*`);
+    const userRow = userRows?.[0] || null;
+    if (!userRow) return emptyStore();
+    const workspaceRows = await supabaseRequest(`workspaces?id=eq.${encodeURIComponent(userRow.workspace_id)}&select=*`);
+    const workspaceRow = workspaceRows?.[0] || null;
+    if (!workspaceRow) return { ...emptyStore(), users: [mapUserFromDb(userRow)] };
+    return loadWorkspaceScope(workspaceRow, { usersRows: [userRow], incomingInviteEmail: userRow.email });
+  }
+
+  if (scope?.email) {
+    const userRows = await supabaseRequest(`users?email=eq.${encodeURIComponent(scope.email)}&select=*`);
+    const userRow = userRows?.[0] || null;
+    if (!userRow) return emptyStore();
+    const workspaceRows = await supabaseRequest(`workspaces?id=eq.${encodeURIComponent(userRow.workspace_id)}&select=*`);
+    const workspaceRow = workspaceRows?.[0] || null;
+    if (!workspaceRow) return { ...emptyStore(), users: [mapUserFromDb(userRow)] };
+    return loadWorkspaceScope(workspaceRow, { usersRows: [userRow], incomingInviteEmail: userRow.email });
+  }
+
+  if (scope?.verificationToken) {
+    const userRows = await supabaseRequest(`users?verification_token=eq.${encodeURIComponent(scope.verificationToken)}&select=*`);
+    const userRow = userRows?.[0] || null;
+    if (!userRow) return emptyStore();
+    const workspaceRows = await supabaseRequest(`workspaces?id=eq.${encodeURIComponent(userRow.workspace_id)}&select=*`);
+    const workspaceRow = workspaceRows?.[0] || null;
+    if (!workspaceRow) return { ...emptyStore(), users: [mapUserFromDb(userRow)] };
+    return loadWorkspaceScope(workspaceRow, { usersRows: [userRow], incomingInviteEmail: userRow.email });
+  }
+
+  if (scope?.resetToken) {
+    const userRows = await supabaseRequest(`users?reset_token=eq.${encodeURIComponent(scope.resetToken)}&select=*`);
+    const userRow = userRows?.[0] || null;
+    if (!userRow) return emptyStore();
+    const workspaceRows = await supabaseRequest(`workspaces?id=eq.${encodeURIComponent(userRow.workspace_id)}&select=*`);
+    const workspaceRow = workspaceRows?.[0] || null;
+    if (!workspaceRow) return { ...emptyStore(), users: [mapUserFromDb(userRow)] };
+    return loadWorkspaceScope(workspaceRow, { usersRows: [userRow], incomingInviteEmail: userRow.email });
+  }
+
   const [workspacesRows, usersRows, quotesRows, teamRows, eventRows, inviteRows] = await Promise.all([
     supabaseRequest('workspaces?select=*'),
     supabaseRequest('users?select=*'),
@@ -251,14 +354,8 @@ async function loadStore() {
     quotes: (quotesRows || []).map((row) => mapQuoteFromDb(row, eventsByQuote)),
     teamMembers: (teamRows || []).map(mapTeamMemberFromDb),
     invites: (inviteRows || []).map(mapInviteFromDb),
+    __deletes: {},
   };
-}
-
-async function deleteMissingRows(table, existingIds, desiredIds) {
-  for (const id of existingIds) {
-    if (desiredIds.has(id)) continue;
-    await supabaseRequest(`${table}?id=eq.${encodeURIComponent(id)}`, { method: 'DELETE', headers: { Prefer: 'return=minimal' } });
-  }
 }
 
 function isMissingColumnError(error, columnName) {
@@ -266,50 +363,70 @@ function isMissingColumnError(error, columnName) {
 }
 
 async function syncTable(table, rows, mapper, { allowMissing = false } = {}) {
-  const existing = await supabaseRequest(`${table}?select=id`, { allow404: allowMissing });
-  if (allowMissing && existing == null) {
-    if (rows.length) {
-      const error = new Error(`Supabase table ${table} is missing.`);
-      error.status = 503;
-      throw error;
-    }
-    return;
-  }
-  const existingIds = new Set((existing || []).map((row) => row.id));
-  const desired = rows.map(mapper);
-  const desiredIds = new Set(desired.map((row) => row.id));
-
-  if (desired.length) {
-    try {
-      await supabaseRequest(table, {
-        method: 'POST',
-        body: desired,
-        headers: { Prefer: 'resolution=merge-duplicates,return=minimal' },
-      });
-    } catch (error) {
-      if (table === 'users' && (isMissingColumnError(error, 'verification_token_expires_at') || isMissingColumnError(error, 'reset_token_expires_at'))) {
-        const legacyDesired = desired.map(({ verification_token_expires_at, reset_token_expires_at, ...row }) => row);
-        await supabaseRequest(table, {
-          method: 'POST',
-          body: legacyDesired,
-          headers: { Prefer: 'resolution=merge-duplicates,return=minimal' },
-        });
-      } else {
+  if (allowMissing) {
+    const existing = await supabaseRequest(`${table}?select=id&limit=1`, { allow404: true });
+    if (existing == null) {
+      if (rows.length) {
+        const error = new Error(`Supabase table ${table} is missing.`);
+        error.status = 503;
         throw error;
       }
+      return;
     }
   }
 
-  await deleteMissingRows(table, existingIds, desiredIds);
+  const desired = (rows || []).map(mapper);
+  if (!desired.length) return;
+
+  try {
+    await supabaseRequest(table, {
+      method: 'POST',
+      body: desired,
+      headers: { Prefer: 'resolution=merge-duplicates,return=minimal' },
+    });
+  } catch (error) {
+    if (table === 'users' && (isMissingColumnError(error, 'verification_token_expires_at') || isMissingColumnError(error, 'reset_token_expires_at'))) {
+      const legacyDesired = desired.map(({ verification_token_expires_at, reset_token_expires_at, ...row }) => row);
+      await supabaseRequest(table, {
+        method: 'POST',
+        body: legacyDesired,
+        headers: { Prefer: 'resolution=merge-duplicates,return=minimal' },
+      });
+      return;
+    }
+    throw error;
+  }
+}
+
+async function deleteQueuedRows(table, ids, { allowMissing = false } = {}) {
+  const uniqueIds = Array.from(new Set((ids || []).filter(Boolean)));
+  if (!uniqueIds.length) return;
+  for (const id of uniqueIds) {
+    try {
+      await supabaseRequest(`${table}?id=eq.${encodeURIComponent(id)}`, {
+        method: 'DELETE',
+        headers: { Prefer: 'return=minimal' },
+        allow404: allowMissing,
+      });
+    } catch (error) {
+      if (allowMissing && error?.status === 404) continue;
+      throw error;
+    }
+  }
 }
 
 async function saveStore(store) {
-  await syncTable('workspaces', store.workspaces, mapWorkspaceToDb);
-  await syncTable('users', store.users, mapUserToDb);
-  await syncTable('team_members', store.teamMembers, mapTeamMemberToDb);
-  await syncTable('quotes', store.quotes, mapQuoteToDb);
-  await syncTable('quote_events', flattenQuoteEvents(store.quotes), (row) => row);
+  await syncTable('workspaces', store.workspaces || [], mapWorkspaceToDb);
+  await syncTable('users', store.users || [], mapUserToDb);
+  await syncTable('team_members', store.teamMembers || [], mapTeamMemberToDb);
+  await syncTable('quotes', store.quotes || [], mapQuoteToDb);
+  await syncTable('quote_events', flattenQuoteEvents(store.quotes || []), (row) => row);
   await syncTable('workspace_invites', store.invites || [], mapInviteToDb, { allowMissing: true });
+
+  const deletes = store.__deletes || {};
+  await deleteQueuedRows('quotes', deletes.quotes);
+  await deleteQueuedRows('team_members', deletes.team_members);
+  await deleteQueuedRows('workspace_invites', deletes.workspace_invites, { allowMissing: true });
 }
 
 module.exports = {

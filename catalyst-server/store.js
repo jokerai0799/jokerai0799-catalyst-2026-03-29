@@ -223,6 +223,13 @@ function sanitizeUser(user) {
   };
 }
 
+function queueStoreDelete(store, table, id) {
+  if (!id) return;
+  if (!store.__deletes || typeof store.__deletes !== 'object') store.__deletes = {};
+  if (!Array.isArray(store.__deletes[table])) store.__deletes[table] = [];
+  store.__deletes[table].push(id);
+}
+
 function buildBootstrap(store, user) {
   const workspace = getWorkspace(store, user.workspaceId);
   const meta = parseWorkspaceMeta(workspace);
@@ -287,6 +294,7 @@ module.exports = {
   getWorkspaceQuotes,
   getWorkspaceTeam,
   loadStore,
+  queueStoreDelete,
   recordQuoteEvent,
   sanitizeUser,
   saveStore,

@@ -11,7 +11,7 @@ This project now runs as a small static frontend + Node backend prototype with:
 - forgot/reset password prototype flow
 - authenticated dashboard shell
 - quote creation + persisted workspace data
-- chase list / team / settings backed by the local server
+- chase list / team / settings backed by the Node backend
 - Supabase-backed persistence/session storage for the Catalyst project only
 
 ## Important rules
@@ -57,8 +57,10 @@ Catalyst now supports its own dedicated Supabase project without touching any ot
    - `supabase/schema.sql`
 2. Set env vars:
    - `SUPABASE_URL_CATALYST`
-   - `SUPABASE_PUBLIC_CATALYST`
    - `SUPABASE_SECRET_CATALYST`
+   - `APP_URL_CATALYST`
+   - `STRIPE_WEBHOOK_SECRET` (for live Stripe subscription sync)
+   - `STRIPE_SECRET_KEY` (needed if webhook events must resolve customer/subscription details)
 3. Import the current local prototype data if wanted:
 
 ```bash
@@ -74,6 +76,6 @@ npm run migrate:supabase
 
 1. apply `supabase/schema.sql` to the Catalyst Supabase project
 2. run the local-to-Supabase import once
-3. set the three Catalyst Supabase env vars in Vercel
-4. verify signup/login flows against Supabase-backed storage
-5. later, decide whether to keep custom auth or move to Supabase Auth fully
+3. set the Catalyst Supabase + app URL env vars in Vercel
+4. add the Stripe webhook secret (and Stripe secret key if used) in Vercel
+5. verify signup/login/billing webhook flows against Supabase-backed storage

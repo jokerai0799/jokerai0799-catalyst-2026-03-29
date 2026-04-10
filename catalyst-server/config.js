@@ -41,6 +41,8 @@ const STRIPE_BUSINESS_PRICE_ID = process.env.STRIPE_BUSINESS_PRICE_ID || 'price_
 const STRIPE_PERSONAL_PAYMENT_LINK = process.env.STRIPE_PERSONAL_PAYMENT_LINK || 'https://buy.stripe.com/5kQ5kF0K21r7gXR2n38Ra03';
 const STRIPE_BUSINESS_PAYMENT_LINK = process.env.STRIPE_BUSINESS_PAYMENT_LINK || 'https://buy.stripe.com/6oUfZjboGgm1fTNbXD8Ra02';
 const STRIPE_CUSTOMER_PORTAL_URL = process.env.STRIPE_CUSTOMER_PORTAL_URL || 'https://billing.stripe.com/p/login/6oUaEZfEWc5Lazte5L8Ra00';
+const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY || '';
+const STRIPE_WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET || '';
 
 module.exports = {
   ROOT,
@@ -62,4 +64,6 @@ module.exports = {
   STRIPE_PERSONAL_PAYMENT_LINK,
   STRIPE_BUSINESS_PAYMENT_LINK,
   STRIPE_CUSTOMER_PORTAL_URL,
+  STRIPE_SECRET_KEY,
+  STRIPE_WEBHOOK_SECRET,
 };
