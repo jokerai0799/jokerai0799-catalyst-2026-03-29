@@ -4347,6 +4347,34 @@ p {
   flex-wrap: wrap;
 }
 
+.qfu-quote-delete-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 42px;
+  padding: 0 14px;
+  border-radius: 12px;
+  border: 1px solid rgba(185, 28, 28, 0.18);
+  background: rgba(255, 255, 255, 0.7);
+  color: #b42318;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  transition: background 0.18s ease, border-color 0.18s ease, color 0.18s ease, transform 0.18s ease;
+}
+
+.qfu-quote-delete-btn:hover {
+  background: #fef3f2;
+  border-color: rgba(185, 28, 28, 0.3);
+  color: #912018;
+  transform: translateY(-1px);
+}
+
+.qfu-quote-delete-btn:focus {
+  outline: none;
+  box-shadow: 0 0 0 4px rgba(180, 35, 24, 0.08);
+}
+
 .qfu-stat-stack,
 .qfu-message-stack {
   display: grid;
