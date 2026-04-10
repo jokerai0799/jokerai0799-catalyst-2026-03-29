@@ -2414,6 +2414,61 @@ p {
   text-decoration: underline;
 }
 
+@media (max-width: 991px) {
+  .ud-footer {
+    padding-top: 72px;
+  }
+
+  .ud-footer .shape {
+    opacity: 0.24;
+  }
+
+  .ud-footer-widgets .row {
+    row-gap: 8px;
+  }
+
+  .ud-widget {
+    margin-bottom: 20px;
+  }
+
+  .ud-widget .ud-widget-title {
+    margin-bottom: 12px;
+  }
+
+  .ud-widget .ud-widget-links a {
+    margin-bottom: 5px;
+    line-height: 24px;
+  }
+
+  .ud-widget .ud-widget-brands {
+    display: none;
+  }
+
+  .ud-footer-bottom {
+    padding: 22px 0;
+    margin-top: 4px;
+  }
+
+  .ud-footer-bottom .row {
+    row-gap: 8px;
+  }
+
+  .ud-footer-bottom .ud-footer-bottom-left {
+    justify-content: flex-start;
+    flex-wrap: wrap;
+    row-gap: 4px;
+  }
+
+  .ud-footer-bottom .ud-footer-bottom-left a {
+    margin-right: 18px;
+    margin-bottom: 4px;
+  }
+
+  .ud-footer-bottom .ud-footer-bottom-right {
+    text-align: left;
+  }
+}
+
 @media (max-width: 767px) {
   .ud-footer {
     padding-top: 56px;
@@ -2423,33 +2478,42 @@ p {
     opacity: 0.28;
   }
 
+  .ud-footer-widgets .row {
+    row-gap: 4px;
+  }
+
   .ud-widget {
-    margin-bottom: 24px;
+    margin-bottom: 18px;
+    text-align: center;
   }
 
   .ud-widget .ud-footer-logo {
     max-width: 138px;
-    margin-bottom: 8px;
+    margin: 0 auto 8px;
   }
 
   .ud-widget .ud-widget-desc {
-    margin-bottom: 18px;
+    margin: 0 auto 18px;
     font-size: 14px;
     line-height: 22px;
-    max-width: none;
+    max-width: 320px;
+  }
+
+  .ud-widget .ud-widget-socials {
+    justify-content: center;
   }
 
   .ud-widget .ud-widget-socials a {
-    margin-right: 16px;
+    margin: 0 8px;
   }
 
   .ud-widget .ud-widget-title {
     font-size: 16px;
-    margin-bottom: 14px;
+    margin-bottom: 12px;
   }
 
   .ud-widget .ud-widget-links a {
-    margin-bottom: 6px;
+    margin-bottom: 5px;
     font-size: 14px;
     line-height: 24px;
   }
@@ -2459,8 +2523,8 @@ p {
   }
 
   .ud-footer-bottom {
-    padding: 20px 0;
-    margin-top: 6px;
+    padding: 18px 0;
+    margin-top: 2px;
   }
 
   .ud-footer-bottom .ud-footer-bottom-left {
@@ -2479,7 +2543,7 @@ p {
 
   .ud-footer-bottom .ud-footer-bottom-right {
     text-align: center;
-    margin-top: 8px;
+    margin-top: 6px;
     font-size: 14px;
   }
 }
