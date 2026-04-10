@@ -2,6 +2,21 @@ import { api } from '../../core/api.js';
 import { $, $all, clear, create, setNotice, show, text } from '../../core/dom.js';
 import { dismissWorkspaceAlert, getAttentionSignature, isWorkspaceAlertDismissed } from '../../core/store.js';
 import { daysBetween, formatCurrency, formatEventTime, relativeFollowUpLabel, statusSortValue } from '../../core/utils.js';
+
+function formatBillingDate(value) {
+  if (!value) return '—';
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return '—';
+  return new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }).format(date);
+}
+
+function titleCase(value) {
+  return String(value || '')
+    .split(/[_\s-]+/)
+    .filter(Boolean)
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(' ');
+}
 import { bindChaseActions } from '../chase-list/index.js';
 import { bindQuoteInteractions, loadQuoteIntoEditor, renderAllQuotesTable, renderDashboardAttentionTable, renderQuoteDetail, resetQuoteEditor } from '../quotes/index.js';
 
@@ -269,6 +284,37 @@ function renderStaleQuotes(openQuotes) {
   });
 }
 
+function renderBillingPanel(state) {
+  const billing = state.workspace?.billing || {};
+  text($('#qfu-billing-plan-name'), titleCase(billing.planTier || state.workspace?.planTier || 'personal'));
+  text($('#qfu-billing-status'), titleCase(billing.billingStatus || 'inactive'));
+  text($('#qfu-billing-currency'), billing.billingCurrency || 'GBP');
+  text($('#qfu-billing-price-id'), billing.stripePriceId || '—');
+  const periodRow = $('#qfu-billing-period-row');
+  const hasPeriodEnd = Boolean(billing.stripeCurrentPeriodEnd);
+  if (periodRow) periodRow.hidden = !hasPeriodEnd;
+  text($('#qfu-billing-period-end'), formatBillingDate(billing.stripeCurrentPeriodEnd));
+
+  const manageLink = $('#qfu-manage-billing-link');
+  if (manageLink) {
+    manageLink.setAttribute('href', billing.portalUrl || '#');
+    manageLink.classList.toggle('is-disabled', !billing.portalUrl);
+    manageLink.setAttribute('aria-disabled', billing.portalUrl ? 'false' : 'true');
+  }
+
+  const upgradeLink = $('#qfu-upgrade-plan-link');
+  if (upgradeLink) {
+    const upgradeHref = billing.checkoutLinks?.business || '#';
+    upgradeLink.setAttribute('href', upgradeHref);
+    const isBusiness = (billing.planTier || state.workspace?.planTier) === 'business';
+    upgradeLink.textContent = isBusiness ? 'Open Business checkout' : 'Upgrade to Business';
+    upgradeLink.hidden = false;
+  }
+
+  const teamUpgradeLink = document.querySelector('[data-upgrade-target="business"]');
+  if (teamUpgradeLink) teamUpgradeLink.setAttribute('href', billing.checkoutLinks?.business || '../landing-page/index.html#pricing');
+}
+
 function setTopbar(workspace) {
   text(document.querySelector('.qfu-workspace-panel strong'), workspace.name);
   text(document.querySelector('.qfu-dashboard-kicker'), 'Today');
@@ -483,6 +529,7 @@ export function renderDashboard(state, refreshApp) {
   bindQuoteInteractions(state, refreshApp);
   bindChaseActions(refreshApp);
   bindSharedLinks(state, refreshApp, alertSignature);
+  renderBillingPanel(state);
 
   if (!$('#quote-id')?.value) resetQuoteEditor(state.workspace, state.user.name);
   else {

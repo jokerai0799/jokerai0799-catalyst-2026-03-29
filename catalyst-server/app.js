@@ -221,6 +221,13 @@ async function handleApi(req, res, url) {
           firstFollowupDays: 2,
           secondFollowupDays: 5,
           notes: withWorkspaceMeta({ createdAt }, 'Keep quote follow ups concise, direct, and easy to reply to.', { planTier: 'personal' }),
+          billingPlanTier: 'personal',
+          billingStatus: 'inactive',
+          billingCurrency: 'GBP',
+          stripeCustomerId: '',
+          stripeSubscriptionId: '',
+          stripePriceId: '',
+          stripeCurrentPeriodEnd: null,
           createdAt,
         };
         user = {
@@ -276,6 +283,13 @@ async function handleApi(req, res, url) {
       firstFollowupDays: 2,
       secondFollowupDays: 5,
       notes: withWorkspaceMeta({ createdAt }, 'Keep quote follow ups concise, direct, and easy to reply to.', { planTier }),
+      billingPlanTier: planTier,
+      billingStatus: 'inactive',
+      billingCurrency: 'GBP',
+      stripeCustomerId: '',
+      stripeSubscriptionId: '',
+      stripePriceId: '',
+      stripeCurrentPeriodEnd: null,
       createdAt,
     };
     const user = {

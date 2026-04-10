@@ -56,6 +56,13 @@ function mapWorkspaceFromDb(row) {
     firstFollowupDays: Number(row.first_followup_days || 2),
     secondFollowupDays: Number(row.second_followup_days || 5),
     notes: row.notes || '',
+    billingPlanTier: row.billing_plan_tier || null,
+    billingStatus: row.billing_status || null,
+    billingCurrency: row.billing_currency || null,
+    stripeCustomerId: row.stripe_customer_id || '',
+    stripeSubscriptionId: row.stripe_subscription_id || '',
+    stripePriceId: row.stripe_price_id || '',
+    stripeCurrentPeriodEnd: row.stripe_current_period_end ? isoDate(row.stripe_current_period_end) : null,
     createdAt: isoDate(row.created_at),
   };
 }
@@ -129,6 +136,13 @@ function mapWorkspaceToDb(row) {
     first_followup_days: row.firstFollowupDays,
     second_followup_days: row.secondFollowupDays,
     notes: row.notes || '',
+    billing_plan_tier: row.billingPlanTier || null,
+    billing_status: row.billingStatus || null,
+    billing_currency: row.billingCurrency || null,
+    stripe_customer_id: row.stripeCustomerId || null,
+    stripe_subscription_id: row.stripeSubscriptionId || null,
+    stripe_price_id: row.stripePriceId || null,
+    stripe_current_period_end: row.stripeCurrentPeriodEnd ? isoDate(row.stripeCurrentPeriodEnd) : null,
     created_at: isoDate(row.createdAt),
   };
 }

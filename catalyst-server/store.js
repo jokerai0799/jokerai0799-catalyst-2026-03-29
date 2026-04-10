@@ -11,6 +11,13 @@ const {
   today,
   uid,
 } = require('./utils');
+const {
+  STRIPE_BUSINESS_PAYMENT_LINK,
+  STRIPE_BUSINESS_PRICE_ID,
+  STRIPE_CUSTOMER_PORTAL_URL,
+  STRIPE_PERSONAL_PAYMENT_LINK,
+  STRIPE_PERSONAL_PRICE_ID,
+} = require('./config');
 const { isSupabaseReady, loadStore: loadSupabaseStore, saveStore: saveSupabaseStore } = require('./supabase');
 
 const WORKSPACE_META_PATTERN = /^<!--qfu:([^>]+)-->/;
@@ -46,6 +53,7 @@ function withWorkspaceMeta(workspace, notes, overrides = {}) {
 }
 
 function getWorkspacePlanTier(workspace) {
+  if (workspace?.billingPlanTier === 'business' || workspace?.billingPlanTier === 'personal') return workspace.billingPlanTier;
   return parseWorkspaceMeta(workspace).planTier;
 }
 
@@ -56,6 +64,26 @@ function isWorkspaceTrialActive(workspace) {
 
 function isTeamFeatureUnlocked(workspace) {
   return getWorkspacePlanTier(workspace) === 'business' && !isWorkspaceTrialActive(workspace);
+}
+
+function getWorkspaceBilling(workspace) {
+  const planTier = getWorkspacePlanTier(workspace);
+  const defaultPriceId = planTier === 'business' ? STRIPE_BUSINESS_PRICE_ID : STRIPE_PERSONAL_PRICE_ID;
+  return {
+    planTier,
+    billingStatus: workspace?.billingStatus || (isWorkspaceTrialActive(workspace) ? 'trialing' : 'inactive'),
+    billingCurrency: workspace?.billingCurrency || 'GBP',
+    stripeCustomerId: workspace?.stripeCustomerId || '',
+    stripeSubscriptionId: workspace?.stripeSubscriptionId || '',
+    stripePriceId: workspace?.stripePriceId || defaultPriceId,
+    stripeCurrentPeriodEnd: workspace?.stripeCurrentPeriodEnd || null,
+    checkoutLinks: {
+      personal: STRIPE_PERSONAL_PAYMENT_LINK,
+      business: STRIPE_BUSINESS_PAYMENT_LINK,
+    },
+    portalUrl: STRIPE_CUSTOMER_PORTAL_URL || '',
+    upgradeTarget: 'business',
+  };
 }
 
 function findUserByEmail(store, email) {
@@ -199,15 +227,17 @@ function buildBootstrap(store, user) {
   teamMembers.forEach((member) => {
     member.activeQuotes = quotes.filter((quote) => quote.owner === member.name && !['Won', 'Lost', 'Archived'].includes(quote.status)).length;
   });
+  const billing = getWorkspaceBilling(workspace);
   return {
     user: sanitizeUser(user),
     workspace: {
       ...workspace,
       notes: getVisibleWorkspaceNotes(workspace),
-      planTier: meta.planTier,
+      planTier: billing.planTier,
       trialEndsAt: meta.trialEndsAt,
       trialActive: meta.trialEndsAt >= today(),
       teamEnabled: isTeamFeatureUnlocked(workspace),
+      billing,
     },
     quotes,
     teamMembers,
@@ -255,4 +285,5 @@ module.exports = {
   normalizeRole,
   isWorkspaceTrialActive,
   isTeamFeatureUnlocked,
+  getWorkspaceBilling,
 };

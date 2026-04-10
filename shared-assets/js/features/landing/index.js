@@ -6,6 +6,11 @@ const PLAN_BASELINES_GBP = {
   business: 59.99,
 };
 
+const PLAN_CHECKOUT_LINKS = {
+  personal: 'https://buy.stripe.com/5kQ5kF0K21r7gXR2n38Ra03',
+  business: 'https://buy.stripe.com/6oUfZjboGgm1fTNbXD8Ra02',
+};
+
 const CURRENCY_RATES = {
   GBP: 1,
   USD: 1.27,
@@ -50,8 +55,13 @@ function localizePricing() {
   });
 
   document.querySelectorAll('[data-plan-checkout]').forEach((node) => {
-    const stripeLink = node.getAttribute('data-stripe-link');
+    const plan = node.getAttribute('data-plan-checkout');
+    const stripeLink = node.getAttribute('data-stripe-link') || PLAN_CHECKOUT_LINKS[plan] || '';
     if (stripeLink) node.setAttribute('href', stripeLink);
+  });
+
+  document.querySelectorAll('[data-pricing-anchor]').forEach((node) => {
+    node.setAttribute('href', '#pricing');
   });
 }
 

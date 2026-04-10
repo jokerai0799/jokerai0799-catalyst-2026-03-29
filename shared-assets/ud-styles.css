@@ -4680,6 +4680,10 @@ p {
   .qfu-auth-subtitle {
     font-size: 15px;
   }
+
+  .qfu-billing-summary-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 .qfu-auth-page .ud-page-banner {
@@ -4822,6 +4826,61 @@ p {
 
 .qfu-team-plan-notice {
   max-width: 760px;
+}
+
+.qfu-billing-panel {
+  height: 100%;
+}
+
+.qfu-billing-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.qfu-billing-summary-grid > div,
+.qfu-billing-meta-row {
+  padding: 14px 16px;
+  border-radius: 16px;
+  border: 1px solid #e4ebf4;
+  background: #f8fafc;
+}
+
+.qfu-billing-summary-grid label,
+.qfu-billing-meta-row label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 12px;
+  color: #667085;
+}
+
+.qfu-billing-summary-grid strong,
+.qfu-billing-meta-row strong {
+  display: block;
+  color: #1d2144;
+  font-size: 15px;
+  overflow-wrap: anywhere;
+}
+
+.qfu-billing-meta-row {
+  margin-bottom: 16px;
+}
+
+.qfu-billing-actions {
+  display: grid;
+  gap: 10px;
+}
+
+.qfu-billing-actions .ud-main-btn {
+  width: 100%;
+  justify-content: center;
+}
+
+.ud-main-btn.is-disabled,
+.ud-main-btn[aria-disabled="true"] {
+  pointer-events: none;
+  opacity: 0.6;
 }
 
 .qfu-auth-actions-stack {
