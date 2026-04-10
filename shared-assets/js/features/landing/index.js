@@ -49,10 +49,6 @@ function localizePricing() {
     node.textContent = `${formatLocalizedPrice(localizedAmount, locale, currency)}/mo`;
   });
 
-  document.querySelectorAll('[data-plan-note]').forEach((node) => {
-    node.textContent = `Converted from the £${PLAN_BASELINES_GBP[node.getAttribute('data-plan-note')]?.toFixed(2) || '0.00'} GBP base · billed monthly`;
-  });
-
   document.querySelectorAll('[data-plan-checkout]').forEach((node) => {
     const stripeLink = node.getAttribute('data-stripe-link');
     if (stripeLink) node.setAttribute('href', stripeLink);
