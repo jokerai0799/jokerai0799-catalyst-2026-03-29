@@ -12,11 +12,6 @@
       "permanent": true
     },
     {
-      "source": "/landing-page/index.html",
-      "destination": "/",
-      "permanent": true
-    },
-    {
       "source": "/(.*)",
       "has": [
         {
