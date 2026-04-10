@@ -201,6 +201,12 @@ p {
   background: var(--heading-color);
 }
 
+@media (max-width: 991px) {
+  .back-to-top {
+    display: none !important;
+  }
+}
+
 /* ===== Header CSS ===== */
 .ud-header {
   position: absolute;
@@ -4157,6 +4163,44 @@ p {
     height: auto;
     border-right: 0;
     border-bottom: 1px solid #d8e2f4;
+    padding: 16px 14px 14px;
+    gap: 14px;
+  }
+
+  .qfu-app-sidebar-top {
+    gap: 12px;
+  }
+
+  .qfu-workspace-panel {
+    padding: 10px 12px 12px;
+  }
+
+  .qfu-app-nav-vertical {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .qfu-app-nav-vertical a {
+    flex: 0 0 auto;
+    padding: 8px 12px;
+    font-size: 13px;
+  }
+
+  .qfu-app-sidebar-bottom {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+    margin-top: 0;
+  }
+
+  .qfu-app-sidebar-bottom .ud-main-btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .qfu-app-sidebar-bottom .qfu-app-logout-link {
+    grid-column: 1 / -1;
+    margin: 2px 2px 0;
   }
 
   .qfu-app-topbar {
@@ -4170,7 +4214,24 @@ p {
   }
 
   .qfu-app-sidebar {
-    padding: 16px 14px;
+    padding: 14px 12px 12px;
+  }
+
+  .qfu-app-brand {
+    gap: 10px;
+  }
+
+  .qfu-workspace-panel strong {
+    font-size: 13px;
+  }
+
+  .qfu-app-nav-vertical a {
+    padding: 8px 10px;
+    font-size: 12px;
+  }
+
+  .qfu-app-sidebar-bottom {
+    grid-template-columns: 1fr 1fr;
   }
 }
 
