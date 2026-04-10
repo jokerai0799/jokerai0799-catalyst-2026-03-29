@@ -289,8 +289,12 @@ function applyReadOnlyState(state) {
   const strip = $('#qfu-readonly-strip');
   if (strip) {
     strip.hidden = !readOnly;
-    strip.textContent = state.workspace?.readOnlyReason || 'This workspace is read-only right now.';
+    const copy = strip.querySelector('.qfu-readonly-strip-copy span');
+    if (copy) copy.textContent = state.workspace?.readOnlyReason || 'This workspace is read-only right now.';
   }
+
+  const subscribeLink = $('#qfu-readonly-subscribe-link');
+  if (subscribeLink) subscribeLink.setAttribute('href', '../landing-page/index.html#pricing');
 
   const lockedSelectors = [
     '#qfu-quote-form input',
