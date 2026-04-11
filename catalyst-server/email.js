@@ -46,12 +46,12 @@ async function sendVerificationEmail(req, user) {
   const firstName = escapeHtml((user.name || '').trim().split(/\s+/)[0] || 'there');
   return sendEmail({
     to: user.email,
-    subject: 'Verify your Catalyst email',
+    subject: 'Verify your Quote Chaser email',
     html: `
       <div style="font-family:Inter,Arial,sans-serif;max-width:560px;margin:0 auto;padding:24px;color:#0f172a;line-height:1.6">
         <h1 style="font-size:24px;margin:0 0 16px">Verify your email</h1>
         <p style="margin:0 0 16px">Hi ${firstName},</p>
-        <p style="margin:0 0 16px">Click below to verify your email and activate your Catalyst workspace.</p>
+        <p style="margin:0 0 16px">Click below to verify your email and activate your Quote Chaser workspace.</p>
         <p style="margin:24px 0">
           <a href="${verifyUrl}" style="display:inline-block;background:#0284c7;color:#ffffff;text-decoration:none;padding:12px 18px;border-radius:12px;font-weight:600">Verify email</a>
         </p>
@@ -68,12 +68,12 @@ async function sendPasswordResetEmail(req, user) {
   const firstName = escapeHtml((user.name || '').trim().split(/\s+/)[0] || 'there');
   return sendEmail({
     to: user.email,
-    subject: 'Reset your Catalyst password',
+    subject: 'Reset your Quote Chaser password',
     html: `
       <div style="font-family:Inter,Arial,sans-serif;max-width:560px;margin:0 auto;padding:24px;color:#0f172a;line-height:1.6">
         <h1 style="font-size:24px;margin:0 0 16px">Reset your password</h1>
         <p style="margin:0 0 16px">Hi ${firstName},</p>
-        <p style="margin:0 0 16px">Click below to choose a new password for your Catalyst workspace.</p>
+        <p style="margin:0 0 16px">Click below to choose a new password for your Quote Chaser workspace.</p>
         <p style="margin:24px 0">
           <a href="${resetUrl}" style="display:inline-block;background:#0284c7;color:#ffffff;text-decoration:none;padding:12px 18px;border-radius:12px;font-weight:600">Reset password</a>
         </p>
