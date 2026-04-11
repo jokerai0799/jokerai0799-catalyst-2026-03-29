@@ -76,5 +76,17 @@
         <p>Response times may vary depending on volume, severity, weekends, holidays, and the nature of the request.</p>
       </div></div></div></div>
     </section>
+    <script>
+      const navbarToggler = document.querySelector('.navbar-toggler');
+      const navbarCollapse = document.querySelector('.navbar-collapse');
+
+      if (navbarToggler && navbarCollapse) {
+        navbarToggler.addEventListener('click', () => {
+          const isOpen = navbarCollapse.classList.toggle('show');
+          navbarToggler.classList.toggle('active', isOpen);
+          navbarToggler.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+        });
+      }
+    </script>
   </body>
 </html>
