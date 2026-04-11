@@ -399,7 +399,7 @@ export function bindQuoteInteractions(state, refreshApp) {
       }
       const quoteId = $('#quote-id').value;
       if (!quoteId) return setNotice($('#qfu-quote-form-notice'), 'Load a quote into the editor first.', 'error');
-      const confirmed = window.confirm('Delete this quote permanently from the prototype workspace?');
+      const confirmed = window.confirm('Delete this quote permanently from your workspace?');
       if (!confirmed) return;
       await api.deleteQuote(quoteId);
       const remaining = Math.max(0, state.quotes.length - 1);
