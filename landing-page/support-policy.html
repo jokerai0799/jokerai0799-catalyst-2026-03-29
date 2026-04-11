@@ -33,18 +33,29 @@
                 </span>
               </a>
 
-              <div class="navbar-collapse" style="display:flex; align-items:center; justify-content:space-between; gap:20px; width:100%;">
-                <ul id="nav" class="navbar-nav mx-auto" style="flex-direction:row; gap:24px;">
+              <button class="navbar-toggler" type="button" aria-label="Toggle navigation" aria-expanded="false">
+                <span class="toggler-icon"> </span>
+                <span class="toggler-icon"> </span>
+                <span class="toggler-icon"> </span>
+              </button>
+
+              <div class="navbar-collapse" id="navMenu">
+                <ul id="nav" class="navbar-nav mx-auto">
                   <li class="nav-item"><a class="ud-menu-scroll" href="/#home">Home</a></li>
                   <li class="nav-item"><a class="ud-menu-scroll" href="/#about">About</a></li>
                   <li class="nav-item"><a class="ud-menu-scroll" href="/#pricing">Pricing</a></li>
                   <li class="nav-item"><a class="ud-menu-scroll" href="/#contact">Contact</a></li>
                 </ul>
 
-                <div class="navbar-btn d-none d-sm-inline-block">
-                  <a href="/landing-page/login.html" class="ud-main-btn ud-login-btn">Sign In</a>
-                  <a class="ud-main-btn ud-white-btn" href="/landing-page/signup.html">Sign Up</a>
+                <div class="qfu-mobile-nav-actions d-sm-none">
+                  <a href="login.html" class="ud-main-btn ud-login-btn">Sign In</a>
+                  <a href="signup.html" class="ud-main-btn ud-white-btn">Sign Up</a>
                 </div>
+              </div>
+
+              <div class="navbar-btn d-none d-sm-inline-block">
+                <a href="login.html" class="ud-main-btn ud-login-btn">Sign In</a>
+                <a class="ud-main-btn ud-white-btn" href="signup.html">Sign Up</a>
               </div>
             </nav>
           </div>
