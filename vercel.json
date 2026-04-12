@@ -22,6 +22,21 @@
       "permanent": true
     },
     {
+      "source": "/estimate-follow-up-software",
+      "destination": "/estimate-follow-up-software/",
+      "permanent": true
+    },
+    {
+      "source": "/quote-chasing-software",
+      "destination": "/quote-chasing-software/",
+      "permanent": true
+    },
+    {
+      "source": "/quote-management-software-for-trades",
+      "destination": "/quote-management-software-for-trades/",
+      "permanent": true
+    },
+    {
       "source": "/landing-page/quote-follow-up-software.html",
       "destination": "/quote-follow-up-software/",
       "permanent": true
