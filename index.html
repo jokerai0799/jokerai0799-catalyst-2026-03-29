@@ -1,13 +1,27 @@
+<!-- =========
+
+	Template Name: Play
+	Author: UIdeck
+	Author URI: https://uideck.com/
+	Support: https://uideck.com/support/
+	Version: 1.1
+
+========== -->
+
 <!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta http-equiv="refresh" content="0; url=./landing-page/index.html" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Quote Chaser | Quote Follow-Up Software for Trades & Service Teams</title>
+
+    <!-- Primary Meta Tags -->
     <meta name="title" content="Quote Chaser | Quote Follow-Up Software for Trades & Service Teams" />
     <meta name="description" content="Track every quote, follow up on time, and turn more estimates into booked work with simple quote follow-up software for trades and service teams." />
     <link rel="canonical" href="https://quotechaser.online/" />
+
+    <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="Quote Chaser" />
     <meta property="og:url" content="https://quotechaser.online/" />
@@ -16,11 +30,15 @@
     <meta property="og:image" content="https://quotechaser.online/shared-assets/images/social/quotechaser-social-preview.jpg" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
+
+    <!-- Twitter -->
     <meta property="twitter:card" content="summary_large_image" />
     <meta property="twitter:url" content="https://quotechaser.online/" />
     <meta property="twitter:title" content="Quote Chaser | Quote Follow-Up Software for Trades & Service Teams" />
     <meta property="twitter:description" content="Track every quote, follow up on time, and turn more estimates into booked work with simple quote follow-up software for trades and service teams." />
     <meta property="twitter:image" content="https://quotechaser.online/shared-assets/images/social/quotechaser-social-preview.jpg" />
+
+    <!--====== Favicon Icon ======-->
     <link rel="icon" href="./shared-assets/images/favicon.svg" type="image/svg+xml" />
     <link rel="icon" href="./shared-assets/images/favicon-32.png" sizes="32x32" type="image/png" />
     <link rel="apple-touch-icon" href="./shared-assets/images/apple-touch-icon.png" sizes="180x180" />
@@ -35,11 +53,1149 @@
         "logo": "https://quotechaser.online/shared-assets/images/logo/qfu-logo-dark.svg"
       }
     </script>
-    <script>
-      window.location.replace('./landing-page/index.html');
-    </script>
+
+    <!-- ===== All CSS files ===== -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
+    <link rel="stylesheet" href="./landing-page/assets/css/lineicons.css" />
+    <link rel="stylesheet" href="./shared-assets/ud-styles.css" />
   </head>
-  <body>
-    <p>Redirecting to <a href="./landing-page/index.html">the landing page</a>…</p>
+  <body class="qfu-landing-page">
+    <!-- ====== Header Start ====== -->
+    <header class="ud-header">
+      <div class="container">
+        <div class="row">
+          <div class="col-lg-12">
+            <nav class="navbar navbar-expand-lg">
+              <a class="navbar-brand" href="/" aria-label="Quote Chaser home">
+                <span class="qfu-brand-lockup">
+                  <img src="./shared-assets/images/logo/icon.svg" alt="" class="qfu-brand-icon" />
+                  <span class="qfu-brand-wordmark">
+                    <span class="qfu-brand-quote">Quote</span>
+                    <span class="qfu-brand-followup">Chaser</span>
+                  </span>
+                </span>
+              </a>
+              <button class="navbar-toggler" type="button" aria-label="Toggle navigation" aria-expanded="false">
+                <span class="toggler-icon"> </span>
+                <span class="toggler-icon"> </span>
+                <span class="toggler-icon"> </span>
+              </button>
+
+              <div class="navbar-collapse" id="navMenu">
+                <ul id="nav" class="navbar-nav mx-auto">
+                  <li class="nav-item">
+                    <a class="ud-menu-scroll" href="#home">Home</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="ud-menu-scroll" href="#about">About</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="ud-menu-scroll" href="#pricing">Pricing</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="ud-menu-scroll" href="#contact">Contact</a>
+                  </li>
+                </ul>
+                <div class="qfu-mobile-nav-actions d-sm-none">
+                  <a href="/landing-page/login.html" class="ud-main-btn ud-login-btn">Sign In</a>
+                  <a href="/landing-page/signup.html" class="ud-main-btn ud-white-btn">Sign Up</a>
+                </div>
+              </div>
+
+              <div class="navbar-btn d-none d-sm-inline-block">
+                <a href="/landing-page/login.html" class="ud-main-btn ud-login-btn">
+                  Sign In
+                </a>
+                <a class="ud-main-btn ud-white-btn" href="/landing-page/signup.html">
+                  Sign Up
+                </a>
+              </div>
+            </nav>
+          </div>
+        </div>
+      </div>
+    </header>
+    <!-- ====== Header End ====== -->
+
+
+
+
+    <!-- ====== Hero Start ====== -->
+    <section class="ud-hero" id="home">
+      <div class="container">
+        <div class="row">
+          <div class="col-lg-12">
+            <div class="ud-hero-content wow fadeInUp" data-wow-delay=".2s">
+              <h1 class="ud-hero-title">
+                Quote Chaser Software for Trades, Service Teams, and More
+              </h1>
+              <p class="ud-hero-desc">
+                Track every quote, follow up on time, and turn more estimates
+                into booked work with a simple system built for service teams.
+              </p>
+              <ul class="ud-hero-buttons">
+                <li>
+                  <a href="/landing-page/signup.html" class="ud-main-btn ud-white-btn">
+                    Start 7 Day Trial
+                  </a>
+                </li>
+                <li>
+                  <a href="#about" class="ud-main-btn ud-link-btn">
+                    Learn More <i class="lni lni-arrow-right"></i>
+                  </a>
+                </li>
+              </ul>
+            </div>
+            <div
+              class="ud-hero-brands-wrapper wow fadeInUp"
+              data-wow-delay=".3s"
+            >
+              <img src="./shared-assets/images/hero/brand.svg" alt="platform symbols" />
+            </div>
+            <div class="ud-hero-image wow fadeInUp" data-wow-delay=".25s">
+              <div class="qfu-hero-demo" aria-label="Quote Chaser product demo">
+                <div class="qfu-demo-sidebar">
+                  <div class="qfu-demo-sidebar-brand">
+                    <img src="./shared-assets/images/logo/icon.svg" alt="" />
+                    <span>Quote Chaser</span>
+                  </div>
+                  <ul class="qfu-demo-nav">
+                    <li class="is-active">Dashboard</li>
+                    <li>Quotes</li>
+                    <li>Chase List</li>
+                    <li>Playbook</li>
+                    <li>Settings</li>
+                  </ul>
+                </div>
+                <div class="qfu-demo-main">
+                  <div class="qfu-demo-toolbar">
+                    <div>
+                      <p class="qfu-demo-kicker">Workspace preview</p>
+                      <h3>Quote pipeline overview</h3>
+                    </div>
+                    <span class="qfu-demo-badge">Today</span>
+                  </div>
+                  <div class="qfu-demo-metrics">
+                    <div class="qfu-demo-metric-card qfu-demo-metric-card-blue">
+                      <span>Open pipeline</span>
+                      <strong data-currency-value="3380">£3,380</strong>
+                      <small>Quotes still in play</small>
+                    </div>
+                    <div class="qfu-demo-metric-card qfu-demo-metric-card-amber">
+                      <span>Due today</span>
+                      <strong>2</strong>
+                      <small>Quotes needing action now</small>
+                    </div>
+                    <div class="qfu-demo-metric-card qfu-demo-metric-card-green">
+                      <span>Won revenue</span>
+                      <strong data-currency-value="1450">£1,450</strong>
+                      <small>Closed business so far</small>
+                    </div>
+                  </div>
+                  <div class="qfu-demo-tracking-bar">
+                    <div class="qfu-demo-track-item qfu-demo-track-blue">
+                      <span>Sent</span>
+                      <strong data-currency-value="2400">£2,400</strong>
+                    </div>
+                    <div class="qfu-demo-track-item qfu-demo-track-amber">
+                      <span>Follow-up due</span>
+                      <strong data-currency-value="980">£980</strong>
+                    </div>
+                    <div class="qfu-demo-track-item qfu-demo-track-green">
+                      <span>Won</span>
+                      <strong data-currency-value="1450">£1,450</strong>
+                    </div>
+                  </div>
+                  <div class="qfu-demo-mobile-story" aria-label="Mobile quote workflow snapshot">
+                    <div class="qfu-demo-mobile-story-head">
+                      <p>What needs attention</p>
+                      <span>Quotes to chase and close</span>
+                    </div>
+                    <div class="qfu-demo-mobile-list">
+                      <div class="qfu-demo-mobile-item qfu-demo-mobile-item-amber">
+                        <div class="qfu-demo-mobile-item-top">
+                          <strong>Reed Electrical</strong>
+                          <span class="qfu-status qfu-status-amber">Due today</span>
+                        </div>
+                        <p>Consumer unit upgrade</p>
+                        <div class="qfu-demo-mobile-item-meta">
+                          <span data-currency-value="980">£980</span>
+                          <small>Send a quick follow-up now</small>
+                        </div>
+                      </div>
+                      <div class="qfu-demo-mobile-item qfu-demo-mobile-item-blue">
+                        <div class="qfu-demo-mobile-item-top">
+                          <strong>Jones Property Lets</strong>
+                          <span class="qfu-status qfu-status-blue">Sent</span>
+                        </div>
+                        <p>Boiler replacement quote</p>
+                        <div class="qfu-demo-mobile-item-meta">
+                          <span data-currency-value="2400">£2,400</span>
+                          <small>Awaiting reply</small>
+                        </div>
+                      </div>
+                      <div class="qfu-demo-mobile-item qfu-demo-mobile-item-green">
+                        <div class="qfu-demo-mobile-item-top">
+                          <strong>Walker Homes</strong>
+                          <span class="qfu-status qfu-status-green">Won</span>
+                        </div>
+                        <p>Kitchen repaint and touch-ups</p>
+                        <div class="qfu-demo-mobile-item-meta">
+                          <span data-currency-value="1450">£1,450</span>
+                          <small>Booked and closed</small>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="qfu-demo-content-grid">
+                    <div class="qfu-demo-panel">
+                      <div class="qfu-demo-panel-head">
+                        <p>Pipeline</p>
+                        <span>Quote pipeline view</span>
+                      </div>
+                      <div class="qfu-demo-table-wrap">
+                        <table class="qfu-demo-table">
+                          <thead>
+                            <tr>
+                              <th>Client</th>
+                              <th>Quote</th>
+                              <th>Value</th>
+                              <th>Status</th>
+                              <th>Next</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            <tr>
+                              <td>Jones Property Lets</td>
+                              <td>Boiler replacement quote</td>
+                              <td class="qfu-value qfu-value-blue" data-currency-value="2400">£2,400</td>
+                              <td><span class="qfu-status qfu-status-blue">Sent</span></td>
+                              <td>20 Mar</td>
+                            </tr>
+                            <tr>
+                              <td>Reed Electrical</td>
+                              <td>Consumer unit upgrade</td>
+                              <td class="qfu-value qfu-value-amber" data-currency-value="980">£980</td>
+                              <td><span class="qfu-status qfu-status-amber">Follow-up due</span></td>
+                              <td>Today</td>
+                            </tr>
+                            <tr>
+                              <td>Walker Homes</td>
+                              <td>Kitchen repaint and touch-ups</td>
+                              <td class="qfu-value qfu-value-green" data-currency-value="1450">£1,450</td>
+                              <td><span class="qfu-status qfu-status-green">Won</span></td>
+                              <td>None</td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <img
+                src="./shared-assets/images/hero/dotted-shape.svg"
+                alt="shape"
+                class="shape shape-1"
+              />
+              <img
+                src="./shared-assets/images/hero/dotted-shape.svg"
+                alt="shape"
+                class="shape shape-2"
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+    <!-- ====== Hero End ====== -->
+
+    <!-- ====== Features Start ====== -->
+    <section id="features" class="ud-features">
+      <div class="container">
+        <div class="row">
+          <div class="col-lg-12">
+            <div class="ud-section-title">
+              <span>Features</span>
+              <h2>Main Features of Quote Chaser</h2>
+              <p>
+                Keep every quote visible, follow up on time, and give your team
+                a simpler way to turn more estimates into booked work.
+              </p>
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-xl-3 col-lg-3 col-sm-6">
+            <div class="ud-single-feature wow fadeInUp" data-wow-delay=".1s">
+              <div class="ud-feature-icon">
+                <i class="lni lni-gift"></i>
+              </div>
+              <div class="ud-feature-content">
+                <h3 class="ud-feature-title">Track Every Sent Quote</h3>
+                <p class="ud-feature-desc">
+                  See quote value, status, sent date, and next action in one
+                  simple workspace your team can actually use.
+                </p>
+                <a href="#about" class="ud-feature-link">
+                  Learn More
+                </a>
+              </div>
+            </div>
+          </div>
+          <div class="col-xl-3 col-lg-3 col-sm-6">
+            <div class="ud-single-feature wow fadeInUp" data-wow-delay=".15s">
+              <div class="ud-feature-icon">
+                <i class="lni lni-move"></i>
+              </div>
+              <div class="ud-feature-content">
+                <h3 class="ud-feature-title">Know Who to Chase Today</h3>
+                <p class="ud-feature-desc">
+                  Surface overdue and due-today follow ups fast, so nothing slips
+                  through the cracks or gets forgotten.
+                </p>
+                <a href="#features" class="ud-feature-link">
+                  Learn More
+                </a>
+              </div>
+            </div>
+          </div>
+          <div class="col-xl-3 col-lg-3 col-sm-6">
+            <div class="ud-single-feature wow fadeInUp" data-wow-delay=".2s">
+              <div class="ud-feature-icon">
+                <i class="lni lni-layout"></i>
+              </div>
+              <div class="ud-feature-content">
+                <h3 class="ud-feature-title">Clear Colour Status Tracking</h3>
+                <p class="ud-feature-desc">
+                  Spot sent, follow up due, and won quotes at a glance with
+                  clean colour coding across the whole pipeline.
+                </p>
+                <a href="#features" class="ud-feature-link">
+                  Learn More
+                </a>
+              </div>
+            </div>
+          </div>
+          <div class="col-xl-3 col-lg-3 col-sm-6">
+            <div class="ud-single-feature wow fadeInUp" data-wow-delay=".25s">
+              <div class="ud-feature-icon">
+                <i class="lni lni-layers"></i>
+              </div>
+              <div class="ud-feature-content">
+                <h3 class="ud-feature-title">Win More Booked Work</h3>
+                <p class="ud-feature-desc">
+                  Build a repeatable quote follow up process that helps convert
+                  more estimates without adding a bloated CRM.
+                </p>
+                <a href="#pricing" class="ud-feature-link">
+                  Learn More
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+    <!-- ====== Features End ====== -->
+
+    <!-- ====== Pricing Start ====== -->
+    <section id="pricing" class="ud-pricing">
+      <div class="container">
+        <div class="row">
+          <div class="col-lg-12">
+            <div class="ud-section-title mx-auto text-center">
+              <span>Pricing</span>
+              <h2>Simple plans for solo users and teams</h2>
+              <p>
+                Choose a personal workspace for yourself, or a business
+                workspace if you need to add team members.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div class="row g-0 align-items-center justify-content-center">
+          <div class="col-lg-4 col-md-6 col-sm-10">
+            <div
+              class="ud-single-pricing first-item wow fadeInUp"
+              data-wow-delay=".15s"
+            >
+              <div class="ud-pricing-header">
+                <h3>PERSONAL</h3>
+                <h4 data-plan-price="personal">£29.99/mo</h4>
+              </div>
+              <div class="ud-pricing-body">
+                <ul>
+                  <li>1 workspace</li>
+                  <li>For solo use</li>
+                  <li>No team members</li>
+                  <li>Quote tracking</li>
+                  <li>Follow up workflow</li>
+                  <li>Simple status view</li>
+                </ul>
+              </div>
+              <div class="ud-pricing-footer">
+                <a href="signup.html?plan=personal" data-plan-checkout="personal" data-stripe-link="" class="ud-main-btn ud-border-btn">
+                  Continue to checkout
+                </a>
+              </div>
+            </div>
+          </div>
+          <div class="col-lg-4 col-md-6 col-sm-10">
+            <div
+              class="ud-single-pricing active wow fadeInUp"
+              data-wow-delay=".1s"
+            >
+              <span class="ud-popular-tag">POPULAR</span>
+              <div class="ud-pricing-header">
+                <h3>BUSINESS</h3>
+                <h4 data-plan-price="business">£59.99/mo</h4>
+              </div>
+              <div class="ud-pricing-body">
+                <ul>
+                  <li>1 workspace</li>
+                  <li>Team ready</li>
+                  <li>One Business workspace covers invited team members</li>
+                  <li>Quote tracking</li>
+                  <li>Follow up workflow</li>
+                  <li>Shared team visibility</li>
+                </ul>
+              </div>
+              <div class="ud-pricing-footer">
+                <a href="signup.html?plan=business" data-plan-checkout="business" data-stripe-link="" class="ud-main-btn ud-white-btn">
+                  Continue to checkout
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+    <!-- ====== Pricing End ====== -->
+
+    <!-- ====== About Start ====== -->
+    <section id="about" class="ud-about">
+      <div class="container">
+        <div class="ud-about-wrapper wow fadeInUp" data-wow-delay=".2s">
+          <div class="ud-about-content-wrapper">
+            <div class="ud-about-content">
+              <span class="tag">Why Quote Chaser</span>
+              <h2>Turn sent quotes into a clear follow up workflow your team can actually run.</h2>
+              <p>
+                Too many quotes go quiet after the first send because follow up
+                lives in inboxes, memory, or scraps of paper instead of one system.
+              </p>
+
+              <p>
+                Quote Chaser gives your team a simple pipeline with visible
+                statuses, due actions, and a cleaner way to win more booked work.
+              </p>
+              <a href="#pricing" data-pricing-anchor class="ud-main-btn">View plans</a>
+            </div>
+          </div>
+          <div class="ud-about-image">
+            <img src="./shared-assets/images/about/about-image.svg" alt="about-image" />
+          </div>
+        </div>
+      </div>
+    </section>
+    <!-- ====== About End ====== -->
+
+
+    <!-- ====== FAQ Start ====== -->
+    <section id="faq" class="ud-faq">
+      <div class="shape">
+        <img src="./shared-assets/images/faq/shape.svg" alt="shape" />
+      </div>
+      <div class="container">
+        <div class="row">
+          <div class="col-lg-12">
+            <div class="ud-section-title text-center mx-auto">
+              <span>FAQ</span>
+              <h2>Questions before you buy?</h2>
+              <p>
+                Quick answers on plans, workspaces, trials, and how Quote Follow
+                Up fits into the way small teams actually work.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-lg-6">
+            <div class="ud-single-faq wow fadeInUp" data-wow-delay=".1s">
+              <div class="accordion">
+                <button
+                  class="ud-faq-btn collapsed"
+                  data-bs-toggle="collapse"
+                  data-bs-target="#collapseOne"
+                >
+                  <span class="icon flex-shrink-0">
+                    <i class="lni lni-chevron-down"></i>
+                  </span>
+                  <span>Who is Quote Chaser for?</span>
+                </button>
+                <div id="collapseOne" class="accordion-collapse collapse">
+                  <div class="ud-faq-body">
+                    Quote Chaser is built for trades and service businesses
+                    that send quotes regularly and need a simpler way to track,
+                    chase, and convert more of them into booked work.
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="ud-single-faq wow fadeInUp" data-wow-delay=".15s">
+              <div class="accordion">
+                <button
+                  class="ud-faq-btn collapsed"
+                  data-bs-toggle="collapse"
+                  data-bs-target="#collapseTwo"
+                >
+                  <span class="icon flex-shrink-0">
+                    <i class="lni lni-chevron-down"></i>
+                  </span>
+                  <span>What is the difference between Personal and Business?</span>
+                </button>
+                <div id="collapseTwo" class="accordion-collapse collapse">
+                  <div class="ud-faq-body">
+                    Personal is for solo use and does not let you add team
+                    members. Business gives you a team ready workspace where you
+                    can add team members and work together.
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="ud-single-faq wow fadeInUp" data-wow-delay=".2s">
+              <div class="accordion">
+                <button
+                  class="ud-faq-btn collapsed"
+                  data-bs-toggle="collapse"
+                  data-bs-target="#collapseThree"
+                >
+                  <span class="icon flex-shrink-0">
+                    <i class="lni lni-chevron-down"></i>
+                  </span>
+                  <span>Can I add team members later?</span>
+                </button>
+                <div id="collapseThree" class="accordion-collapse collapse">
+                  <div class="ud-faq-body">
+                    Yes. If you start on Personal and later need to work with a
+                    team, you can move to Business when you are ready to add
+                    team members to the workspace.
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-lg-6">
+            <div class="ud-single-faq wow fadeInUp" data-wow-delay=".1s">
+              <div class="accordion">
+                <button
+                  class="ud-faq-btn collapsed"
+                  data-bs-toggle="collapse"
+                  data-bs-target="#collapseFour"
+                >
+                  <span class="icon flex-shrink-0">
+                    <i class="lni lni-chevron-down"></i>
+                  </span>
+                  <span>How do I get started?</span>
+                </button>
+                <div id="collapseFour" class="accordion-collapse collapse">
+                  <div class="ud-faq-body">
+                    Choose the plan that fits, head through Stripe checkout,
+                    and start using the workspace straight away. Personal is
+                    built for solo use, and Business unlocks team collaboration.
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="ud-single-faq wow fadeInUp" data-wow-delay=".15s">
+              <div class="accordion">
+                <button
+                  class="ud-faq-btn collapsed"
+                  data-bs-toggle="collapse"
+                  data-bs-target="#collapseFive"
+                >
+                  <span class="icon flex-shrink-0">
+                    <i class="lni lni-chevron-down"></i>
+                  </span>
+                  <span>How quickly can I get set up?</span>
+                </button>
+                <div id="collapseFive" class="accordion-collapse collapse">
+                  <div class="ud-faq-body">
+                    Most businesses can get started quickly. Add your first
+                    quotes, set follow up dates, and begin tracking what needs
+                    chasing without a long or complicated setup process.
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="ud-single-faq wow fadeInUp" data-wow-delay=".2s">
+              <div class="accordion">
+                <button
+                  class="ud-faq-btn collapsed"
+                  data-bs-toggle="collapse"
+                  data-bs-target="#collapseSix"
+                >
+                  <span class="icon flex-shrink-0">
+                    <i class="lni lni-chevron-down"></i>
+                  </span>
+                  <span>Is this a full CRM?</span>
+                </button>
+                <div id="collapseSix" class="accordion-collapse collapse">
+                  <div class="ud-faq-body">
+                    No. Quote Chaser is focused on quote tracking and follow
+                    up workflow, so you get the parts that help you win work
+                    without the weight of a bloated CRM.
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+    <!-- ====== FAQ End ====== -->
+
+    <!-- ====== Testimonials Start ====== -->
+    <section id="testimonials" class="ud-testimonials">
+      <div class="container">
+        <div class="row">
+          <div class="col-lg-12">
+            <div class="ud-section-title mx-auto text-center">
+              <span>Testimonials</span>
+              <h2>What our customers say</h2>
+              <p>
+                A few honest comments from businesses using Quote Chaser to
+                stay on top of quotes and follow ups.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-lg-4 col-md-6">
+            <div
+              class="ud-single-testimonial wow fadeInUp"
+              data-wow-delay=".1s"
+            >
+              <div class="ud-testimonial-ratings">
+                <i class="lni lni-star-filled"></i>
+                <i class="lni lni-star-filled"></i>
+                <i class="lni lni-star-filled"></i>
+                <i class="lni lni-star-filled"></i>
+                <i class="lni lni-star-filled"></i>
+              </div>
+              <div class="ud-testimonial-content">
+                <p>
+                  “Before this, we were tracking quotes in too many places. Now
+                  it is much easier to see who needs a follow up and what is
+                  still waiting.
+                </p>
+              </div>
+              <div class="ud-testimonial-info">
+                <div class="ud-testimonial-image">
+                  <img
+                    src="./shared-assets/images/testimonials/author-01.png"
+                    alt="author"
+                  />
+                </div>
+                <div class="ud-testimonial-meta">
+                  <h4>Sabo Masties</h4>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-lg-4 col-md-6">
+            <div
+              class="ud-single-testimonial wow fadeInUp"
+              data-wow-delay=".15s"
+            >
+              <div class="ud-testimonial-ratings">
+                <i class="lni lni-star-filled"></i>
+                <i class="lni lni-star-filled"></i>
+                <i class="lni lni-star-filled"></i>
+                <i class="lni lni-star-filled"></i>
+                <i class="lni lni-star-filled"></i>
+              </div>
+              <div class="ud-testimonial-content">
+                <p>
+                  “It has made the follow up side of things feel a lot more
+                  organised. We can see what has been sent and what still needs
+                  a call or message.
+                </p>
+              </div>
+              <div class="ud-testimonial-info">
+                <div class="ud-testimonial-image">
+                  <img
+                    src="./shared-assets/images/testimonials/author-02.png"
+                    alt="author"
+                  />
+                </div>
+                <div class="ud-testimonial-meta">
+                  <h4>Margin Gesmu</h4>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-lg-4 col-md-6">
+            <div
+              class="ud-single-testimonial wow fadeInUp"
+              data-wow-delay=".2s"
+            >
+              <div class="ud-testimonial-ratings">
+                <i class="lni lni-star-filled"></i>
+                <i class="lni lni-star-filled"></i>
+                <i class="lni lni-star-filled"></i>
+                <i class="lni lni-star-filled"></i>
+                <i class="lni lni-star-filled"></i>
+              </div>
+              <div class="ud-testimonial-content">
+                <p>
+                  “We did not want a massive system to manage. This feels much
+                  more straightforward and helps us keep on top of quotes
+                  without overcomplicating it.
+                </p>
+              </div>
+              <div class="ud-testimonial-info">
+                <div class="ud-testimonial-image">
+                  <img
+                    src="./shared-assets/images/testimonials/author-03.png"
+                    alt="author"
+                  />
+                </div>
+                <div class="ud-testimonial-meta">
+                  <h4>William Smith</h4>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-lg-12">
+            <div class="ud-brands wow fadeInUp" data-wow-delay=".2s">
+              <div class="ud-title">
+                <h6>Trusted and Used by</h6>
+              </div>
+              <div class="ud-brands-logo">
+                <div class="ud-single-logo">
+                  <img src="./shared-assets/images/brands/ayroui.svg" alt="ayroui" />
+                </div>
+                <div class="ud-single-logo">
+                  <img src="./shared-assets/images/brands/uideck.svg" alt="uideck" />
+                </div>
+                <div class="ud-single-logo">
+                  <img
+                    src="./shared-assets/images/brands/graygrids.svg"
+                    alt="graygrids"
+                  />
+                </div>
+                <div class="ud-single-logo">
+                  <img
+                    src="./shared-assets/images/brands/lineicons.svg"
+                    alt="lineicons"
+                  />
+                </div>
+                <div class="ud-single-logo">
+                  <img
+                    src="./shared-assets/images/brands/ecommerce-html.svg"
+                    alt="ecommerce-html"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+    <!-- ====== Testimonials End ====== -->
+
+
+    <!-- ====== Contact Start ====== -->
+    <section id="contact" class="ud-contact">
+      <div class="container">
+        <div class="row align-items-center">
+          <div class="col-xl-8 col-lg-7">
+            <div class="ud-contact-content-wrapper">
+              <div class="ud-contact-title">
+                <span>CONTACT US</span>
+                <h2>
+                  Let’s talk about <br />
+                  Love to hear from you!
+                </h2>
+              </div>
+              <div class="ud-contact-info-wrapper">
+                <div class="ud-single-info">
+                  <div class="ud-info-icon">
+                    <i class="lni lni-map-marker"></i>
+                  </div>
+                  <div class="ud-info-meta">
+                    <h5>Our Location</h5>
+                    <p>30 Churchill Place, Canary Wharf, London E14 5EU</p>
+                  </div>
+                </div>
+                <div class="ud-single-info">
+                  <div class="ud-info-icon">
+                    <i class="lni lni-envelope"></i>
+                  </div>
+                  <div class="ud-info-meta">
+                    <h5>How Can We Help?</h5>
+                    <p>
+                      <a href="mailto:quotefollowup@outlook.com"
+                        >quotefollowup@outlook.com</a
+                      >
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-xl-4 col-lg-5">
+            <div
+              class="ud-contact-form-wrapper wow fadeInUp"
+              data-wow-delay=".2s"
+            >
+              <h3 class="ud-contact-form-title">Send us a Message</h3>
+              <form class="ud-contact-form" id="contactForm">
+                <div class="ud-form-group">
+                  <label for="fullName">Full Name*</label>
+                  <input
+                    id="fullName"
+                    type="text"
+                    name="fullName"
+                    placeholder="Adam Gelius"
+                    required
+                  />
+                </div>
+                <div class="ud-form-group">
+                  <label for="email">Email*</label>
+                  <input
+                    id="email"
+                    type="email"
+                    name="email"
+                    placeholder="example@yourmail.com"
+                    required
+                  />
+                </div>
+                <div class="ud-form-group">
+                  <label for="phone">Phone*</label>
+                  <input
+                    id="phone"
+                    type="text"
+                    name="phone"
+                    placeholder="+885 1254 5211 552"
+                    required
+                  />
+                </div>
+                <div class="ud-form-group">
+                  <label for="message">Message*</label>
+                  <textarea
+                    id="message"
+                    name="message"
+                    rows="1"
+                    placeholder="type your message here"
+                    required
+                  ></textarea>
+                </div>
+                <div class="ud-form-group mb-0">
+                  <button type="submit" class="ud-main-btn" id="contactSubmitBtn">
+                    Send Message
+                  </button>
+                </div>
+                <p
+                  id="contactFormStatus"
+                  style="display: none; margin-top: 14px; font-size: 14px; line-height: 1.6"
+                ></p>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+    <!-- ====== Contact End ====== -->
+    <!-- ====== Footer Start ====== -->
+    <footer class="ud-footer wow fadeInUp" data-wow-delay=".15s">
+      <div class="shape shape-1">
+        <img src="./shared-assets/images/footer/shape-1.svg" alt="shape" />
+      </div>
+      <div class="shape shape-2">
+        <img src="./shared-assets/images/footer/shape-2.svg" alt="shape" />
+      </div>
+      <div class="shape shape-3">
+        <img src="./shared-assets/images/footer/shape-3.svg" alt="shape" />
+      </div>
+      <div class="ud-footer-widgets">
+        <div class="container">
+          <div class="row">
+            <div class="col-xl-3 col-lg-4 col-md-6">
+              <div class="ud-widget">
+                <a href="/" class="ud-footer-logo">
+                  <img src="./shared-assets/images/logo/qfu-logo-light.svg" alt="Quote Chaser" />
+                </a>
+                <p class="ud-widget-desc">
+                  Quote Chaser helps trades and service businesses stay on
+                  top of quotes, follow ups, and booked work.
+                </p>
+                <ul class="ud-widget-socials">
+                  <li>
+                    <a href="mailto:quotefollowup@outlook.com" aria-label="Email Quote Chaser">
+                      <i class="lni lni-facebook-filled"></i>
+                    </a>
+                  </li>
+                  <li>
+                    <a href="mailto:quotefollowup@outlook.com" aria-label="Email Quote Chaser">
+                      <i class="lni lni-twitter-filled"></i>
+                    </a>
+                  </li>
+                  <li>
+                    <a href="mailto:quotefollowup@outlook.com" aria-label="Email Quote Chaser">
+                      <i class="lni lni-instagram-filled"></i>
+                    </a>
+                  </li>
+                  <li>
+                    <a href="mailto:quotefollowup@outlook.com" aria-label="Email Quote Chaser">
+                      <i class="lni lni-linkedin-original"></i>
+                    </a>
+                  </li>
+                </ul>
+              </div>
+            </div>
+
+            <div class="col-xl-2 col-lg-2 col-md-6 col-sm-6">
+              <div class="ud-widget">
+                <h5 class="ud-widget-title">About Us</h5>
+                <ul class="ud-widget-links">
+                  <li><a href="/#home">Home</a></li>
+                  <li><a href="/#features">Features</a></li>
+                  <li><a href="/#about">About</a></li>
+                  <li><a href="/#testimonials">Testimonials</a></li>
+                </ul>
+              </div>
+            </div>
+            <div class="col-xl-2 col-lg-3 col-md-6 col-sm-6">
+              <div class="ud-widget">
+                <h5 class="ud-widget-title">Features</h5>
+                <ul class="ud-widget-links">
+                  <li><a href="/quote-follow-up-software/">How it works</a></li>
+                  <li><a href="/landing-page/privacy-policy.html">Privacy policy</a></li>
+                  <li><a href="/landing-page/terms-of-service.html">Terms of service</a></li>
+                  <li><a href="/landing-page/refund-policy.html">Refund policy</a></li>
+                </ul>
+              </div>
+            </div>
+            <div class="col-xl-3 col-lg-6 col-md-8 col-sm-10">
+              <div class="ud-widget">
+                <h5 class="ud-widget-title">Partners</h5>
+                <ul class="ud-widget-brands">
+                  <li>
+                    <a>
+                      <img src="./shared-assets/images/footer/brands/ayroui.svg" alt="ayroui" />
+                    </a>
+                  </li>
+                  <li>
+                    <a>
+                      <img src="./shared-assets/images/footer/brands/ecommerce-html.svg" alt="ecommerce-html" />
+                    </a>
+                  </li>
+                  <li>
+                    <a>
+                      <img src="./shared-assets/images/footer/brands/graygrids.svg" alt="graygrids" />
+                    </a>
+                  </li>
+                  <li>
+                    <a>
+                      <img src="./shared-assets/images/footer/brands/lineicons.svg" alt="lineicons" />
+                    </a>
+                  </li>
+                  <li>
+                    <a>
+                      <img src="./shared-assets/images/footer/brands/uideck.svg" alt="uideck" />
+                    </a>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="ud-footer-bottom">
+        <div class="container">
+          <div class="row">
+            <div class="col-md-8">
+              <ul class="ud-footer-bottom-left">
+                <li><a href="/landing-page/privacy-policy.html">Privacy policy</a></li>
+                <li><a href="/landing-page/support-policy.html">Support policy</a></li>
+                <li><a href="/landing-page/terms-of-service.html">Terms of service</a></li>
+              </ul>
+            </div>
+            <div class="col-md-4">
+              <p class="ud-footer-bottom-right">
+                Designed and Developed by
+                <a href="/#contact">Bluepeak Software</a>
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </footer>
+    <!-- ====== Footer End ====== -->
+
+
+
+
+    <!-- ====== Back To Top Start ====== -->
+    <a href="#home" class="back-to-top" aria-label="Back to top">
+      <i class="lni lni-chevron-up"> </i>
+    </a>
+    <!-- ====== Back To Top End ====== -->
+
+    <!-- ====== All Javascript Files ====== -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/wow/1.1.2/wow.min.js"></script>
+    <script src="data:text/javascript,document.addEventListener('DOMContentLoaded',function(){if(window.WOW){new WOW().init();}});"></script>
+    <script>
+      const navbarToggler = document.querySelector(".navbar-toggler");
+      const navbarCollapse = document.querySelector(".navbar-collapse");
+
+      if (navbarToggler && navbarCollapse) {
+        navbarToggler.addEventListener("click", () => {
+          const isOpen = navbarCollapse.classList.toggle("show");
+          navbarToggler.classList.toggle("active", isOpen);
+          navbarToggler.setAttribute("aria-expanded", isOpen ? "true" : "false");
+        });
+      }
+
+      // ==== for menu scroll
+      const pageLink = document.querySelectorAll(".ud-menu-scroll");
+
+      pageLink.forEach((elem) => {
+        elem.addEventListener("click", (e) => {
+          e.preventDefault();
+          document.querySelector(elem.getAttribute("href")).scrollIntoView({
+            behavior: "smooth",
+            offsetTop: 1 - 60,
+          });
+
+          if (navbarCollapse && navbarToggler) {
+            navbarCollapse.classList.remove("show");
+            navbarToggler.classList.remove("active");
+            navbarToggler.setAttribute("aria-expanded", "false");
+          }
+        });
+      });
+
+      // ======= Sticky header + back to top
+      window.addEventListener("scroll", function () {
+        const udHeader = document.querySelector(".ud-header");
+        if (!udHeader) return;
+
+        const sticky = udHeader.offsetTop;
+        if (window.pageYOffset > sticky) {
+          udHeader.classList.add("sticky");
+        } else {
+          udHeader.classList.remove("sticky");
+        }
+
+        const backToTop = document.querySelector(".back-to-top");
+        if (backToTop) {
+          if (
+            document.body.scrollTop > 50 ||
+            document.documentElement.scrollTop > 50
+          ) {
+            backToTop.style.display = "flex";
+          } else {
+            backToTop.style.display = "none";
+          }
+        }
+      });
+
+      const backToTopButton = document.querySelector(".back-to-top");
+      if (backToTopButton) {
+        backToTopButton.addEventListener("click", function () {
+          window.scrollTo({ top: 0, behavior: "smooth" });
+        });
+      }
+
+      // ==== contact form submit
+      const contactForm = document.getElementById("contactForm");
+      const contactSubmitBtn = document.getElementById("contactSubmitBtn");
+      const contactFormStatus = document.getElementById("contactFormStatus");
+
+      if (contactForm && contactSubmitBtn && contactFormStatus) {
+        contactForm.addEventListener("submit", async (e) => {
+          e.preventDefault();
+
+          contactSubmitBtn.disabled = true;
+          contactSubmitBtn.textContent = "Sending...";
+          contactFormStatus.style.display = "none";
+          contactFormStatus.textContent = "";
+
+          const formData = new FormData(contactForm);
+
+          try {
+            const response = await fetch(
+              "https://formsubmit.co/ajax/quotefollowup@outlook.com",
+              {
+                method: "POST",
+                headers: {
+                  Accept: "application/json",
+                },
+                body: formData,
+              }
+            );
+
+            if (!response.ok) {
+              throw new Error("Form submission failed");
+            }
+
+            contactForm.reset();
+            contactFormStatus.textContent =
+              "Thanks — your message has been sent. We will get back to you soon.";
+            contactFormStatus.style.display = "block";
+            contactFormStatus.style.color = "#13c296";
+          } catch (error) {
+            contactFormStatus.innerHTML =
+              'Sorry, there was a problem sending your message. You can email us directly at <a href="mailto:quotefollowup@outlook.com">quotefollowup@outlook.com</a>.';
+            contactFormStatus.style.display = "block";
+            contactFormStatus.style.color = "#f98f5c";
+          } finally {
+            contactSubmitBtn.disabled = false;
+            contactSubmitBtn.textContent = "Send Message";
+          }
+        });
+      }
+
+      // section menu active
+      function onScroll(event) {
+        const sections = document.querySelectorAll(".ud-menu-scroll");
+        const scrollPos =
+          window.pageYOffset ||
+          document.documentElement.scrollTop ||
+          document.body.scrollTop;
+
+        for (let i = 0; i < sections.length; i++) {
+          const currLink = sections[i];
+          const val = currLink.getAttribute("href");
+          const refElement = document.querySelector(val);
+          const scrollTopMinus = scrollPos + 73;
+          if (
+            refElement.offsetTop <= scrollTopMinus &&
+            refElement.offsetTop + refElement.offsetHeight > scrollTopMinus
+          ) {
+            document
+              .querySelector(".ud-menu-scroll")
+              .classList.remove("active");
+            currLink.classList.add("active");
+          } else {
+            currLink.classList.remove("active");
+          }
+        }
+      }
+
+      window.document.addEventListener("scroll", onScroll);
+    </script>
+    <script type="module" src="./shared-assets/js/main.js"></script>
   </body>
 </html>

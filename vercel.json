@@ -7,8 +7,23 @@
       "permanent": true
     },
     {
+      "source": "/landing-page/index.html",
+      "destination": "/",
+      "permanent": true
+    },
+    {
       "source": "/landing-page",
       "destination": "/",
+      "permanent": true
+    },
+    {
+      "source": "/quote-follow-up-software",
+      "destination": "/quote-follow-up-software/",
+      "permanent": true
+    },
+    {
+      "source": "/landing-page/quote-follow-up-software.html",
+      "destination": "/quote-follow-up-software/",
       "permanent": true
     },
     {
