@@ -5086,6 +5086,16 @@ p {
   justify-content: center;
 }
 
+.qfu-billing-primary-cta {
+  background: var(--primary-color);
+  color: var(--white);
+}
+
+.qfu-billing-primary-cta:hover {
+  background: var(--heading-color);
+  color: var(--white);
+}
+
 .ud-main-btn.is-disabled,
 .ud-main-btn[aria-disabled="true"],
 .qfu-link-button.is-disabled,
