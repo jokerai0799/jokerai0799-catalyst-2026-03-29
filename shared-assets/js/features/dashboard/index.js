@@ -353,13 +353,18 @@ function renderBillingPanel(state) {
 
   const upgradeLink = $('#qfu-upgrade-plan-link');
   if (upgradeLink) {
-    const upgradeHref = billing.checkoutLinks?.business || '#';
-    const hasUpgradeLink = Boolean(currentWorkspaceAccess?.role === 'Owner' && billing.checkoutLinks?.business);
-    upgradeLink.setAttribute('href', hasUpgradeLink ? upgradeHref : '#');
-    upgradeLink.classList.toggle('is-disabled', !hasUpgradeLink);
-    upgradeLink.setAttribute('aria-disabled', hasUpgradeLink ? 'false' : 'true');
+    const isOwner = currentWorkspaceAccess?.role === 'Owner';
     const isBusiness = (billing.planTier || state.workspace?.planTier) === 'business';
-    upgradeLink.textContent = isBusiness ? 'Open Business checkout' : 'Upgrade to Business';
+    const isInactive = !billing.billingStatus || billing.billingStatus === 'inactive';
+    const businessCheckoutHref = billing.checkoutLinks?.business || '';
+    const fallbackPricingHref = '../landing-page/index.html#pricing';
+    const targetHref = businessCheckoutHref || fallbackPricingHref;
+    upgradeLink.setAttribute('href', isOwner ? targetHref : '#');
+    upgradeLink.classList.toggle('is-disabled', !isOwner);
+    upgradeLink.setAttribute('aria-disabled', isOwner ? 'false' : 'true');
+    upgradeLink.textContent = isBusiness
+      ? 'Open Business checkout'
+      : (isInactive ? 'Choose a plan' : 'Upgrade to Business');
     upgradeLink.hidden = false;
   }
 
