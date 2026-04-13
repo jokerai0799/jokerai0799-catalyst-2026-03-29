@@ -4632,6 +4632,10 @@ p {
   color: #ffffff;
 }
 
+.qfu-team-lock-card .qfu-upgrade-business-btn {
+  cursor: pointer !important;
+}
+
 .qfu-team-lock-kicker {
   display: inline-block;
   margin-bottom: 10px;
