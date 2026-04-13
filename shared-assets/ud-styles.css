@@ -1990,6 +1990,17 @@ p {
   transition: all 0.3s ease-out 0s;
 }
 
+.ud-brands .ud-brands-logo .qfu-brand-chip {
+  display: inline-flex;
+  align-items: center;
+  min-height: 38px;
+  font-size: 0.98rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(136, 144, 164, 0.85);
+}
+
 /* ===== Team CSS ===== */
 .ud-team {
   padding-top: 120px;
@@ -2348,6 +2359,19 @@ p {
   max-width: 120px;
   margin-bottom: 20px;
   margin-right: 20px;
+}
+
+.ud-widget .ud-widget-brands .qfu-footer-brand-chip {
+  display: inline-flex;
+  align-items: center;
+  min-height: 30px;
+  margin-bottom: 20px;
+  margin-right: 20px;
+  font-size: 0.92rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.75);
 }
 
 @media only screen and (min-width: 1200px) and (max-width: 1399px) {
