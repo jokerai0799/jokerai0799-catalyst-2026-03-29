@@ -2,28 +2,6 @@
   "version": 2,
   "redirects": [
     {
-      "source": "/",
-      "has": [
-        {
-          "type": "query",
-          "key": "utm_medium",
-          "value": "company_profile"
-        },
-        {
-          "type": "query",
-          "key": "utm_source",
-          "value": "trustpilot"
-        },
-        {
-          "type": "query",
-          "key": "utm_campaign",
-          "value": "domain_click"
-        }
-      ],
-      "destination": "https://quotechaser.online/",
-      "permanent": true
-    },
-    {
       "source": "/index.html",
       "destination": "/",
       "permanent": true
