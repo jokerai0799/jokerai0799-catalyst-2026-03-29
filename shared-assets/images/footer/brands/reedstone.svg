@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="160" height="40" viewBox="0 0 160 40" fill="none" role="img" aria-label="REEDSTONE">
+  <rect width="160" height="40" fill="transparent"/>
+  <path d="M8 10h20c0 5-4 8-10 8S8 15 8 10Z" fill="rgba(255,255,255,0.74)"/>
+<path d="M11 20h14c0 3.6-2.8 5.8-7 5.8s-7-2.2-7-5.8Z" fill="rgba(255,255,255,0.74)" opacity="0.9"/>
+<rect x="14" y="28" width="8" height="3.8" rx="1.9" fill="rgba(255,255,255,0.74)" opacity="0.78"/>
+  <text x="44" y="25" fill="rgba(255,255,255,0.74)" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="800" font-style="normal" letter-spacing="2.6px">REEDSTONE</text>
+</svg>

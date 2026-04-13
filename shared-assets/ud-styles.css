@@ -2001,6 +2001,26 @@ p {
   color: rgba(136, 144, 164, 0.85);
 }
 
+.qfu-brand-chip-northfield {
+  letter-spacing: 0.24em;
+  font-weight: 800;
+}
+
+.qfu-brand-chip-oakmere {
+  letter-spacing: 0.14em;
+  font-style: italic;
+}
+
+.qfu-brand-chip-brightforge {
+  letter-spacing: 0.18em;
+  font-weight: 800;
+}
+
+.qfu-brand-chip-reedstone {
+  letter-spacing: 0.3em;
+  font-size: 0.88rem;
+}
+
 /* ===== Team CSS ===== */
 .ud-team {
   padding-top: 120px;
@@ -2372,6 +2392,11 @@ p {
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: rgba(255, 255, 255, 0.75);
+}
+
+.ud-widget .ud-widget-brands .qfu-brand-chip-oakmere,
+.ud-widget .ud-widget-brands .qfu-brand-chip-reedstone {
+  color: rgba(255, 255, 255, 0.72);
 }
 
 @media only screen and (min-width: 1200px) and (max-width: 1399px) {

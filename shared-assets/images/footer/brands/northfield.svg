@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="160" height="40" viewBox="0 0 160 40" fill="none" role="img" aria-label="NORTHFIELD">
+  <rect width="160" height="40" fill="transparent"/>
+  <rect x="6" y="9" width="5" height="22" rx="2.5" fill="rgba(255,255,255,0.78)"/>
+<rect x="15" y="9" width="5" height="16" rx="2.5" fill="rgba(255,255,255,0.78)" opacity="0.88"/>
+<rect x="24" y="9" width="5" height="22" rx="2.5" fill="rgba(255,255,255,0.78)"/>
+<path d="M33 9v22" stroke="rgba(255,255,255,0.78)" stroke-width="2.4" stroke-linecap="round" opacity="0.9"/>
+  <text x="44" y="25" fill="rgba(255,255,255,0.78)" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="800" font-style="normal" letter-spacing="2.6px">NORTHFIELD</text>
+</svg>

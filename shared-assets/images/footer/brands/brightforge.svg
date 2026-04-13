@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="160" height="40" viewBox="0 0 160 40" fill="none" role="img" aria-label="BRIGHTFORGE">
+  <rect width="160" height="40" fill="transparent"/>
+  <path d="M18 7 30 20 18 33 6 20Z" fill="none" stroke="rgba(255,255,255,0.78)" stroke-width="2.5"/>
+<path d="M18 11 26 20 18 29 10 20Z" fill="rgba(255,255,255,0.78)" opacity="0.9"/>
+<path d="M18 11V29" stroke="rgba(255,255,255,0.18)" stroke-width="1.5"/>
+  <text x="44" y="25" fill="rgba(255,255,255,0.78)" font-family="Inter, Arial, sans-serif" font-size="12" font-weight="800" font-style="normal" letter-spacing="2.6px">BRIGHTFORGE</text>
+</svg>
