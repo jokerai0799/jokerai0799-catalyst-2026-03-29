@@ -4632,8 +4632,17 @@ p {
   color: #ffffff;
 }
 
-.qfu-team-lock-card .qfu-upgrade-business-btn {
+.qfu-team-preview-shell.is-locked .qfu-team-lock-overlay,
+.qfu-team-preview-shell.is-locked .qfu-team-lock-overlay *,
+.qfu-team-preview-shell.is-locked .qfu-team-lock-card,
+.qfu-team-preview-shell.is-locked .qfu-team-lock-card * {
+  cursor: auto !important;
+}
+
+.qfu-team-preview-shell.is-locked .qfu-team-lock-card .qfu-upgrade-business-btn {
   cursor: pointer !important;
+  pointer-events: auto;
+  opacity: 1;
 }
 
 .qfu-team-lock-kicker {
@@ -5090,14 +5099,22 @@ p {
   justify-content: center;
 }
 
+.qfu-billing-actions .ud-main-btn[aria-disabled="false"] {
+  opacity: 1;
+  pointer-events: auto;
+  cursor: pointer;
+}
+
 .qfu-billing-primary-cta {
-  background: var(--primary-color);
-  color: var(--white);
+  background: #16a34a;
+  border-color: #16a34a;
+  color: #ffffff;
 }
 
 .qfu-billing-primary-cta:hover {
-  background: var(--heading-color);
-  color: var(--white);
+  background: #15803d;
+  border-color: #15803d;
+  color: #ffffff;
 }
 
 .ud-main-btn.is-disabled,
