@@ -5097,24 +5097,42 @@ p {
 .qfu-billing-actions .ud-main-btn {
   width: 100%;
   justify-content: center;
+  opacity: 1;
+  filter: none;
+}
+
+.qfu-billing-actions .ud-main-btn[aria-disabled="true"] {
+  opacity: 0.45 !important;
+  pointer-events: none;
+  cursor: not-allowed !important;
 }
 
 .qfu-billing-actions .ud-main-btn[aria-disabled="false"] {
-  opacity: 1;
+  opacity: 1 !important;
+  filter: none !important;
   pointer-events: auto;
-  cursor: pointer;
+  cursor: pointer !important;
 }
 
-.qfu-billing-primary-cta {
-  background: #16a34a;
-  border-color: #16a34a;
-  color: #ffffff;
+.qfu-billing-actions .ud-white-btn[aria-disabled="true"] {
+  background: #dbe4f0;
+  border-color: #dbe4f0;
+  color: #6b7a90;
 }
 
-.qfu-billing-primary-cta:hover {
-  background: #15803d;
-  border-color: #15803d;
-  color: #ffffff;
+.qfu-billing-actions .qfu-billing-primary-cta,
+.qfu-billing-actions .qfu-billing-primary-cta[aria-disabled="false"] {
+  background: #16a34a !important;
+  border-color: #16a34a !important;
+  color: #ffffff !important;
+  box-shadow: 0 10px 24px rgba(22, 163, 74, 0.18);
+}
+
+.qfu-billing-actions .qfu-billing-primary-cta:hover,
+.qfu-billing-actions .qfu-billing-primary-cta[aria-disabled="false"]:hover {
+  background: #15803d !important;
+  border-color: #15803d !important;
+  color: #ffffff !important;
 }
 
 .ud-main-btn.is-disabled,
