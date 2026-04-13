@@ -5,6 +5,9 @@ const state = {
   workspace: null,
   quotes: [],
   teamMembers: [],
+  pendingInvites: [],
+  incomingInvites: [],
+  accessibleWorkspaces: [],
   alerts: {},
 };
 
@@ -32,6 +35,9 @@ export async function refreshState() {
   state.workspace = bootstrap.workspace;
   state.quotes = bootstrap.quotes || [];
   state.teamMembers = bootstrap.teamMembers || [];
+  state.pendingInvites = bootstrap.pendingInvites || [];
+  state.incomingInvites = bootstrap.incomingInvites || [];
+  state.accessibleWorkspaces = bootstrap.accessibleWorkspaces || [];
   readAlerts();
   return state;
 }
