@@ -4632,6 +4632,15 @@ p {
   color: #ffffff;
 }
 
+.qfu-team-preview-shell.is-locked .qfu-panel *,
+.qfu-team-preview-shell.is-locked .qfu-member-grid *,
+.qfu-team-preview-shell.is-locked .qfu-table-wrap *,
+.qfu-team-preview-shell.is-locked #qfu-pending-invites-list *,
+.qfu-team-preview-shell.is-locked #qfu-team-form *,
+.qfu-team-preview-shell.is-locked #qfu-team-notice * {
+  cursor: not-allowed !important;
+}
+
 .qfu-team-preview-shell.is-locked .qfu-team-lock-overlay,
 .qfu-team-preview-shell.is-locked .qfu-team-lock-overlay *,
 .qfu-team-preview-shell.is-locked .qfu-team-lock-card,
@@ -4666,14 +4675,6 @@ p {
   color: #667085;
 }
 
-.qfu-team-preview-shell.is-locked .qfu-link-button,
-.qfu-team-preview-shell.is-locked .ud-main-btn,
-.qfu-team-preview-shell.is-locked input,
-.qfu-team-preview-shell.is-locked select,
-.qfu-team-preview-shell.is-locked textarea,
-.qfu-team-preview-shell.is-locked button {
-  cursor: not-allowed !important;
-}
 
 .qfu-pending-invite-card {
   display: block;
@@ -5097,42 +5098,53 @@ p {
 .qfu-billing-actions .ud-main-btn {
   width: 100%;
   justify-content: center;
-  opacity: 1;
-  filter: none;
 }
 
-.qfu-billing-actions .ud-main-btn[aria-disabled="true"] {
-  opacity: 0.45 !important;
-  pointer-events: none;
-  cursor: not-allowed !important;
+.qfu-billing-manage-link {
+  background: #ffffff;
+  border-color: #dbe4f0;
+  color: #1d2144;
 }
 
-.qfu-billing-actions .ud-main-btn[aria-disabled="false"] {
-  opacity: 1 !important;
-  filter: none !important;
-  pointer-events: auto;
-  cursor: pointer !important;
+.qfu-billing-manage-link:hover {
+  background: #eef3f8;
+  border-color: #dbe4f0;
+  color: #1d2144;
 }
 
-.qfu-billing-actions .ud-white-btn[aria-disabled="true"] {
+.qfu-billing-manage-link.is-disabled,
+.qfu-billing-manage-link[aria-disabled="true"] {
   background: #dbe4f0;
   border-color: #dbe4f0;
   color: #6b7a90;
+  opacity: 0.55 !important;
+  pointer-events: none;
+  cursor: not-allowed !important;
+  box-shadow: none;
 }
 
-.qfu-billing-actions .qfu-billing-primary-cta,
-.qfu-billing-actions .qfu-billing-primary-cta[aria-disabled="false"] {
-  background: #16a34a !important;
-  border-color: #16a34a !important;
-  color: #ffffff !important;
+.qfu-billing-plan-link {
+  background: #16a34a;
+  border-color: #16a34a;
+  color: #ffffff;
   box-shadow: 0 10px 24px rgba(22, 163, 74, 0.18);
 }
 
-.qfu-billing-actions .qfu-billing-primary-cta:hover,
-.qfu-billing-actions .qfu-billing-primary-cta[aria-disabled="false"]:hover {
-  background: #15803d !important;
-  border-color: #15803d !important;
-  color: #ffffff !important;
+.qfu-billing-plan-link:hover {
+  background: #15803d;
+  border-color: #15803d;
+  color: #ffffff;
+}
+
+.qfu-billing-plan-link.is-disabled,
+.qfu-billing-plan-link[aria-disabled="true"] {
+  background: #cbd5e1;
+  border-color: #cbd5e1;
+  color: #64748b;
+  opacity: 0.55 !important;
+  pointer-events: none;
+  cursor: not-allowed !important;
+  box-shadow: none;
 }
 
 .ud-main-btn.is-disabled,

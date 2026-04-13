@@ -331,6 +331,28 @@ function applyReadOnlyState(state) {
   });
 }
 
+function setBillingAction(link, { enabled, href = '#', label, target = '_self' }) {
+  if (!link) return;
+  if (label) link.textContent = label;
+  link.setAttribute('href', enabled ? href : '#');
+  if (enabled) {
+    link.classList.remove('is-disabled');
+    link.removeAttribute('aria-disabled');
+    if (target === '_blank') {
+      link.setAttribute('target', '_blank');
+      link.setAttribute('rel', 'noreferrer');
+    } else {
+      link.removeAttribute('target');
+      link.removeAttribute('rel');
+    }
+  } else {
+    link.classList.add('is-disabled');
+    link.setAttribute('aria-disabled', 'true');
+    link.removeAttribute('target');
+    link.removeAttribute('rel');
+  }
+}
+
 function renderBillingPanel(state) {
   const billing = state.workspace?.billing || {};
   const currentWorkspaceAccess = (state.accessibleWorkspaces || []).find((workspaceAccess) => workspaceAccess.id === state.workspace?.id);
@@ -342,29 +364,28 @@ function renderBillingPanel(state) {
   if (periodRow) periodRow.hidden = !hasPeriodEnd;
   text($('#qfu-billing-period-end'), formatBillingDate(billing.stripeCurrentPeriodEnd));
 
-  const canManageBilling = Boolean(currentWorkspaceAccess?.role === 'Owner' && billing.stripeCustomerId && billing.billingStatus && billing.billingStatus !== 'inactive');
+  const isOwner = currentWorkspaceAccess?.role === 'Owner';
+  const canManageBilling = Boolean(isOwner && billing.stripeCustomerId && billing.billingStatus && billing.billingStatus !== 'inactive');
   const manageLink = $('#qfu-manage-billing-link');
   if (manageLink) {
-    manageLink.setAttribute('href', '#');
-    manageLink.classList.toggle('is-disabled', !canManageBilling);
-    manageLink.setAttribute('aria-disabled', canManageBilling ? 'false' : 'true');
+    setBillingAction(manageLink, { enabled: canManageBilling, href: '#', label: 'Manage billing', target: '_blank' });
     manageLink.dataset.manageEnabled = canManageBilling ? 'true' : 'false';
   }
 
   const upgradeLink = $('#qfu-upgrade-plan-link');
   if (upgradeLink) {
-    const isOwner = currentWorkspaceAccess?.role === 'Owner';
     const isBusiness = (billing.planTier || state.workspace?.planTier) === 'business';
     const isInactive = !billing.billingStatus || billing.billingStatus === 'inactive';
     const businessCheckoutHref = billing.checkoutLinks?.business || '';
     const fallbackPricingHref = '../landing-page/index.html#pricing';
-    const targetHref = businessCheckoutHref || fallbackPricingHref;
-    upgradeLink.setAttribute('href', isOwner ? targetHref : '#');
-    upgradeLink.classList.toggle('is-disabled', !isOwner);
-    upgradeLink.setAttribute('aria-disabled', isOwner ? 'false' : 'true');
-    upgradeLink.textContent = isBusiness
-      ? 'Open Business checkout'
-      : (isInactive ? 'Choose a plan' : 'Upgrade to Business');
+    const targetHref = isInactive ? fallbackPricingHref : (businessCheckoutHref || fallbackPricingHref);
+    const targetMode = targetHref === fallbackPricingHref ? '_self' : '_blank';
+    setBillingAction(upgradeLink, {
+      enabled: Boolean(isOwner),
+      href: targetHref,
+      label: isBusiness ? 'Open Business checkout' : (isInactive ? 'Choose a plan' : 'Upgrade to Business'),
+      target: targetMode,
+    });
     upgradeLink.hidden = false;
   }
 
