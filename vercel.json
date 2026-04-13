@@ -6,10 +6,21 @@
       "has": [
         {
           "type": "query",
-          "key": "utm_source"
+          "key": "utm_medium",
+          "value": "company_profile"
+        },
+        {
+          "type": "query",
+          "key": "utm_source",
+          "value": "trustpilot"
+        },
+        {
+          "type": "query",
+          "key": "utm_campaign",
+          "value": "domain_click"
         }
       ],
-      "destination": "/",
+      "destination": "https://quotechaser.online/",
       "permanent": true
     },
     {
