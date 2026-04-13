@@ -5,10 +5,9 @@ export const config = {
 export default function middleware(request) {
   const url = new URL(request.url);
 
-  const hasTrackedHomepageParams =
-    url.searchParams.get('utm_source') === 'trustpilot' ||
-    url.searchParams.get('utm_medium') === 'company_profile' ||
-    url.searchParams.get('utm_campaign') === 'domain_click';
+  const hasTrackedHomepageParams = Array.from(url.searchParams.keys()).some((key) =>
+    key.toLowerCase().startsWith('utm_')
+  );
 
   if (hasTrackedHomepageParams) {
     url.search = '';
