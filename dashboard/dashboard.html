@@ -32,9 +32,10 @@
             </span>
           </a>
           <div class="qfu-workspace-panel">
-            <span>Current workspace</span>
+            <span id="qfu-workspace-switch-label">Current workspace</span>
             <strong>Loading workspace…</strong>
-            <select id="qfu-workspace-switcher" class="qfu-workspace-switcher" hidden></select>
+            <span id="qfu-workspace-switch-help" style="display:none; font-size:12px; opacity:.72; margin-top:6px;">Choose another workspace you can access.</span>
+            <select id="qfu-workspace-switcher" class="qfu-workspace-switcher" aria-label="Change workspace" hidden></select>
           </div>
           <nav class="qfu-app-nav qfu-app-nav-vertical" aria-label="Workspace sections">
             <a href="#today" class="active" data-tab="today">Today</a>

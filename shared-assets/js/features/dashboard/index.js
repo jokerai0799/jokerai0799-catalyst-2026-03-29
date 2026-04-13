@@ -370,6 +370,8 @@ function renderBillingPanel(state) {
 function setTopbar(workspace, accessibleWorkspaces = []) {
   text(document.querySelector('.qfu-workspace-panel strong'), workspace.name);
   const workspaceSwitcher = $('#qfu-workspace-switcher');
+  const workspaceSwitchLabel = $('#qfu-workspace-switch-label');
+  const workspaceSwitchHelp = $('#qfu-workspace-switch-help');
   if (workspaceSwitcher) {
     clear(workspaceSwitcher);
     if ((accessibleWorkspaces || []).length > 1) {
@@ -381,8 +383,12 @@ function setTopbar(workspace, accessibleWorkspaces = []) {
       });
       workspaceSwitcher.value = workspace.id;
       workspaceSwitcher.hidden = false;
+      if (workspaceSwitchLabel) workspaceSwitchLabel.textContent = 'Change workspace';
+      if (workspaceSwitchHelp) workspaceSwitchHelp.style.display = 'block';
     } else {
       workspaceSwitcher.hidden = true;
+      if (workspaceSwitchLabel) workspaceSwitchLabel.textContent = 'Current workspace';
+      if (workspaceSwitchHelp) workspaceSwitchHelp.style.display = 'none';
     }
   }
   text(document.querySelector('.qfu-dashboard-kicker'), 'Today');

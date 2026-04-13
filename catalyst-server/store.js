@@ -204,13 +204,13 @@ function seedWorkspace(store, workspace, ownerUser) {
   }
 }
 
-async function loadStore() {
+async function loadStore(scope = {}) {
   if (!(await isSupabaseReady())) {
     const error = new Error('Supabase is not configured or not ready.');
     error.status = 503;
     throw error;
   }
-  return loadSupabaseStore();
+  return loadSupabaseStore(scope);
 }
 
 async function saveStore(store) {
