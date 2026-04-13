@@ -79,19 +79,6 @@
             <a href="#quotes" data-tab="quotes" class="qfu-alert-link">Open quotes</a>
           </div>
 
-          <div id="qfu-incoming-invite-strip" class="qfu-alert-strip wow fadeInUp" data-wow-delay=".06s" hidden>
-            <div class="qfu-alert-dot"></div>
-            <div class="qfu-alert-copy">
-              <strong>Workspace invite</strong>
-              <span id="qfu-incoming-invite-summary">You have a pending workspace invite.</span>
-            </div>
-            <div style="display:flex; gap:10px; flex-wrap:wrap;">
-              <button type="button" class="ud-main-btn qfu-app-primary-btn" data-invite-accept="">Accept</button>
-              <button type="button" class="ud-main-btn ud-white-btn qfu-app-secondary-btn" data-invite-decline="">Decline</button>
-            </div>
-          </div>
-          <div id="qfu-invite-notice" class="qfu-inline-notice" style="display:none; margin-top: 16px;"></div>
-
           <div class="qfu-dashboard-metrics qfu-dashboard-metrics-compact row">
             <div class="col-lg-4 col-md-6">
               <div class="qfu-metric-card wow fadeInUp" data-wow-delay=".05s">
@@ -342,7 +329,7 @@
               <div class="qfu-panel">
                 <div class="qfu-panel-header">
                   <div>
-                    <span>Invite</span>
+                    <span>Access</span>
                     <h3>Add a teammate</h3>
                   </div>
                 </div>
@@ -365,16 +352,16 @@
                     </select>
                   </div>
                   <div class="qfu-form-actions qfu-form-span-2">
-                    <button type="submit" class="ud-main-btn qfu-app-primary-btn">Send invite</button>
+                    <button type="submit" class="ud-main-btn qfu-app-primary-btn">Add teammate</button>
                   </div>
-                  <p class="qfu-form-hint qfu-form-span-2">One Business workspace covers invited team members — they do not need their own subscription to work inside your workspace.</p>
+                  <p class="qfu-form-hint qfu-form-span-2">If the email already has an account, they are added straight into this workspace. If not, you will be told they need an account first. Teammates do not need their own subscription to work inside your Business workspace.</p>
                 </form>
               </div>
               <div class="qfu-panel" style="margin-top:24px;">
                 <div class="qfu-panel-header">
                   <div>
-                    <span>Pending</span>
-                    <h3>Outstanding invites</h3>
+                    <span>Access</span>
+                    <h3>How teammate access works</h3>
                   </div>
                 </div>
                 <div id="qfu-pending-invites-list" class="qfu-pending-invites-list"></div>

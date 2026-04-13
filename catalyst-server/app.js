@@ -760,7 +760,7 @@ async function handleApi(req, res, url) {
     if (!auth) return;
     if (!ensureWorkspaceWritable(res, auth.workspace)) return;
     if (!isTeamFeatureUnlocked(auth.workspace)) {
-      return badRequest(res, 'Team features unlock after the Business trial ends.');
+      return badRequest(res, 'Team collaboration is available only inside an active Business workspace.');
     }
     const currentMember = store.teamMembers.find((member) => member.workspaceId === auth.workspace.id && member.email.toLowerCase() === auth.user.email.toLowerCase());
     if (!currentMember || currentMember.role !== 'Owner') return unauthorized(res);
@@ -875,7 +875,7 @@ async function handleApi(req, res, url) {
     if (!auth) return;
     if (!ensureWorkspaceWritable(res, auth.workspace)) return;
     if (!isTeamFeatureUnlocked(auth.workspace)) {
-      return badRequest(res, 'Team features unlock after the Business trial ends.');
+      return badRequest(res, 'Team collaboration is available only inside an active Business workspace.');
     }
     const currentMember = store.teamMembers.find((member) => member.workspaceId === auth.workspace.id && member.email.toLowerCase() === auth.user.email.toLowerCase());
     if (!currentMember || currentMember.role !== 'Owner') return unauthorized(res);

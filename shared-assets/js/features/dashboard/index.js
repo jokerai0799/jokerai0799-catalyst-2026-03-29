@@ -106,8 +106,8 @@ function renderLockedTeamPreview(state) {
     pendingInvitesList.appendChild(create('div', {
       className: 'qfu-pending-invite-card',
       children: [
-        create('strong', { text: 'sarah@example.com' }),
-        create('span', { text: 'Pending invite · Sales' }),
+        create('strong', { text: 'Business workspace access' }),
+        create('span', { text: 'Members with an existing account can be added straight into the workspace. Their own subscription does not control access to this workspace.' }),
       ],
     }));
   }
@@ -501,9 +501,9 @@ function bindSharedLinks(state, refreshApp, attentionSignature) {
         });
         teamForm.reset();
         const message = result.joined
-          ? 'Team member added. They can switch into this workspace from their account.'
+          ? 'Team member added. They can switch into this workspace from their own dashboard even if their personal workspace is locked.'
           : (result.needsAccount
-            ? 'That email needs an account before it can join this workspace.'
+            ? 'That member needs an account before they can be added to this workspace.'
             : 'Team member added.');
         setNotice($('#qfu-team-notice'), message, 'success');
         await refreshApp();
@@ -512,34 +512,6 @@ function bindSharedLinks(state, refreshApp, attentionSignature) {
       }
     });
   }
-
-  document.querySelectorAll('[data-invite-accept]').forEach((button) => {
-    if (button.dataset.bound) return;
-    button.dataset.bound = 'true';
-    button.addEventListener('click', async () => {
-      try {
-        await api.acceptInvite(button.dataset.inviteAccept);
-        setNotice($('#qfu-invite-notice'), 'Invite accepted.', 'success');
-        await refreshApp();
-      } catch (error) {
-        setNotice($('#qfu-invite-notice'), error.message, 'error');
-      }
-    });
-  });
-
-  document.querySelectorAll('[data-invite-decline]').forEach((button) => {
-    if (button.dataset.bound) return;
-    button.dataset.bound = 'true';
-    button.addEventListener('click', async () => {
-      try {
-        await api.declineInvite(button.dataset.inviteDecline);
-        setNotice($('#qfu-invite-notice'), 'Invite declined.', 'success');
-        await refreshApp();
-      } catch (error) {
-        setNotice($('#qfu-invite-notice'), error.message, 'error');
-      }
-    });
-  });
 
   const settingsForm = $('#qfu-settings-form');
   if (settingsForm && !settingsForm.dataset.bound) {
@@ -570,54 +542,30 @@ export function renderDashboard(state, refreshApp) {
   if ($('#first-followup')) $('#first-followup').value = `${state.workspace.firstFollowupDays || 2} days after sent`;
   if ($('#second-followup')) $('#second-followup').value = `${state.workspace.secondFollowupDays || 5} days later`;
   if ($('#settings-notes')) $('#settings-notes').value = state.workspace.notes || '';
-  const inviteStrip = $('#qfu-incoming-invite-strip');
-  const inviteSummary = $('#qfu-incoming-invite-summary');
-  if (inviteStrip && inviteSummary) {
-    const invite = state.incomingInvites?.[0] || null;
-    if (invite) {
-      text(inviteSummary, `${invite.inviterName || 'Someone'} invited you to join ${invite.workspaceName || 'this workspace'} as ${invite.role}.`);
-      const accept = inviteStrip.querySelector('[data-invite-accept]');
-      const decline = inviteStrip.querySelector('[data-invite-decline]');
-      if (accept) accept.dataset.inviteAccept = invite.id;
-      if (decline) decline.dataset.inviteDecline = invite.id;
-      inviteStrip.hidden = false;
-    } else {
-      inviteStrip.hidden = true;
-    }
-  }
   const pendingInvitesList = $('#qfu-pending-invites-list');
   if (pendingInvitesList) {
     clear(pendingInvitesList);
-    const pendingInvites = state.pendingInvites || [];
-    const incomingInvites = state.incomingInvites || [];
-    if (!pendingInvites.length && !incomingInvites.length) {
-      pendingInvitesList.appendChild(create('div', {
-        className: 'qfu-pending-invite-card is-empty',
-        children: [
-          create('strong', { text: 'No pending invites' }),
-          create('span', { text: 'New invites will appear here until they are accepted or declined.' }),
-        ],
-      }));
-    } else {
-      pendingInvites.forEach((invite) => {
-        pendingInvitesList.appendChild(create('div', {
-          className: 'qfu-pending-invite-card',
-          children: [
-            create('strong', { text: invite.inviteeName || invite.inviteeEmail }),
-            create('span', { text: `Sent to ${invite.inviteeEmail} · ${invite.role}` }),
-          ],
-        }));
-      });
-      incomingInvites.forEach((invite) => {
-        pendingInvitesList.appendChild(create('div', {
-          className: 'qfu-pending-invite-card',
-          children: [
-            create('strong', { text: invite.workspaceName || 'Workspace invite' }),
-            create('span', { text: `Invited by ${invite.inviterName || 'owner'} · ${invite.role}` }),
-          ],
-        }));
-      });
-    }
+    pendingInvitesList.appendChild(create('div', {
+      className: 'qfu-pending-invite-card',
+      children: [
+        create('strong', { text: 'Existing account' }),
+        create('span', { text: 'They are added straight into this workspace and can switch to it from their own dashboard.' }),
+      ],
+    }));
+    pendingInvitesList.appendChild(create('div', {
+      className: 'qfu-pending-invite-card',
+      children: [
+        create('strong', { text: 'No account yet' }),
+        create('span', { text: 'You will see a "member needs an account" message instead of creating a pending invite.' }),
+      ],
+    }));
+    pendingInvitesList.appendChild(create('div', {
+      className: 'qfu-pending-invite-card',
+      children: [
+        create('strong', { text: 'Subscription rule' }),
+        create('span', { text: 'Team access follows the active workspace they are viewing. Their own personal workspace can stay locked while your subscribed Business workspace stays open to them.' }),
+      ],
+    }));
   }
   const availableOwners = state.workspace?.teamEnabled ? state.teamMembers : [{ name: state.user.name, role: 'Owner', email: state.user.email, activeQuotes: 0 }];
   setOwnerOptions(state, availableOwners);

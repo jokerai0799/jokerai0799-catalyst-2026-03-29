@@ -72,7 +72,7 @@ function isWorkspaceReadOnly(workspace) {
 }
 
 function isTeamFeatureUnlocked(workspace) {
-  return getWorkspacePlanTier(workspace) === 'business' && !isWorkspaceTrialActive(workspace) && !isWorkspaceReadOnly(workspace);
+  return getWorkspacePlanTier(workspace) === 'business' && isWorkspacePaid(workspace);
 }
 
 function getWorkspaceBilling(workspace) {
