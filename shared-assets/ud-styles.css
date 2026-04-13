@@ -5114,10 +5114,10 @@ p {
 
 .qfu-billing-manage-link.is-disabled,
 .qfu-billing-manage-link[aria-disabled="true"] {
-  background: #dbe4f0;
-  border-color: #dbe4f0;
-  color: #6b7a90;
-  opacity: 0.55 !important;
+  background: #3056d3;
+  border-color: #3056d3;
+  color: #ffffff;
+  opacity: 0.38 !important;
   pointer-events: none;
   cursor: not-allowed !important;
   box-shadow: none;
