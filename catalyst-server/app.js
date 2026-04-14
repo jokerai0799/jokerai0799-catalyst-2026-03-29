@@ -31,7 +31,7 @@ const {
   queueStoreDelete,
   recordQuoteEvent,
   sanitizeUser,
-  saveStore,
+  saveChanges,
   seedWorkspace,
   withUser,
   isValidEmail,
@@ -183,7 +183,7 @@ function shouldRefreshLastSeen(user) {
 async function refreshLastSeen(store, user) {
   if (!shouldRefreshLastSeen(user)) return false;
   user.lastSeenAt = new Date().toISOString();
-  await saveStore(store);
+  await saveChanges({ users: [user] });
   return true;
 }
 
@@ -480,12 +480,17 @@ async function handleApi(req, res, url) {
         store.workspaces.push(workspace);
         store.users.push(user);
         seedWorkspace(store, workspace, user);
-        await saveStore(store);
+        await saveChanges({
+          workspaces: [workspace],
+          users: [user],
+          teamMembers: store.teamMembers.filter((member) => member.workspaceId === workspace.id),
+          quotes: store.quotes.filter((quote) => quote.workspaceId === workspace.id),
+        });
       } else {
         user.verified = true;
         user.lastSeenAt = new Date().toISOString();
         if (!user.name && profile.name) user.name = normalizeName(profile.name);
-        await saveStore(store);
+        await saveChanges({ users: [user] });
       }
 
       await createSession(res, user.id);
@@ -551,7 +556,12 @@ async function handleApi(req, res, url) {
     store.workspaces.push(workspace);
     store.users.push(user);
     seedWorkspace(store, workspace, user);
-    await saveStore(store);
+    await saveChanges({
+      workspaces: [workspace],
+      users: [user],
+      teamMembers: store.teamMembers.filter((member) => member.workspaceId === workspace.id),
+      quotes: store.quotes.filter((quote) => quote.workspaceId === workspace.id),
+    });
     const delivery = await attemptEmail(() => sendVerificationEmail(req, user));
     return sendJson(res, 201, {
       ok: true,
@@ -589,7 +599,7 @@ async function handleApi(req, res, url) {
     clearExpiredAuthTokens(user);
     if (user.verified) return sendJson(res, 200, { ok: true, sent: false, verified: true, emailDeliveryAvailable: Boolean(RESEND_API_KEY) });
     if (!user.verificationToken) setVerificationToken(user);
-    await saveStore(store);
+    await saveChanges({ users: [user] });
     const delivery = await attemptEmail(() => sendVerificationEmail(req, user));
     return sendJson(res, 200, {
       ok: true,
@@ -614,7 +624,7 @@ async function handleApi(req, res, url) {
     if (!verifyPassword(password, user.passwordHash)) return badRequest(res, 'Invalid email or password.');
     if (!user.verified) return badRequest(res, 'Check your email page and verify your account before logging in.');
     user.lastSeenAt = new Date().toISOString();
-    await saveStore(store);
+    await saveChanges({ users: [user] });
     await createSession(res, user.id);
     return sendJson(res, 200, { ok: true, user: sanitizeUser(user) });
   }
@@ -637,7 +647,7 @@ async function handleApi(req, res, url) {
     user.verified = true;
     delete user.verificationToken;
     user.verificationTokenExpiresAt = null;
-    await saveStore(store);
+    await saveChanges({ users: [user] });
     return sendJson(res, 200, { ok: true, email: user.email });
   }
 
@@ -652,7 +662,7 @@ async function handleApi(req, res, url) {
     if (!user) return sendJson(res, 200, { ok: true, sent: false, emailDeliveryAvailable: Boolean(RESEND_API_KEY) });
     clearExpiredAuthTokens(user);
     setResetToken(user);
-    await saveStore(store);
+    await saveChanges({ users: [user] });
     const delivery = await attemptEmail(() => sendPasswordResetEmail(req, user));
     return sendJson(res, 200, {
       ok: true,
@@ -678,7 +688,7 @@ async function handleApi(req, res, url) {
     user.passwordHash = hashPassword(password);
     delete user.resetToken;
     user.resetTokenExpiresAt = null;
-    await saveStore(store);
+    await saveChanges({ users: [user] });
     return sendJson(res, 200, { ok: true });
   }
 
@@ -748,7 +758,7 @@ async function handleApi(req, res, url) {
     auth.workspace.firstFollowupDays = Math.max(1, Number(body.firstFollowupDays || auth.workspace.firstFollowupDays || 2));
     auth.workspace.secondFollowupDays = Math.max(1, Number(body.secondFollowupDays || auth.workspace.secondFollowupDays || 5));
     auth.workspace.notes = withWorkspaceMeta(auth.workspace, body.notes, { planTier: getWorkspacePlanTier(auth.workspace) });
-    await saveStore(store);
+    await saveChanges({ workspaces: [auth.workspace] });
     return sendJson(res, 200, { ok: true, workspace: auth.workspace });
   }
 
@@ -796,18 +806,17 @@ async function handleApi(req, res, url) {
       store.invites = (store.invites || []).filter((invite) => invite.id !== existingPendingInvite.id);
       queueStoreDelete(store, 'workspace_invites', existingPendingInvite.id);
     }
-    if (!existingMembership) {
-      store.teamMembers.push({
-        id: uid('team'),
-        workspaceId: auth.workspace.id,
-        name,
-        email,
-        role,
-        activeQuotes: 0,
-        createdAt: new Date().toISOString(),
-      });
-    }
-    await saveStore(store);
+    const newMember = !existingMembership ? {
+      id: uid('team'),
+      workspaceId: auth.workspace.id,
+      name,
+      email,
+      role,
+      activeQuotes: 0,
+      createdAt: new Date().toISOString(),
+    } : null;
+    if (newMember) store.teamMembers.push(newMember);
+    await saveChanges({ teamMembers: newMember ? [newMember] : [], deletes: store.__deletes || {} });
     return sendJson(res, 201, {
       ok: true,
       joined: true,
@@ -834,20 +843,19 @@ async function handleApi(req, res, url) {
     const alreadyMember = store.teamMembers.some(
       (member) => member.workspaceId === invite.workspaceId && member.email.toLowerCase() === auth.user.email.toLowerCase(),
     );
-    if (!alreadyMember) {
-      store.teamMembers.push({
-        id: uid('team'),
-        workspaceId: invite.workspaceId,
-        name: normalizeName(auth.user.name || invite.inviteeName || auth.user.email.split('@')[0]),
-        email: auth.user.email,
-        role: normalizeRole(invite.role),
-        activeQuotes: 0,
-        createdAt: new Date().toISOString(),
-      });
-    }
+    const acceptedMember = !alreadyMember ? {
+      id: uid('team'),
+      workspaceId: invite.workspaceId,
+      name: normalizeName(auth.user.name || invite.inviteeName || auth.user.email.split('@')[0]),
+      email: auth.user.email,
+      role: normalizeRole(invite.role),
+      activeQuotes: 0,
+      createdAt: new Date().toISOString(),
+    } : null;
+    if (acceptedMember) store.teamMembers.push(acceptedMember);
     invite.status = 'accepted';
     invite.respondedAt = new Date().toISOString();
-    await saveStore(store);
+    await saveChanges({ teamMembers: acceptedMember ? [acceptedMember] : [], invites: [invite] });
     return sendJson(res, 200, { ok: true, invite });
   }
 
@@ -862,7 +870,7 @@ async function handleApi(req, res, url) {
     if (!invite) return notFound(res);
     invite.status = 'declined';
     invite.respondedAt = new Date().toISOString();
-    await saveStore(store);
+    await saveChanges({ invites: [invite] });
     return sendJson(res, 200, { ok: true, invite });
   }
 
@@ -894,13 +902,15 @@ async function handleApi(req, res, url) {
 
     store.teamMembers = store.teamMembers.filter((member) => member.id !== target.id);
     queueStoreDelete(store, 'team_members', target.id);
+    const reassignedQuotes = [];
     store.quotes.forEach((quote) => {
       if (quote.workspaceId === auth.workspace.id && quote.owner === target.name) {
         quote.owner = replacementOwner;
         recordQuoteEvent(quote, 'Quote reassigned', `Ownership moved from ${target.name} to ${replacementOwner}.`);
+        reassignedQuotes.push(quote);
       }
     });
-    await saveStore(store);
+    await saveChanges({ quotes: reassignedQuotes, deletes: store.__deletes || {} });
     return sendJson(res, 200, { ok: true });
   }
 
@@ -933,7 +943,7 @@ async function handleApi(req, res, url) {
     };
     recordQuoteEvent(quote, 'Quote created', `Added with status ${status} and value £${Number(value).toFixed(0)}.`);
     store.quotes.unshift(quote);
-    await saveStore(store);
+    await saveChanges({ quotes: [quote] });
     return sendJson(res, 201, { ok: true, quote });
   }
 
@@ -962,7 +972,7 @@ async function handleApi(req, res, url) {
     quote.notes = notes;
     quote.archived = quote.status === 'Archived' ? true : Boolean(quote.archived);
     recordQuoteEvent(quote, 'Quote updated', `Status ${quote.status} · follow up ${quote.nextFollowUp}`);
-    await saveStore(store);
+    await saveChanges({ quotes: [quote] });
     return sendJson(res, 200, { ok: true, quote });
   }
 
@@ -977,7 +987,7 @@ async function handleApi(req, res, url) {
     if (index === -1) return notFound(res);
     const [deletedQuote] = store.quotes.splice(index, 1);
     queueStoreDelete(store, 'quotes', deletedQuote?.id);
-    await saveStore(store);
+    await saveChanges({ deletes: store.__deletes || {} });
     return sendJson(res, 200, { ok: true });
   }
 
@@ -1004,7 +1014,7 @@ async function handleApi(req, res, url) {
     if (!['Won', 'Lost', 'Archived', 'Replied'].includes(quote.status)) quote.status = 'Sent';
     quote.nextFollowUp = addDays(today(), auth.workspace.secondFollowupDays || auth.workspace.firstFollowupDays || 2);
     recordQuoteEvent(quote, 'Follow-up email sent', `Sent to ${quote.customerEmail} and queued next follow up for ${quote.nextFollowUp}.`);
-    await saveStore(store);
+    await saveChanges({ quotes: [quote] });
     return sendJson(res, 200, { ok: true, quote, delivery });
   }
 
@@ -1057,7 +1067,7 @@ async function handleApi(req, res, url) {
     } else {
       return badRequest(res, 'Unknown action.');
     }
-    await saveStore(store);
+    await saveChanges({ quotes: [quote] });
     return sendJson(res, 200, { ok: true, quote });
   }
 

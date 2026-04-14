@@ -18,7 +18,7 @@ const {
   STRIPE_PERSONAL_PAYMENT_LINK,
   STRIPE_PERSONAL_PRICE_ID,
 } = require('./config');
-const { isSupabaseReady, loadStore: loadSupabaseStore, saveStore: saveSupabaseStore } = require('./supabase');
+const { isSupabaseReady, loadStore: loadSupabaseStore, saveChanges: saveSupabaseChanges, saveStore: saveSupabaseStore } = require('./supabase');
 
 const WORKSPACE_META_PATTERN = /^<!--qfu:([^>]+)-->/;
 
@@ -213,6 +213,10 @@ async function loadStore(scope = {}) {
   return loadSupabaseStore(scope);
 }
 
+async function saveChanges(changes) {
+  return saveSupabaseChanges(changes);
+}
+
 async function saveStore(store) {
   return saveSupabaseStore(store);
 }
@@ -304,6 +308,7 @@ module.exports = {
   queueStoreDelete,
   recordQuoteEvent,
   sanitizeUser,
+  saveChanges,
   saveStore,
   seedWorkspace,
   withWorkspaceMeta,

@@ -1,10 +1,11 @@
 const crypto = require('crypto');
 const { IS_VERCEL, SESSION_COOKIE, SESSION_MAX_AGE_SECONDS } = require('./config');
-const { isSupabaseReady, supabaseRequest } = require('./supabase');
+const { cleanupExpiredSessions, isSupabaseReady, supabaseRequest } = require('./supabase');
 
 async function getSessionRecord(sessionId) {
   if (!sessionId) return null;
   if (!(await isSupabaseReady())) return null;
+  await cleanupExpiredSessions();
   const rows = await supabaseRequest(`sessions?id=eq.${encodeURIComponent(sessionId)}&select=*`);
   const session = rows?.[0] || null;
   if (!session) return null;
@@ -16,6 +17,7 @@ async function getSessionRecord(sessionId) {
 }
 
 async function persistSession(userId) {
+  await cleanupExpiredSessions();
   const sid = crypto.randomBytes(24).toString('hex');
   const createdAt = new Date().toISOString();
   const expiresAt = new Date(Date.now() + SESSION_MAX_AGE_SECONDS * 1000).toISOString();

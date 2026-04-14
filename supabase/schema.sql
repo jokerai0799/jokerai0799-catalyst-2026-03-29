@@ -41,6 +41,7 @@ create table if not exists team_members (
 );
 
 create unique index if not exists team_members_workspace_email_idx on team_members (workspace_id, email);
+create index if not exists team_members_email_idx on team_members (email);
 
 create table if not exists quotes (
   id text primary key,

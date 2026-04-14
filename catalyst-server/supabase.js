@@ -5,6 +5,8 @@ const SUPABASE_ENABLED = Boolean(SUPABASE_BASE_URL && SUPABASE_SERVICE_KEY);
 let supabaseReadyCache = null;
 let supabaseCheckedAt = 0;
 const SUPABASE_RECHECK_MS = 60_000;
+let lastExpiredSessionCleanupAt = 0;
+const EXPIRED_SESSION_CLEANUP_MS = 15 * 60_000;
 
 async function supabaseRequest(resource, { method = 'GET', body, headers = {}, allow404 = false } = {}) {
   const response = await fetch(`${SUPABASE_BASE_URL}/rest/v1/${resource}`, {
@@ -99,7 +101,7 @@ function mapQuoteFromDb(row, eventsByQuote) {
     notes: row.notes || '',
     createdAt: isoDate(row.created_at),
     archived: Boolean(row.archived),
-    history: (eventsByQuote.get(row.id) || []).sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || '')),
+    history: (eventsByQuote.get(row.id) || []).sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || '')).slice(0, 12),
   };
 }
 
@@ -236,6 +238,26 @@ function emptyStore() {
   };
 }
 
+function buildInFilter(values) {
+  const uniqueValues = Array.from(new Set((values || []).filter((value) => value != null && String(value).trim() !== '')));
+  if (!uniqueValues.length) return null;
+  const quoted = uniqueValues.map((value) => `"${String(value).replace(/\\/g, '\\\\').replace(/"/g, '\\"')}"`);
+  return `in.(${quoted.join(',')})`;
+}
+
+async function cleanupExpiredSessions({ force = false } = {}) {
+  if (!SUPABASE_ENABLED) return false;
+  const now = Date.now();
+  if (!force && now - lastExpiredSessionCleanupAt < EXPIRED_SESSION_CLEANUP_MS) return false;
+  lastExpiredSessionCleanupAt = now;
+  await supabaseRequest(`sessions?expires_at=lt.${encodeURIComponent(new Date(now).toISOString())}`, {
+    method: 'DELETE',
+    headers: { Prefer: 'return=minimal' },
+    allow404: true,
+  });
+  return true;
+}
+
 function dedupeById(rows) {
   const seen = new Map();
   for (const row of rows || []) {
@@ -247,7 +269,7 @@ function dedupeById(rows) {
 
 async function loadWorkspaceScope(workspaceRow, { usersRows, incomingInviteEmail, accessibleWorkspaces = [], activeWorkspaceId = null } = {}) {
   if (!workspaceRow?.id) return emptyStore();
-  const [resolvedUsers, quotesRows, teamRows, inviteRows, incomingInviteRows, eventRows] = await Promise.all([
+  const [resolvedUsers, quotesRows, teamRows, inviteRows, incomingInviteRows] = await Promise.all([
     usersRows ? Promise.resolve(usersRows) : supabaseRequest(`users?workspace_id=eq.${encodeURIComponent(workspaceRow.id)}&select=*`),
     supabaseRequest(`quotes?workspace_id=eq.${encodeURIComponent(workspaceRow.id)}&select=*`),
     supabaseRequest(`team_members?workspace_id=eq.${encodeURIComponent(workspaceRow.id)}&select=*`),
@@ -255,13 +277,16 @@ async function loadWorkspaceScope(workspaceRow, { usersRows, incomingInviteEmail
     incomingInviteEmail
       ? supabaseRequest(`workspace_invites?invitee_email=eq.${encodeURIComponent(incomingInviteEmail)}&status=eq.pending&select=*`, { allow404: true })
       : Promise.resolve([]),
-    supabaseRequest('quote_events?select=*'),
   ]);
 
-  const quoteIds = new Set((quotesRows || []).map((row) => row.id));
+  const quoteIds = (quotesRows || []).map((row) => row.id);
+  const eventFilter = buildInFilter(quoteIds);
+  const eventRows = eventFilter
+    ? await supabaseRequest(`quote_events?quote_id=${encodeURIComponent(eventFilter)}&select=*`)
+    : [];
+
   const eventsByQuote = new Map();
   for (const row of eventRows || []) {
-    if (!quoteIds.has(row.quote_id)) continue;
     if (!eventsByQuote.has(row.quote_id)) eventsByQuote.set(row.quote_id, []);
     eventsByQuote.get(row.quote_id).push({
       id: row.id,
@@ -287,9 +312,10 @@ async function loadUserScopedStore(userRow, requestedWorkspaceId) {
   if (!userRow) return emptyStore();
   const membershipRows = await supabaseRequest(`team_members?email=eq.${encodeURIComponent(userRow.email)}&select=*`);
   const workspaceIds = Array.from(new Set([userRow.workspace_id, ...(membershipRows || []).map((row) => row.workspace_id).filter(Boolean)]));
-  const workspaceRows = (await Promise.all(workspaceIds.map((workspaceId) => supabaseRequest(`workspaces?id=eq.${encodeURIComponent(workspaceId)}&select=*`))))
-    .map((rows) => rows?.[0] || null)
-    .filter(Boolean);
+  const workspaceFilter = buildInFilter(workspaceIds);
+  const workspaceRows = workspaceFilter
+    ? await supabaseRequest(`workspaces?id=${encodeURIComponent(workspaceFilter)}&select=*`)
+    : [];
   const membershipByWorkspace = new Map((membershipRows || []).map((row) => [row.workspace_id, row]));
   const accessibleWorkspaces = workspaceRows.map((workspaceRow) => {
     const membership = membershipByWorkspace.get(workspaceRow.id);
@@ -433,23 +459,42 @@ async function deleteQueuedRows(table, ids, { allowMissing = false } = {}) {
   }
 }
 
-async function saveStore(store) {
-  await syncTable('workspaces', store.workspaces || [], mapWorkspaceToDb);
-  await syncTable('users', store.users || [], mapUserToDb);
-  await syncTable('team_members', store.teamMembers || [], mapTeamMemberToDb);
-  await syncTable('quotes', store.quotes || [], mapQuoteToDb);
-  await syncTable('quote_events', flattenQuoteEvents(store.quotes || []), (row) => row);
-  await syncTable('workspace_invites', store.invites || [], mapInviteToDb, { allowMissing: true });
+async function saveChanges({ workspaces = [], users = [], teamMembers = [], quotes = [], invites = [], deletes = {} } = {}) {
+  await syncTable('workspaces', workspaces, mapWorkspaceToDb);
+  await syncTable('users', users, mapUserToDb);
+  await syncTable('team_members', teamMembers, mapTeamMemberToDb);
+  await syncTable('quotes', quotes, mapQuoteToDb);
+  for (const quote of quotes || []) {
+    if (!quote?.id) continue;
+    await supabaseRequest(`quote_events?quote_id=eq.${encodeURIComponent(quote.id)}`, {
+      method: 'DELETE',
+      headers: { Prefer: 'return=minimal' },
+    });
+  }
+  await syncTable('quote_events', flattenQuoteEvents(quotes), (row) => row);
+  await syncTable('workspace_invites', invites, mapInviteToDb, { allowMissing: true });
 
-  const deletes = store.__deletes || {};
   await deleteQueuedRows('quotes', deletes.quotes);
   await deleteQueuedRows('team_members', deletes.team_members);
   await deleteQueuedRows('workspace_invites', deletes.workspace_invites, { allowMissing: true });
 }
 
+async function saveStore(store) {
+  await saveChanges({
+    workspaces: store.workspaces || [],
+    users: store.users || [],
+    teamMembers: store.teamMembers || [],
+    quotes: store.quotes || [],
+    invites: store.invites || [],
+    deletes: store.__deletes || {},
+  });
+}
+
 module.exports = {
+  cleanupExpiredSessions,
   isSupabaseReady,
   loadStore,
+  saveChanges,
   saveStore,
   supabaseRequest,
 };
