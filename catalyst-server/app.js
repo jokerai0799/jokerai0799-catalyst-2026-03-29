@@ -266,6 +266,11 @@ async function stripeRequest(pathname) {
 async function findWorkspaceForStripeEvent(eventObject) {
   const customerId = String(eventObject?.customer || '').trim();
   if (customerId) {
+    const billingRows = await supabaseRequest(`workspace_billing?stripe_customer_id=eq.${encodeURIComponent(customerId)}&select=workspace_id`, { allow404: true });
+    if (billingRows?.[0]?.workspace_id) {
+      const workspaceRows = await supabaseRequest(`workspaces?id=eq.${encodeURIComponent(billingRows[0].workspace_id)}&select=*`);
+      if (workspaceRows?.[0]) return workspaceRows[0];
+    }
     const rows = await supabaseRequest(`workspaces?stripe_customer_id=eq.${encodeURIComponent(customerId)}&select=*`);
     if (rows?.[0]) return rows[0];
   }
@@ -309,16 +314,35 @@ async function syncStripeBillingFromEvent(event) {
   const nextPeriod = subscription?.current_period_end ? new Date(subscription.current_period_end * 1000).toISOString() : null;
   const planTier = stripePlanTierFromPriceId(priceId || workspace.stripe_price_id || STRIPE_PERSONAL_PRICE_ID);
 
+  const billingPayload = {
+    workspace_id: workspace.id,
+    billing_plan_tier: planTier,
+    billing_status: billingStatus,
+    billing_currency: billingCurrency,
+    stripe_customer_id: String(subscription?.customer || eventObject?.customer || workspace.stripe_customer_id || ''),
+    stripe_subscription_id: String(subscription?.id || eventObject?.subscription || workspace.stripe_subscription_id || ''),
+    stripe_price_id: priceId || workspace.stripe_price_id || null,
+    stripe_current_period_end: nextPeriod,
+    created_at: workspace.created_at || new Date().toISOString(),
+  };
+
+  await supabaseRequest('workspace_billing', {
+    method: 'POST',
+    body: [billingPayload],
+    headers: { Prefer: 'resolution=merge-duplicates,return=minimal' },
+    allow404: true,
+  });
+
   await supabaseRequest(`workspaces?id=eq.${encodeURIComponent(workspace.id)}`, {
     method: 'PATCH',
     body: {
-      billing_plan_tier: planTier,
-      billing_status: billingStatus,
-      billing_currency: billingCurrency,
-      stripe_customer_id: String(subscription?.customer || eventObject?.customer || workspace.stripe_customer_id || ''),
-      stripe_subscription_id: String(subscription?.id || eventObject?.subscription || workspace.stripe_subscription_id || ''),
-      stripe_price_id: priceId || workspace.stripe_price_id || null,
-      stripe_current_period_end: nextPeriod,
+      billing_plan_tier: billingPayload.billing_plan_tier,
+      billing_status: billingPayload.billing_status,
+      billing_currency: billingPayload.billing_currency,
+      stripe_customer_id: billingPayload.stripe_customer_id,
+      stripe_subscription_id: billingPayload.stripe_subscription_id,
+      stripe_price_id: billingPayload.stripe_price_id,
+      stripe_current_period_end: billingPayload.stripe_current_period_end,
     },
     headers: { Prefer: 'return=minimal' },
   });
@@ -457,7 +481,8 @@ async function handleApi(req, res, url) {
           replyEmail: email,
           firstFollowupDays: 2,
           secondFollowupDays: 5,
-          notes: withWorkspaceMeta({ createdAt }, 'Keep quote follow ups concise, direct, and easy to reply to.', { planTier: 'personal' }),
+          notes: withWorkspaceMeta({ createdAt }, 'Keep quote follow ups concise, direct, and easy to reply to.'),
+          trialEndsAt: addDays(String(createdAt).slice(0, 10), 7),
           billingPlanTier: 'personal',
           billingStatus: 'inactive',
           billingCurrency: 'GBP',
@@ -528,7 +553,8 @@ async function handleApi(req, res, url) {
       replyEmail: email,
       firstFollowupDays: 2,
       secondFollowupDays: 5,
-      notes: withWorkspaceMeta({ createdAt }, 'Keep quote follow ups concise, direct, and easy to reply to.', { planTier }),
+      notes: withWorkspaceMeta({ createdAt }, 'Keep quote follow ups concise, direct, and easy to reply to.'),
+      trialEndsAt: addDays(String(createdAt).slice(0, 10), 7),
       billingPlanTier: planTier,
       billingStatus: 'inactive',
       billingCurrency: 'GBP',

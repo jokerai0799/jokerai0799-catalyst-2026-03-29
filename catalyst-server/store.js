@@ -20,14 +20,14 @@ const {
 } = require('./config');
 const { isSupabaseReady, loadStore: loadSupabaseStore, saveChanges: saveSupabaseChanges, saveStore: saveSupabaseStore } = require('./supabase');
 
-const WORKSPACE_META_PATTERN = /^<!--qfu:([^>]+)-->/;
+const WORKSPACE_META_PATTERN = /^<!--qfu:([^>]+)-->\s*/;
 
-function parseWorkspaceMeta(workspace) {
+function parseLegacyWorkspaceMeta(workspace) {
   const rawNotes = String(workspace?.notes || '');
   const match = rawNotes.match(WORKSPACE_META_PATTERN);
   const meta = {
-    planTier: 'personal',
-    trialEndsAt: workspace?.createdAt ? addDays(String(workspace.createdAt).slice(0, 10), 7) : addDays(today(), 7),
+    planTier: null,
+    trialEndsAt: null,
   };
   if (!match) return meta;
   for (const part of match[1].split(';')) {
@@ -39,17 +39,20 @@ function parseWorkspaceMeta(workspace) {
   return meta;
 }
 
+function parseWorkspaceMeta(workspace) {
+  const legacy = parseLegacyWorkspaceMeta(workspace);
+  return {
+    planTier: workspace?.billingPlanTier || legacy.planTier || 'personal',
+    trialEndsAt: workspace?.trialEndsAt || legacy.trialEndsAt || (workspace?.createdAt ? addDays(String(workspace.createdAt).slice(0, 10), 7) : addDays(today(), 7)),
+  };
+}
+
 function getVisibleWorkspaceNotes(workspace) {
   return String(workspace?.notes || '').replace(WORKSPACE_META_PATTERN, '').trim();
 }
 
-function withWorkspaceMeta(workspace, notes, overrides = {}) {
-  const current = parseWorkspaceMeta(workspace);
-  const planTier = overrides.planTier || current.planTier || 'personal';
-  const trialEndsAt = overrides.trialEndsAt || current.trialEndsAt || addDays(today(), 7);
-  const visibleNotes = clampText(notes, 2000);
-  const meta = `<!--qfu:plan=${planTier};trialEndsAt=${trialEndsAt}-->`;
-  return visibleNotes ? `${meta}\n${visibleNotes}` : meta;
+function withWorkspaceMeta(_workspace, notes) {
+  return clampText(notes, 2000);
 }
 
 function getWorkspacePlanTier(workspace) {
