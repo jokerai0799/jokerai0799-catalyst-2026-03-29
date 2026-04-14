@@ -76,7 +76,7 @@ function mapUserFromDb(row) {
     workspaceId: row.workspace_id,
     name: row.name,
     email: row.email,
-    passwordHash: row.password_hash,
+    passwordHash: row.password_hash || null,
     verified: Boolean(row.verified),
     verificationToken: row.verification_token || undefined,
     verificationTokenExpiresAt: row.verification_token_expires_at ? isoDate(row.verification_token_expires_at) : null,
@@ -95,6 +95,7 @@ function mapQuoteFromDb(row, eventsByQuote) {
     customer: row.customer,
     customerEmail: row.customer_email || '',
     owner: row.owner,
+    ownerTeamMemberId: row.owner_team_member_id || null,
     status: row.status,
     value: Number(row.value || 0),
     sentDate: row.sent_date,
@@ -110,6 +111,7 @@ function mapTeamMemberFromDb(row) {
   return {
     id: row.id,
     workspaceId: row.workspace_id,
+    userId: row.user_id || null,
     name: row.name,
     email: row.email,
     role: row.role,
@@ -188,7 +190,7 @@ function mapUserToDb(row) {
     workspace_id: row.workspaceId,
     name: row.name,
     email: row.email,
-    password_hash: row.passwordHash,
+    password_hash: row.passwordHash || null,
     verified: Boolean(row.verified),
     verification_token: row.verificationToken || null,
     verification_token_expires_at: row.verificationTokenExpiresAt ? isoDate(row.verificationTokenExpiresAt) : null,
@@ -207,6 +209,7 @@ function mapQuoteToDb(row) {
     customer: row.customer,
     customer_email: row.customerEmail || null,
     owner: row.owner,
+    owner_team_member_id: row.ownerTeamMemberId || null,
     status: row.status,
     value: Number(row.value || 0),
     sent_date: row.sentDate,
@@ -221,6 +224,7 @@ function mapTeamMemberToDb(row) {
   return {
     id: row.id,
     workspace_id: row.workspaceId,
+    user_id: row.userId || null,
     name: row.name,
     email: row.email,
     role: row.role,
@@ -478,6 +482,24 @@ async function syncTable(table, rows, mapper, { allowMissing = false, probeQuery
     }
     if (table === 'workspaces' && isMissingColumnError(error, 'trial_ends_at')) {
       const legacyDesired = desired.map(({ trial_ends_at, ...row }) => row);
+      await supabaseRequest(table, {
+        method: 'POST',
+        body: legacyDesired,
+        headers: { Prefer: 'resolution=merge-duplicates,return=minimal' },
+      });
+      return;
+    }
+    if (table === 'team_members' && isMissingColumnError(error, 'user_id')) {
+      const legacyDesired = desired.map(({ user_id, ...row }) => row);
+      await supabaseRequest(table, {
+        method: 'POST',
+        body: legacyDesired,
+        headers: { Prefer: 'resolution=merge-duplicates,return=minimal' },
+      });
+      return;
+    }
+    if (table === 'quotes' && isMissingColumnError(error, 'owner_team_member_id')) {
+      const legacyDesired = desired.map(({ owner_team_member_id, ...row }) => row);
       await supabaseRequest(table, {
         method: 'POST',
         body: legacyDesired,

@@ -28,12 +28,15 @@ function quotePayload(workspace) {
   const title = $('#quote-title')?.value.trim() || '';
   const rawValue = ($('#quote-value')?.value || '').replace(/[^0-9.]/g, '');
   const sentDate = $('#quote-date')?.value || today();
+  const ownerSelect = $('#quote-owner');
+  const selectedOption = ownerSelect?.selectedOptions?.[0] || null;
   return {
     title,
     customer: title.split('-')[1]?.trim() || title,
     value: Number(rawValue),
     status: $('#quote-status')?.value || 'Draft',
-    owner: $('#quote-owner')?.value || '',
+    ownerId: ownerSelect?.value || '',
+    owner: selectedOption?.textContent?.trim() || ownerSelect?.value || '',
     sentDate,
     nextFollowUp: $('#quote-followup')?.value || addDays(sentDate, workspace.firstFollowupDays || 2),
     customerEmail: $('#quote-customer-email')?.value.trim().toLowerCase() || '',
@@ -94,7 +97,7 @@ export function loadQuoteIntoEditor(quote) {
     'quote-title': quote.title,
     'quote-value': String(quote.value),
     'quote-status': quote.status,
-    'quote-owner': quote.owner,
+    'quote-owner': quote.ownerTeamMemberId || quote.owner,
     'quote-date': quote.sentDate,
     'quote-followup': quote.nextFollowUp,
     'quote-customer-email': quote.customerEmail || '',

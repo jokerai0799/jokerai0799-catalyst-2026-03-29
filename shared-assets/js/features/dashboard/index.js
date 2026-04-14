@@ -20,6 +20,12 @@ function titleCase(value) {
 import { bindChaseActions } from '../chase-list/index.js';
 import { bindQuoteInteractions, loadQuoteIntoEditor, renderAllQuotesTable, renderDashboardAttentionTable, renderQuoteDetail, resetQuoteEditor } from '../quotes/index.js';
 
+function quoteOwnedByMember(quote, member) {
+  if (!quote || !member) return false;
+  if (quote.ownerTeamMemberId && member.id) return quote.ownerTeamMemberId === member.id;
+  return quote.owner === member.name;
+}
+
 function renderAnalytics(quotes) {
   const statusBars = $('#qfu-analytics-status-bars');
   const teamBars = $('#qfu-analytics-team-bars');
@@ -192,7 +198,7 @@ function renderTeam(state, refreshApp) {
   if (!ownershipBody) return;
   clear(ownershipBody);
   state.teamMembers.forEach((member) => {
-    const memberQuotes = state.quotes.filter((quote) => quote.owner === member.name);
+    const memberQuotes = state.quotes.filter((quote) => quoteOwnedByMember(quote, member));
     const due = memberQuotes.filter((quote) => daysBetween(quote.nextFollowUp) <= 0 && !['Won', 'Lost'].includes(quote.status)).length;
     const wonTotal = memberQuotes.filter((quote) => quote.status === 'Won').reduce((sum, quote) => sum + Number(quote.value || 0), 0);
     const row = create('tr', { dataset: { memberId: member.id } });
@@ -456,8 +462,18 @@ function setOwnerOptions(state, availableOwners) {
   if (!ownerSelect) return;
   const current = ownerSelect.value || state.user.name;
   clear(ownerSelect);
-  availableOwners.forEach((member) => ownerSelect.appendChild(create('option', { text: member.name, attrs: { value: member.name } })));
-  ownerSelect.value = availableOwners.some((member) => member.name === current) ? current : (state.user.name || availableOwners[0]?.name || 'Owner');
+  availableOwners.forEach((member) => {
+    const optionValue = member.id || member.name;
+    ownerSelect.appendChild(create('option', { text: member.name, attrs: { value: optionValue } }));
+  });
+  const fallbackValue = availableOwners.find((member) => member.email === state.user.email)?.id
+    || availableOwners.find((member) => member.name === state.user.name)?.id
+    || state.user.name
+    || availableOwners[0]?.id
+    || availableOwners[0]?.name
+    || 'Owner';
+  const matchingOwner = availableOwners.find((member) => member.id === current || member.name === current);
+  ownerSelect.value = matchingOwner ? (matchingOwner.id || matchingOwner.name) : fallbackValue;
 }
 
 function bindSharedLinks(state, refreshApp, attentionSignature) {
@@ -624,7 +640,12 @@ export function renderDashboard(state, refreshApp) {
   renderBillingPanel(state);
   applyReadOnlyState(state);
 
-  if (!$('#quote-id')?.value) resetQuoteEditor(state.workspace, state.user.name);
+  if (!$('#quote-id')?.value) {
+    const defaultOwnerValue = availableOwners.find((member) => member.email === state.user.email)?.id
+      || availableOwners.find((member) => member.name === state.user.name)?.id
+      || state.user.name;
+    resetQuoteEditor(state.workspace, defaultOwnerValue);
+  }
   else {
     const selected = state.quotes.find((quote) => quote.id === $('#quote-id').value);
     if (selected) loadQuoteIntoEditor(selected);

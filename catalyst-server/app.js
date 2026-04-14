@@ -29,6 +29,7 @@ const {
   isWorkspaceReadOnly,
   loadStore,
   queueStoreDelete,
+  quoteOwnedByMember,
   recordQuoteEvent,
   sanitizeUser,
   saveChanges,
@@ -62,6 +63,7 @@ const AUTH_RATE_LIMITS = {
   forgotPassword: { windowMs: 15 * 60 * 1000, max: 10 },
   resetPassword: { windowMs: 15 * 60 * 1000, max: 10 },
 };
+const STRIPE_WEBHOOK_TOLERANCE_SECONDS = 300;
 
 function getAppBaseUrl(req) {
   if (APP_URL) return APP_URL.replace(/\/$/, '');
@@ -187,11 +189,15 @@ async function refreshLastSeen(store, user) {
   return true;
 }
 
-function enforceRateLimit(req, res, key) {
+async function enforceRateLimit(req, res, key) {
   const policy = AUTH_RATE_LIMITS[key];
   if (!policy) return true;
-  const result = checkRateLimit(req, `auth:${key}`, policy);
+  const result = await checkRateLimit(req, `auth:${key}`, policy);
   if (result.allowed) return true;
+  if (result.resetAt) {
+    const retryAfterSeconds = Math.max(1, Math.ceil((new Date(result.resetAt).getTime() - Date.now()) / 1000));
+    res.setHeader('Retry-After', String(retryAfterSeconds));
+  }
   tooManyRequests(res, 'Too many requests for that action. Please wait a few minutes and try again.');
   return false;
 }
@@ -242,15 +248,39 @@ function verifyStripeSignature(rawBody, signatureHeader) {
       .map((part) => part.trim().split('='))
       .filter(([key, value]) => key && value),
   );
-  const timestamp = parts.t;
+  const timestamp = Number(parts.t || 0);
   const signature = parts.v1;
   if (!timestamp || !signature) return false;
+  const ageSeconds = Math.abs(Math.floor(Date.now() / 1000) - timestamp);
+  if (ageSeconds > STRIPE_WEBHOOK_TOLERANCE_SECONDS) return false;
   const payload = `${timestamp}.${rawBody.toString('utf8')}`;
   const expected = crypto.createHmac('sha256', STRIPE_WEBHOOK_SECRET).update(payload).digest('hex');
   try {
-    return crypto.timingSafeEqual(Buffer.from(expected), Buffer.from(signature));
+    return crypto.timingSafeEqual(Buffer.from(expected, 'hex'), Buffer.from(signature, 'hex'));
   } catch {
     return false;
+  }
+}
+
+async function recordStripeWebhookEvent(event) {
+  if (!event?.id) return true;
+  try {
+    await supabaseRequest('stripe_webhook_events', {
+      method: 'POST',
+      body: [{
+        id: event.id,
+        type: event.type || 'unknown',
+        created_at: event.created ? new Date(Number(event.created) * 1000).toISOString() : new Date().toISOString(),
+        processed_at: new Date().toISOString(),
+      }],
+      headers: { Prefer: 'return=minimal' },
+      allow404: true,
+    });
+    return true;
+  } catch (error) {
+    if (error?.status === 409 || String(error?.body || '').includes('duplicate key')) return false;
+    if (error?.status === 404 || String(error?.body || '').includes('stripe_webhook_events')) return true;
+    throw error;
   }
 }
 
@@ -406,6 +436,8 @@ async function handleApi(req, res, url) {
       return sendJson(res, 400, { error: 'Invalid Stripe signature.' });
     }
     const event = JSON.parse(rawBody.toString('utf8') || '{}');
+    const firstSeen = await recordStripeWebhookEvent(event);
+    if (!firstSeen) return sendJson(res, 200, { received: true, duplicate: true });
     const handledEvents = new Set([
       'checkout.session.completed',
       'customer.subscription.created',
@@ -497,7 +529,7 @@ async function handleApi(req, res, url) {
           workspaceId: workspace.id,
           name: normalizeName(profile.name || email.split('@')[0]),
           email,
-          passwordHash: '',
+          passwordHash: null,
           verified: true,
           lastSeenAt: new Date().toISOString(),
           createdAt: new Date().toISOString(),
@@ -532,7 +564,7 @@ async function handleApi(req, res, url) {
   }
 
   if (req.method === 'POST' && pathname === '/api/auth/signup') {
-    if (!enforceRateLimit(req, res, 'signup')) return;
+    if (!(await enforceRateLimit(req, res, 'signup'))) return;
     const body = await readJsonOrReject(req, res, badRequest);
     if (!body) return;
     const name = normalizeName(body.name);
@@ -614,7 +646,7 @@ async function handleApi(req, res, url) {
   }
 
   if (req.method === 'POST' && pathname === '/api/auth/resend-verification') {
-    if (!enforceRateLimit(req, res, 'resendVerification')) return;
+    if (!(await enforceRateLimit(req, res, 'resendVerification'))) return;
     const body = await readJsonOrReject(req, res, badRequest);
     if (!body) return;
     const email = String(body.email || '').trim().toLowerCase();
@@ -637,7 +669,7 @@ async function handleApi(req, res, url) {
   }
 
   if (req.method === 'POST' && pathname === '/api/auth/login') {
-    if (!enforceRateLimit(req, res, 'login')) return;
+    if (!(await enforceRateLimit(req, res, 'login'))) return;
     const body = await readJsonOrReject(req, res, badRequest);
     if (!body) return;
     const email = String(body.email || '').trim().toLowerCase();
@@ -662,7 +694,7 @@ async function handleApi(req, res, url) {
   }
 
   if (req.method === 'POST' && pathname === '/api/auth/verify') {
-    if (!enforceRateLimit(req, res, 'verify')) return;
+    if (!(await enforceRateLimit(req, res, 'verify'))) return;
     const body = await readJsonOrReject(req, res, badRequest);
     if (!body) return;
     const token = String(body.token || '').trim();
@@ -678,7 +710,7 @@ async function handleApi(req, res, url) {
   }
 
   if (req.method === 'POST' && pathname === '/api/auth/forgot-password') {
-    if (!enforceRateLimit(req, res, 'forgotPassword')) return;
+    if (!(await enforceRateLimit(req, res, 'forgotPassword'))) return;
     const body = await readJsonOrReject(req, res, badRequest);
     if (!body) return;
     const email = String(body.email || '').trim().toLowerCase();
@@ -699,7 +731,7 @@ async function handleApi(req, res, url) {
   }
 
   if (req.method === 'POST' && pathname === '/api/auth/reset-password') {
-    if (!enforceRateLimit(req, res, 'resetPassword')) return;
+    if (!(await enforceRateLimit(req, res, 'resetPassword'))) return;
     const body = await readJsonOrReject(req, res, badRequest);
     if (!body) return;
     const token = String(body.token || '').trim();
@@ -835,6 +867,7 @@ async function handleApi(req, res, url) {
     const newMember = !existingMembership ? {
       id: uid('team'),
       workspaceId: auth.workspace.id,
+      userId: existingUser.id,
       name,
       email,
       role,
@@ -872,6 +905,7 @@ async function handleApi(req, res, url) {
     const acceptedMember = !alreadyMember ? {
       id: uid('team'),
       workspaceId: invite.workspaceId,
+      userId: auth.user.id,
       name: normalizeName(auth.user.name || invite.inviteeName || auth.user.email.split('@')[0]),
       email: auth.user.email,
       role: normalizeRole(invite.role),
@@ -922,16 +956,18 @@ async function handleApi(req, res, url) {
       return badRequest(res, 'You cannot remove the last owner from the workspace.');
     }
 
-    const replacementOwner = currentMember.name === target.name
-      ? ownerMembers.find((member) => member.id !== target.id)?.name || auth.user.name
-      : currentMember.name;
+    const replacementMember = currentMember.id === target.id
+      ? ownerMembers.find((member) => member.id !== target.id) || currentMember
+      : currentMember;
+    const replacementOwner = replacementMember?.name || auth.user.name;
 
     store.teamMembers = store.teamMembers.filter((member) => member.id !== target.id);
     queueStoreDelete(store, 'team_members', target.id);
     const reassignedQuotes = [];
     store.quotes.forEach((quote) => {
-      if (quote.workspaceId === auth.workspace.id && quote.owner === target.name) {
+      if (quote.workspaceId === auth.workspace.id && quoteOwnedByMember(quote, target)) {
         quote.owner = replacementOwner;
+        quote.ownerTeamMemberId = replacementMember?.id || null;
         recordQuoteEvent(quote, 'Quote reassigned', `Ownership moved from ${target.name} to ${replacementOwner}.`);
         reassignedQuotes.push(quote);
       }
@@ -949,7 +985,7 @@ async function handleApi(req, res, url) {
     const body = await readJsonOrReject(req, res, badRequest);
     if (!body) return;
     if (!ensureWorkspaceWritable(res, auth.workspace)) return;
-    const { title, customer, customerEmail, owner, status, value, sentDate, nextFollowUp, notes } = buildQuoteInput(body, auth, store);
+    const { title, customer, customerEmail, owner, ownerTeamMemberId, status, value, sentDate, nextFollowUp, notes } = buildQuoteInput(body, auth, store);
     if (!title || !value) return badRequest(res, 'Add at least a title and value before saving.');
     const quote = {
       id: uid('quote'),
@@ -958,6 +994,7 @@ async function handleApi(req, res, url) {
       customer,
       customerEmail,
       owner,
+      ownerTeamMemberId,
       status,
       value,
       sentDate,
@@ -985,12 +1022,13 @@ async function handleApi(req, res, url) {
     const body = await readJsonOrReject(req, res, badRequest);
     if (!body) return;
     if (!ensureWorkspaceWritable(res, auth.workspace)) return;
-    const { title, customer, customerEmail, owner, status, value, sentDate, nextFollowUp, notes } = buildQuoteInput(body, auth, store, quote);
+    const { title, customer, customerEmail, owner, ownerTeamMemberId, status, value, sentDate, nextFollowUp, notes } = buildQuoteInput(body, auth, store, quote);
     if (!title || !value) return badRequest(res, 'Add at least a title and value before saving.');
     quote.title = title;
     quote.customer = customer;
     quote.customerEmail = customerEmail;
     quote.owner = owner;
+    quote.ownerTeamMemberId = ownerTeamMemberId;
     quote.status = status;
     quote.value = value;
     quote.sentDate = sentDate;
