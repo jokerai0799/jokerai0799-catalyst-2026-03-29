@@ -533,9 +533,9 @@ function bindSharedLinks(state, refreshApp, attentionSignature) {
         });
         teamForm.reset();
         const message = result.joined
-          ? 'Team member added. They can switch into this workspace from their own dashboard even if their personal workspace is locked.'
+          ? 'Team member added. They can switch to this workspace from their dashboard.'
           : (result.needsAccount
-            ? 'That member needs an account before they can be added to this workspace.'
+            ? 'That member needs to create an account before they can be added to this workspace.'
             : 'Team member added.');
         setNotice($('#qfu-team-notice'), message, 'success');
         await refreshApp();
@@ -580,22 +580,22 @@ export function renderDashboard(state, refreshApp) {
     pendingInvitesList.appendChild(create('div', {
       className: 'qfu-pending-invite-card',
       children: [
-        create('strong', { text: 'Existing account' }),
-        create('span', { text: 'They are added straight into this workspace and can switch to it from their own dashboard.' }),
+        create('strong', { text: 'Already has an account' }),
+        create('span', { text: 'They will be added straight to this workspace and can switch to it from their dashboard.' }),
       ],
     }));
     pendingInvitesList.appendChild(create('div', {
       className: 'qfu-pending-invite-card',
       children: [
-        create('strong', { text: 'No account yet' }),
-        create('span', { text: 'You will see a "member needs an account" message instead of creating a pending invite.' }),
+        create('strong', { text: 'Needs an account first' }),
+        create('span', { text: 'You will see a message telling you they need to create an account before they can be added.' }),
       ],
     }));
     pendingInvitesList.appendChild(create('div', {
       className: 'qfu-pending-invite-card',
       children: [
-        create('strong', { text: 'Subscription rule' }),
-        create('span', { text: 'Team access follows the active workspace they are viewing. Their own personal workspace can stay locked while your subscribed Business workspace stays open to them.' }),
+        create('strong', { text: 'Access rules' }),
+        create('span', { text: 'Team members can work inside this Business workspace without needing their own separate subscription.' }),
       ],
     }));
   }
