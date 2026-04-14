@@ -146,6 +146,9 @@ returns trigger
 language plpgsql
 as $$
 begin
+  if pg_trigger_depth() > 1 then
+    return coalesce(new, old);
+  end if;
   perform recalc_workspace_active_quotes(coalesce(new.workspace_id, old.workspace_id));
   if tg_op = 'UPDATE' and old.workspace_id is distinct from new.workspace_id then
     perform recalc_workspace_active_quotes(old.workspace_id);
@@ -161,7 +164,7 @@ for each row execute function trigger_recalc_active_quotes();
 
 drop trigger if exists team_members_recalc_active_quotes on team_members;
 create trigger team_members_recalc_active_quotes
-after insert or update or delete on team_members
+after insert or delete or update of workspace_id, user_id, email, name, role on team_members
 for each row execute function trigger_recalc_active_quotes();
 
 DO $$
