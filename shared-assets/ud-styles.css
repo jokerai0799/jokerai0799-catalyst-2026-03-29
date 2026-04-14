@@ -400,6 +400,113 @@ p {
   }
 }
 
+.qfu-seo-nav {
+  position: relative;
+}
+
+.qfu-seo-nav .navbar-collapse {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  width: 100%;
+}
+
+.qfu-seo-nav .navbar-nav {
+  flex-direction: row;
+  gap: 24px;
+}
+
+.qfu-seo-nav .qfu-seo-nav-actions {
+  display: inline-block;
+}
+
+.qfu-seo-nav .qfu-seo-mobile-nav-actions {
+  display: none;
+}
+
+@media only screen and (max-width: 1199px) {
+  .qfu-seo-nav {
+    flex-wrap: wrap;
+  }
+
+  .qfu-seo-nav .navbar-toggler {
+    display: block;
+  }
+
+  .qfu-seo-nav .navbar-collapse {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    left: auto;
+    max-width: 320px;
+    width: min(320px, calc(100vw - 32px));
+    background-color: var(--white);
+    z-index: 9;
+    box-shadow: 0px 15px 20px 0px rgba(0, 0, 0, 0.1);
+    padding: 0;
+    display: none;
+    border-radius: 5px;
+  }
+
+  .qfu-seo-nav .navbar-collapse.show {
+    display: block;
+  }
+
+  .qfu-seo-nav .navbar-nav {
+    padding: 20px 30px 10px;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .qfu-seo-nav .navbar-nav .nav-item {
+    padding: 0;
+  }
+
+  .qfu-seo-nav .navbar-nav .nav-item > a {
+    display: inline-block;
+    color: var(--heading-color);
+    padding: 12px 0;
+  }
+
+  .qfu-seo-nav .qfu-seo-nav-actions {
+    display: none;
+  }
+
+  .qfu-seo-nav .qfu-seo-mobile-nav-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 0 30px 24px;
+  }
+
+  .qfu-seo-nav .qfu-seo-mobile-nav-actions .ud-main-btn {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+  }
+
+  .qfu-seo-nav .qfu-seo-mobile-nav-actions .ud-login-btn {
+    background: #eff6ff;
+    border: 1px solid #bfdbfe;
+    color: #1d4ed8;
+  }
+
+  .qfu-seo-nav .qfu-seo-mobile-nav-actions .ud-white-btn {
+    background: #3056d3;
+    border-color: #3056d3;
+    color: #ffffff;
+  }
+}
+
+@media only screen and (min-width: 1200px) {
+  .qfu-seo-nav .navbar-toggler {
+    display: none;
+  }
+}
+
 .navbar-nav .nav-item {
   position: relative;
   padding: 0px 20px;
