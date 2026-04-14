@@ -19,6 +19,13 @@ export async function ensureLandingLinks() {
 export function initSignupPage() {
   const form = document.querySelector('.ud-login-form');
   if (!form) return;
+  const params = new URLSearchParams(window.location.search);
+  const requestedPlan = params.get('plan') || params.get('trial') || '';
+  const selectedPlan = requestedPlan === 'business' ? 'business' : 'personal';
+  const planInput = form.querySelector('input[name="plan"]');
+  if (planInput) planInput.value = selectedPlan;
+  const planLabel = document.querySelector('[data-selected-plan]');
+  if (planLabel) planLabel.textContent = selectedPlan === 'business' ? 'Business workspace trial' : 'Personal workspace trial';
   const notice = document.createElement('div');
   notice.className = 'qfu-inline-notice';
   notice.style.display = 'none';
@@ -30,6 +37,7 @@ export function initSignupPage() {
       company: String(new FormData(form).get('company') || '').trim(),
       email: String(new FormData(form).get('email') || '').trim().toLowerCase(),
       password: String(new FormData(form).get('password') || ''),
+      plan: String(new FormData(form).get('plan') || selectedPlan),
     };
     try {
       await api.signup(payload);

@@ -7,6 +7,36 @@
       "permanent": true
     },
     {
+      "source": "/signup.html",
+      "destination": "/landing-page/signup.html",
+      "permanent": true
+    },
+    {
+      "source": "/login.html",
+      "destination": "/landing-page/login.html",
+      "permanent": true
+    },
+    {
+      "source": "/check-email.html",
+      "destination": "/landing-page/check-email.html",
+      "permanent": true
+    },
+    {
+      "source": "/verify.html",
+      "destination": "/landing-page/verify.html",
+      "permanent": true
+    },
+    {
+      "source": "/forgot-password.html",
+      "destination": "/landing-page/forgot-password.html",
+      "permanent": true
+    },
+    {
+      "source": "/reset-password.html",
+      "destination": "/landing-page/reset-password.html",
+      "permanent": true
+    },
+    {
       "source": "/landing-page/index.html",
       "destination": "/",
       "permanent": true
