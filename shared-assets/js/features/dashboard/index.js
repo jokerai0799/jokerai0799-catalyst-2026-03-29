@@ -533,9 +533,9 @@ function bindSharedLinks(state, refreshApp, attentionSignature) {
         });
         teamForm.reset();
         const message = result.joined
-          ? 'Team member added. They can switch to this workspace from their dashboard.'
+          ? 'Team member added to this workspace.'
           : (result.needsAccount
-            ? 'That member needs to create an account before they can be added to this workspace.'
+            ? 'That member needs to create an account first.'
             : 'Team member added.');
         setNotice($('#qfu-team-notice'), message, 'success');
         await refreshApp();
@@ -580,22 +580,22 @@ export function renderDashboard(state, refreshApp) {
     pendingInvitesList.appendChild(create('div', {
       className: 'qfu-pending-invite-card',
       children: [
-        create('strong', { text: 'Already has an account' }),
-        create('span', { text: 'They will be added straight to this workspace and can switch to it from their dashboard.' }),
+        create('strong', { text: 'Has an account' }),
+        create('span', { text: 'Added straight to this workspace.' }),
       ],
     }));
     pendingInvitesList.appendChild(create('div', {
       className: 'qfu-pending-invite-card',
       children: [
-        create('strong', { text: 'Needs an account first' }),
-        create('span', { text: 'You will see a message telling you they need to create an account before they can be added.' }),
+        create('strong', { text: 'No account yet' }),
+        create('span', { text: 'They need to create an account first.' }),
       ],
     }));
     pendingInvitesList.appendChild(create('div', {
       className: 'qfu-pending-invite-card',
       children: [
-        create('strong', { text: 'Access rules' }),
-        create('span', { text: 'Team members can work inside this Business workspace without needing their own separate subscription.' }),
+        create('strong', { text: 'Business plan' }),
+        create('span', { text: 'Team members do not pay separately.' }),
       ],
     }));
   }
