@@ -1,0 +1,23 @@
+# Quote Chaser
+
+> Quote follow-up software for trades and service businesses.
+
+Quote Chaser helps businesses track quotes, follow up on time, and turn more estimates into booked work with a simple quote follow-up workflow.
+
+## Canonical pages
+- Homepage: https://quotechaser.online/
+- Product page: https://quotechaser.online/quote-follow-up-software/
+- Estimate follow-up software: https://quotechaser.online/estimate-follow-up-software/
+- Quote chasing software: https://quotechaser.online/quote-chasing-software/
+- Quote management software for trades: https://quotechaser.online/quote-management-software-for-trades/
+- Privacy policy: https://quotechaser.online/landing-page/privacy-policy.html
+- Terms of service: https://quotechaser.online/landing-page/terms-of-service.html
+- Refund policy: https://quotechaser.online/landing-page/refund-policy.html
+- Support policy: https://quotechaser.online/landing-page/support-policy.html
+
+## Notes
+- Primary brand: Quote Chaser
+- Product focus: quote tracking and follow-up workflow
+- Audience: trades and service teams
+- Not intended to be a full CRM
+- Prefer canonical clean URLs over legacy `.html` landing-page URLs where available
