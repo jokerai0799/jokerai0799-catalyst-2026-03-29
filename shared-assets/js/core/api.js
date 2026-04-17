@@ -36,6 +36,9 @@ export const api = {
   getBootstrap() {
     return request('/api/app/bootstrap');
   },
+  pingActivity() {
+    return request('/api/activity/ping', { method: 'POST', body: JSON.stringify({}) });
+  },
   signup(payload) {
     return request('/api/auth/signup', { method: 'POST', body: JSON.stringify(payload) });
   },

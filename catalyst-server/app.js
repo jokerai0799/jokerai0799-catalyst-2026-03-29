@@ -55,6 +55,9 @@ const {
 const GOOGLE_STATE_COOKIE = 'catalyst_google_state';
 const VERIFY_TOKEN_HOURS = 72;
 const RESET_TOKEN_HOURS = 2;
+const LAST_SEEN_REFRESH_MS = 5 * 60 * 1000;
+const LIVE_USERS_WINDOW_MS = 15 * 60 * 1000;
+const PROJECT_METRICS_CACHE_MS = 30 * 1000;
 const AUTH_RATE_LIMITS = {
   signup: { windowMs: 15 * 60 * 1000, max: 10 },
   login: { windowMs: 15 * 60 * 1000, max: 20 },
@@ -64,6 +67,8 @@ const AUTH_RATE_LIMITS = {
   resetPassword: { windowMs: 15 * 60 * 1000, max: 10 },
 };
 const STRIPE_WEBHOOK_TOLERANCE_SECONDS = 300;
+let projectMetricsCache = null;
+let projectMetricsCachedAt = 0;
 
 function getAppBaseUrl(req) {
   if (APP_URL) return APP_URL.replace(/\/$/, '');
@@ -171,15 +176,12 @@ function clearExpiredAuthTokens(user) {
   }
 }
 
-function shouldRefreshLastSeen(user) {
+function shouldRefreshLastSeen(user, maxAgeMs = LAST_SEEN_REFRESH_MS) {
   if (!user) return false;
   if (!user.lastSeenAt) return true;
   const lastSeen = new Date(user.lastSeenAt);
   if (Number.isNaN(lastSeen.getTime())) return true;
-  const now = new Date();
-  return lastSeen.getUTCFullYear() !== now.getUTCFullYear()
-    || lastSeen.getUTCMonth() !== now.getUTCMonth()
-    || lastSeen.getUTCDate() !== now.getUTCDate();
+  return Date.now() - lastSeen.getTime() >= maxAgeMs;
 }
 
 async function refreshLastSeen(store, user) {
@@ -187,6 +189,59 @@ async function refreshLastSeen(store, user) {
   user.lastSeenAt = new Date().toISOString();
   await saveChanges({ users: [user] });
   return true;
+}
+
+function startOfUtcDayIso() {
+  const date = new Date();
+  date.setUTCHours(0, 0, 0, 0);
+  return date.toISOString();
+}
+
+async function buildProjectMetrics() {
+  const generatedAt = new Date().toISOString();
+  const storageReady = await isSupabaseReady();
+
+  if (!storageReady) {
+    return {
+      ok: false,
+      project: 'catalyst',
+      health: 'degraded',
+      liveUsers: 0,
+      signupsToday: 0,
+      storage: 'unavailable',
+      liveWindowMinutes: Math.round(LIVE_USERS_WINDOW_MS / 60000),
+      generatedAt,
+    };
+  }
+
+  const liveSinceIso = new Date(Date.now() - LIVE_USERS_WINDOW_MS).toISOString();
+  const signupsSinceIso = startOfUtcDayIso();
+
+  const [liveUsersRows, signupsTodayRows] = await Promise.all([
+    supabaseRequest(`users?select=id&last_seen_at=gte.${encodeURIComponent(liveSinceIso)}`),
+    supabaseRequest(`users?select=id&created_at=gte.${encodeURIComponent(signupsSinceIso)}`),
+  ]);
+
+  return {
+    ok: true,
+    project: 'catalyst',
+    health: 'ok',
+    liveUsers: Array.isArray(liveUsersRows) ? liveUsersRows.length : 0,
+    signupsToday: Array.isArray(signupsTodayRows) ? signupsTodayRows.length : 0,
+    storage: 'supabase',
+    liveWindowMinutes: Math.round(LIVE_USERS_WINDOW_MS / 60000),
+    generatedAt,
+  };
+}
+
+async function getProjectMetrics() {
+  const now = Date.now();
+  if (projectMetricsCache && now - projectMetricsCachedAt < PROJECT_METRICS_CACHE_MS) {
+    return projectMetricsCache;
+  }
+  projectMetricsCache = await buildProjectMetrics();
+  projectMetricsCachedAt = now;
+  return projectMetricsCache;
 }
 
 async function enforceRateLimit(req, res, key) {
@@ -397,6 +452,11 @@ async function handleApi(req, res, url) {
     return sendJson(res, 200, { ok: true, storage: (await isSupabaseReady()) ? 'supabase' : 'unavailable' });
   }
 
+  if (req.method === 'GET' && pathname === '/api/project-metrics') {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    return sendJson(res, 200, await getProjectMetrics());
+  }
+
   if (req.method === 'GET' && pathname === '/api/auth/google/start') {
     if (!GOOGLE_CLIENT_ID || !GOOGLE_CLIENT_SECRET) return badRequest(res, 'Google auth is not configured yet.');
     const state = crypto.randomBytes(24).toString('hex');
@@ -466,6 +526,16 @@ async function handleApi(req, res, url) {
     const user = await getSessionUser(req, store);
     await refreshLastSeen(store, user);
     return sendJson(res, 200, { user: user ? sanitizeUser(user) : null });
+  }
+
+  if (req.method === 'POST' && pathname === '/api/activity/ping') {
+    if (!ensureSameOrigin(req, res)) return;
+    const store = await loadAuthenticatedStore(req, res);
+    if (!store) return;
+    const user = await getSessionUser(req, store);
+    if (!user) return unauthorized(res);
+    await refreshLastSeen(store, user);
+    return sendJson(res, 200, { ok: true, lastSeenAt: user.lastSeenAt || new Date().toISOString() });
   }
 
   if (req.method === 'GET' && pathname === '/api/auth/google/callback') {
