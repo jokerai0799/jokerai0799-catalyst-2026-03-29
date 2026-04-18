@@ -4370,7 +4370,7 @@ p {
 
   .qfu-app-sidebar-bottom .qfu-app-logout-link {
     grid-column: 1 / -1;
-    margin: 2px 2px 0;
+    margin: 2px 0 0;
   }
 
   .qfu-app-topbar {
@@ -4858,11 +4858,11 @@ p {
   margin-top: 28px;
   padding: 18px 0;
   background: #1f2937;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  border-top: 0;
 }
 
 .qfu-app-shell + .qfu-workspace-footer {
-  margin-top: 0;
+  margin-top: -1px;
   width: 100%;
   position: relative;
 }
@@ -5279,14 +5279,33 @@ button.is-disabled {
 }
 
 .qfu-app-logout-link {
-  display: inline-block;
-  margin-bottom: 12px;
-  color: #98a2b3;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 40px;
+  padding: 0 14px;
+  margin-top: 2px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(8, 15, 38, 0.18);
+  color: rgba(255, 255, 255, 0.86);
+  font-size: 13px;
+  font-weight: 600;
+  transition: background 0.18s ease, border-color 0.18s ease, color 0.18s ease, transform 0.18s ease;
+}
+
+.qfu-app-logout-link i {
   font-size: 14px;
 }
 
-.qfu-app-logout-link:hover {
-  color: #1d2144;
+.qfu-app-logout-link:hover,
+.qfu-app-logout-link:focus {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.22);
+  transform: translateY(-1px);
 }
 
 .qfu-panel-helper {
