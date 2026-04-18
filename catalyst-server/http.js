@@ -107,7 +107,7 @@ function sendStaticFile(res, status, finalPath, buffer) {
 }
 
 function serveStatic(req, res, pathname) {
-  const target = pathname === '/' ? '/landing-page/index.html' : pathname;
+  const target = pathname === '/' ? '/index.html' : pathname;
   const filePath = path.normalize(path.join(ROOT, decodeURIComponent(target)));
   if (!filePath.startsWith(ROOT)) {
     res.writeHead(403);
