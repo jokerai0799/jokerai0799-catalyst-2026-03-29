@@ -58,6 +58,7 @@ const RESET_TOKEN_HOURS = 2;
 const LAST_SEEN_REFRESH_MS = 5 * 60 * 1000;
 const LIVE_USERS_WINDOW_MS = 15 * 60 * 1000;
 const PROJECT_METRICS_CACHE_MS = 30 * 1000;
+const BUSINESS_TEAM_MEMBER_LIMIT = 20;
 const AUTH_RATE_LIMITS = {
   signup: { windowMs: 15 * 60 * 1000, max: 10 },
   login: { windowMs: 15 * 60 * 1000, max: 20 },
@@ -270,6 +271,10 @@ function ensureWorkspaceWritable(res, workspace) {
   if (!isWorkspaceReadOnly(workspace)) return true;
   sendJson(res, 402, { error: 'Your 7 day trial has ended. This workspace is now read-only until you choose Personal or Business.' });
   return false;
+}
+
+function getWorkspaceMemberCount(store, workspaceId) {
+  return store.teamMembers.filter((member) => member.workspaceId === workspaceId).length;
 }
 
 function stripePlanTierFromPriceId(priceId) {
@@ -912,6 +917,9 @@ async function handleApi(req, res, url) {
     if (store.teamMembers.some((member) => member.workspaceId === auth.workspace.id && member.email.toLowerCase() === email)) {
       return badRequest(res, 'A team member with that email already exists.');
     }
+    if (getWorkspaceMemberCount(store, auth.workspace.id) >= BUSINESS_TEAM_MEMBER_LIMIT) {
+      return badRequest(res, `Business supports up to ${BUSINESS_TEAM_MEMBER_LIMIT} users per workspace. Contact us if you need a larger team setup.`);
+    }
     const existingPendingInvite = (store.invites || []).find(
       (invite) => invite.workspaceId === auth.workspace.id && invite.status === 'pending' && String(invite.inviteeEmail || '').trim().toLowerCase() === email,
     );
@@ -972,6 +980,9 @@ async function handleApi(req, res, url) {
     const alreadyMember = store.teamMembers.some(
       (member) => member.workspaceId === invite.workspaceId && member.email.toLowerCase() === auth.user.email.toLowerCase(),
     );
+    if (!alreadyMember && getWorkspaceMemberCount(store, invite.workspaceId) >= BUSINESS_TEAM_MEMBER_LIMIT) {
+      return badRequest(res, `This workspace already has ${BUSINESS_TEAM_MEMBER_LIMIT} users. Contact us if you need a larger team setup.`);
+    }
     const acceptedMember = !alreadyMember ? {
       id: uid('team'),
       workspaceId: invite.workspaceId,
