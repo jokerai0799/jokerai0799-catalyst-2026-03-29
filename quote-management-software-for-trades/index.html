@@ -106,123 +106,259 @@
       </div>
     </section>
 
-    <section class="ud-about" style="padding-top: 80px;">
+
+    <section class="ud-about" style="padding-top: 80px; padding-bottom: 40px;">
       <div class="container">
-        <div class="ud-about-wrapper wow fadeInUp" data-wow-delay=".1s">
-          <div class="ud-about-content-wrapper" style="max-width: 100%; flex: 1 1 auto;">
+        <div class="row align-items-center g-5">
+          <div class="col-lg-5">
             <div class="ud-about-content" style="max-width: 100%;">
               <span class="tag">Quote management software for trades</span>
-              <h2>Why trade businesses look for this</h2>
-              <p>Trades and service businesses often need quote management software because the real challenge starts after the quote has been sent. The team needs to know what stage each quote is in, what happens next, and which jobs are still active.</p>
-              <p>Quote Chaser keeps that workflow simpler. Instead of managing quotes through a general-purpose CRM, teams can track sent dates, current status, next follow ups, and won or lost outcomes in one focused place.</p>
-              <p>That makes it a better fit for businesses that want practical quote management for trades: clear pipeline visibility, cleaner follow up, and less clutter around the core job.</p>
+              <h2>Keep quote status, next actions, and outcomes in one place</h2>
+              <p>
+                Quote Chaser gives trade and service businesses one clear place to track sent quotes, current status, next follow up dates, and outcomes without the extra CRM clutter.
+              </p>
+              <p>
+                It is built for the part that usually gets messy after the quote goes out: what stage each job is in, what should happen next, and what has already been won or closed out.
+              </p>
+              <ul class="ud-widget-links" style="display: grid; gap: 12px; margin: 24px 0 0; max-width: 760px;">
+                <li><strong>Track quote status clearly</strong><span style="color: #7b8794;"> — sent, follow-up due, won, and lost quotes stay visible.</span></li>
+                <li><strong>Keep the pipeline readable</strong><span style="color: #7b8794;"> — the team can see what is still active and what needs action next.</span></li>
+                <li><strong>Work without CRM bloat</strong><span style="color: #7b8794;"> — the workflow stays focused on quotes and follow ups.</span></li>
+              </ul>
+            </div>
+          </div>
+          <div class="col-lg-7">
+
+            <div class="qfu-hero-demo" aria-label="Quote Chaser workspace preview" style="margin: 0 auto; max-width: 100%; aspect-ratio: auto; min-height: 0;">
+              <div class="qfu-demo-sidebar">
+                <div class="qfu-demo-sidebar-brand">
+                  <img src="/shared-assets/images/logo/icon.svg" alt="Quote Chaser icon" />
+                  <span>Quote Chaser</span>
+                </div>
+                <ul class="qfu-demo-nav">
+                  <li class="is-active">Dashboard</li>
+                  <li>Quotes</li>
+                  <li>Chase List</li>
+                  <li>Playbook</li>
+                  <li>Settings</li>
+                </ul>
+              </div>
+              <div class="qfu-demo-main">
+                <div class="qfu-demo-toolbar">
+                  <div>
+                    <p class="qfu-demo-kicker">Workspace preview</p>
+                    <h3>Quote pipeline overview</h3>
+                  </div>
+                  <span class="qfu-demo-badge">Today</span>
+                </div>
+                <div class="qfu-demo-metrics">
+                  <div class="qfu-demo-metric-card qfu-demo-metric-card-blue">
+                    <span>Open pipeline</span>
+                    <strong data-currency-value="3380">£3,380</strong>
+                    <small>Quotes still in play</small>
+                  </div>
+                  <div class="qfu-demo-metric-card qfu-demo-metric-card-amber">
+                    <span>Due today</span>
+                    <strong>2</strong>
+                    <small>Quotes needing action now</small>
+                  </div>
+                  <div class="qfu-demo-metric-card qfu-demo-metric-card-green">
+                    <span>Won revenue</span>
+                    <strong data-currency-value="1450">£1,450</strong>
+                    <small>Closed business so far</small>
+                  </div>
+                </div>
+                <div class="qfu-demo-tracking-bar">
+                  <div class="qfu-demo-track-item qfu-demo-track-blue">
+                    <span>Sent</span>
+                    <strong data-currency-value="2400">£2,400</strong>
+                  </div>
+                  <div class="qfu-demo-track-item qfu-demo-track-amber">
+                    <span>Follow-up due</span>
+                    <strong data-currency-value="980">£980</strong>
+                  </div>
+                  <div class="qfu-demo-track-item qfu-demo-track-green">
+                    <span>Won</span>
+                    <strong data-currency-value="1450">£1,450</strong>
+                  </div>
+                </div>
+                <div class="qfu-demo-content-grid">
+                  <div class="qfu-demo-panel">
+                    <div class="qfu-demo-panel-head">
+                      <p>Pipeline</p>
+                      <span>Quote pipeline view</span>
+                    </div>
+                    <div class="qfu-demo-table-wrap">
+                      <table class="qfu-demo-table">
+                        <thead>
+                          <tr>
+                            <th>Client</th>
+                            <th>Quote</th>
+                            <th>Value</th>
+                            <th>Status</th>
+                            <th>Next</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr>
+                            <td>Jones Property Lets</td>
+                            <td>Boiler replacement quote</td>
+                            <td class="qfu-value qfu-value-blue" data-currency-value="2400">£2,400</td>
+                            <td><span class="qfu-status qfu-status-blue">Sent</span></td>
+                            <td>20 Mar</td>
+                          </tr>
+                          <tr>
+                            <td>Reed Electrical</td>
+                            <td>Consumer unit upgrade</td>
+                            <td class="qfu-value qfu-value-amber" data-currency-value="980">£980</td>
+                            <td><span class="qfu-status qfu-status-amber">Follow-up due</span></td>
+                            <td>Today</td>
+                          </tr>
+                          <tr>
+                            <td>Walker Homes</td>
+                            <td>Kitchen repaint and touch-ups</td>
+                            <td class="qfu-value qfu-value-green" data-currency-value="1450">£1,450</td>
+                            <td><span class="qfu-status qfu-status-green">Won</span></td>
+                            <td>None</td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
       </div>
     </section>
 
-    <section class="ud-features" id="use-cases">
+    <section class="ud-features" id="use-cases" style="padding-top: 64px; padding-bottom: 56px;">
       <div class="container">
         <div class="row">
           <div class="col-lg-12">
             <div class="ud-section-title">
-              <span>Use cases</span>
-              <h2>What teams usually need from quote management</h2>
-              <p>For many trades businesses, good quote management is about clarity more than complexity.</p>
+              <span>Key outcomes</span>
+              <h2>What teams need at a glance</h2>
+              <p>
+                Keep the pipeline readable, make next actions clear, and give the team one focused quote workflow.
+              </p>
             </div>
           </div>
         </div>
         <div class="row">
-      <div class="col-xl-6 col-lg-6 col-md-6">
-        <div class="ud-single-feature wow fadeInUp" data-wow-delay=".10s">
-          <div class="ud-feature-content">
-            <h3 class="ud-feature-title">Track quote status clearly</h3>
-            <p class="ud-feature-desc">
-              Keep sent, follow-up due, won, and lost quotes visible so the whole team can see where work stands.
-            </p>
+          <div class="col-xl-4 col-lg-4 col-md-6">
+            <div class="ud-single-feature wow fadeInUp" data-wow-delay=".10s">
+              <div class="ud-feature-icon">
+                <i class="lni lni-layout"></i>
+              </div>
+              <div class="ud-feature-content">
+                <h3 class="ud-feature-title">Track quote status clearly</h3>
+                <p class="ud-feature-desc">
+                  Keep sent, follow-up due, won, and lost quotes visible so the whole team can see where work stands.
+                </p>
+              </div>
+            </div>
           </div>
-        </div>
-      </div>
-      <div class="col-xl-6 col-lg-6 col-md-6">
-        <div class="ud-single-feature wow fadeInUp" data-wow-delay=".15s">
-          <div class="ud-feature-content">
-            <h3 class="ud-feature-title">See next follow ups</h3>
-            <p class="ud-feature-desc">
-              A quote record is much more useful when the next action is attached to it, rather than buried in someone’s inbox or memory.
-            </p>
+          <div class="col-xl-4 col-lg-4 col-md-6">
+            <div class="ud-single-feature wow fadeInUp" data-wow-delay=".20s">
+              <div class="ud-feature-icon">
+                <i class="lni lni-calendar"></i>
+              </div>
+              <div class="ud-feature-content">
+                <h3 class="ud-feature-title">See next follow ups</h3>
+                <p class="ud-feature-desc">
+                  Keep the next action attached to each quote instead of buried in someone’s inbox or memory.
+                </p>
+              </div>
+            </div>
           </div>
-        </div>
-      </div>
-      <div class="col-xl-6 col-lg-6 col-md-6">
-        <div class="ud-single-feature wow fadeInUp" data-wow-delay=".20s">
-          <div class="ud-feature-content">
-            <h3 class="ud-feature-title">Keep the pipeline readable</h3>
-            <p class="ud-feature-desc">
-              Trade teams usually want a clean view of what is still in play, what is overdue, and what has already converted into booked work.
-            </p>
+          <div class="col-xl-4 col-lg-4 col-md-6">
+            <div class="ud-single-feature wow fadeInUp" data-wow-delay=".30s">
+              <div class="ud-feature-icon">
+                <i class="lni lni-dashboard"></i>
+              </div>
+              <div class="ud-feature-content">
+                <h3 class="ud-feature-title">Keep the pipeline readable</h3>
+                <p class="ud-feature-desc">
+                  See what is still in play, what is overdue, and what has already turned into booked work.
+                </p>
+              </div>
+            </div>
           </div>
-        </div>
-      </div>
-      <div class="col-xl-6 col-lg-6 col-md-6">
-        <div class="ud-single-feature wow fadeInUp" data-wow-delay=".25s">
-          <div class="ud-feature-content">
-            <h3 class="ud-feature-title">Use something lighter than a CRM</h3>
-            <p class="ud-feature-desc">
-              If the main need is quote management and follow up, a focused workflow can be a better fit than paying for broad CRM complexity.
-            </p>
-          </div>
-        </div>
-      </div>
         </div>
       </div>
     </section>
 
-    <section class="ud-faq">
+
+    <section class="ud-features" style="padding-top: 12px; padding-bottom: 56px;">
       <div class="container">
         <div class="row">
           <div class="col-lg-12">
-            <div class="ud-section-title text-center mx-auto">
-              <span>Built for focused follow up</span>
-              <h2>A simpler take on quote management</h2>
-              <p>Trade businesses usually do not need more software layers. They need clearer visibility over sent quotes and follow ups.</p>
+            <div class="ud-section-title">
+              <span>How it works</span>
+              <h2>How teams manage quote follow up day to day</h2>
+              <p>
+                Quote Chaser is built around the practical steps teams need every day, not a heavy sales process.
+              </p>
             </div>
           </div>
         </div>
-        <div class="row justify-content-center">
-          <div class="col-lg-10">
-        <div class="ud-single-faq wow fadeInUp" data-wow-delay=".10s">
-          <div class="accordion">
-            <button class="ud-faq-btn" type="button">
-              <span class="icon flex-shrink-0"><i class="lni lni-chevron-down"></i></span>
-              <span>Who is this page for?</span>
-            </button>
-            <div class="accordion-collapse show">
-              <div class="ud-faq-body">
-                Trade and service businesses that send quotes regularly and want a simpler way to manage quote status, next actions, and won/lost outcomes.
+        <div class="row">
+          <div class="col-xl-6 col-lg-6 col-md-6">
+            <div class="ud-single-feature wow fadeInUp" data-wow-delay=".1s">
+              <div class="ud-feature-content">
+                <h3 class="ud-feature-title">Log the quote</h3>
+                <p class="ud-feature-desc">
+                  Add the client, value, sent date, and owner so the quote is visible from day one.
+                </p>
+              </div>
+            </div>
+          </div>
+          <div class="col-xl-6 col-lg-6 col-md-6">
+            <div class="ud-single-feature wow fadeInUp" data-wow-delay=".15s">
+              <div class="ud-feature-content">
+                <h3 class="ud-feature-title">Set the next follow up</h3>
+                <p class="ud-feature-desc">
+                  Keep the next action attached to the quote, so nobody has to guess what should happen next.
+                </p>
+              </div>
+            </div>
+          </div>
+          <div class="col-xl-6 col-lg-6 col-md-6">
+            <div class="ud-single-feature wow fadeInUp" data-wow-delay=".2s">
+              <div class="ud-feature-content">
+                <h3 class="ud-feature-title">Work from a clear queue</h3>
+                <p class="ud-feature-desc">
+                  See what is due, overdue, won, or closed out without jumping between tools.
+                </p>
+              </div>
+            </div>
+          </div>
+          <div class="col-xl-6 col-lg-6 col-md-6">
+            <div class="ud-single-feature wow fadeInUp" data-wow-delay=".25s">
+              <div class="ud-feature-content">
+                <h3 class="ud-feature-title">Close it out properly</h3>
+                <p class="ud-feature-desc">
+                  Mark quotes as won, lost, or booked work so the whole team can see the real outcome.
+                </p>
               </div>
             </div>
           </div>
         </div>
-        <div class="ud-single-faq wow fadeInUp" data-wow-delay=".15s">
-          <div class="accordion">
-            <button class="ud-faq-btn" type="button">
-              <span class="icon flex-shrink-0"><i class="lni lni-chevron-down"></i></span>
-              <span>What makes this different from a generic CRM?</span>
-            </button>
-            <div class="accordion-collapse show">
-              <div class="ud-faq-body">
-                It stays focused on quote management and follow up. That means less clutter, less setup, and a workflow closer to what many small trade teams actually need day to day.
-              </div>
+        <div class="row">
+          <div class="col-lg-12">
+            <div style="display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; margin-top: 8px;">
+              <a href="/#pricing" class="ud-main-btn">See plans and pricing</a>
+              <a href="/landing-page/signup.html" class="ud-main-btn ud-white-btn" style="background: #eff6ff; color: #1d4ed8; border-color: #bfdbfe;">Start your free trial</a>
             </div>
-          </div>
-        </div>
           </div>
         </div>
       </div>
     </section>
 
-    <section class="ud-about" style="padding-top: 0; padding-bottom: 72px;">
+
+    <section class="ud-about" style="padding-top: 0; padding-bottom: 56px;">
       <div class="container">
         <div class="ud-about-wrapper wow fadeInUp" data-wow-delay=".05s" style="padding: 32px 36px;">
           <div class="ud-about-content-wrapper" style="max-width: 100%; flex: 1 1 auto;">
@@ -242,8 +378,8 @@
                   <span style="color: #7b8794;"> — one shared workspace for up to 20 users.</span>
                 </li>
                 <li>
-                  <strong>Need a larger setup?</strong>
-                  <span style="color: #7b8794;"> — if you need more than 20 users, <a href="/#contact">contact us</a>.</span>
+                  <strong>Larger teams</strong>
+                  <span style="color: #7b8794;"> — custom setup available on request.</span>
                 </li>
               </ul>
             </div>
@@ -252,6 +388,67 @@
       </div>
     </section>
 
+    <section class="ud-about" style="padding-top: 0; padding-bottom: 72px;">
+      <div class="container">
+        <div class="ud-about-wrapper wow fadeInUp" data-wow-delay=".05s" style="padding: 40px 36px; background: linear-gradient(135deg, rgba(48, 86, 211, 0.08), rgba(48, 86, 211, 0.03)); border: 1px solid rgba(48, 86, 211, 0.12);">
+          <div class="ud-about-content-wrapper" style="max-width: 100%; flex: 1 1 auto;">
+            <div class="ud-about-content" style="max-width: 720px;">
+              <span class="tag">Ready to try it?</span>
+              <h2 style="margin-bottom: 12px;">Start managing quotes with a clearer pipeline and workflow</h2>
+              <p style="margin-bottom: 20px;">
+                Start with the plan that matches your workspace, or get in touch if you need a larger setup.
+              </p>
+              <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+                <a href="/#pricing" class="ud-main-btn">See plans and pricing</a>
+                <a href="/landing-page/signup.html" class="ud-main-btn ud-white-btn">Start your free trial</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="ud-features" style="padding-top: 0; padding-bottom: 56px;">
+      <div class="container">
+        <div class="row">
+          <div class="col-lg-12">
+            <div class="ud-section-title">
+              <span>Related pages</span>
+              <h2>Explore more focused pages</h2>
+              <p>
+                If you want to explore related use cases, these pages go a bit deeper.
+              </p>
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-xl-4 col-lg-4 col-md-6">
+            <div class="ud-single-feature wow fadeInUp" data-wow-delay=".10s">
+              <div class="ud-feature-content">
+                <h3 class="ud-feature-title"><a href="/quote-follow-up-software/">Quote Follow Up Software</a></h3>
+                <p class="ud-feature-desc">For teams that want a broader quote follow-up workflow.</p>
+              </div>
+            </div>
+          </div>
+          <div class="col-xl-4 col-lg-4 col-md-6">
+            <div class="ud-single-feature wow fadeInUp" data-wow-delay=".15s">
+              <div class="ud-feature-content">
+                <h3 class="ud-feature-title"><a href="/estimate-follow-up-software/">Estimate Follow Up Software</a></h3>
+                <p class="ud-feature-desc">For teams focused on estimates and next actions.</p>
+              </div>
+            </div>
+          </div>
+          <div class="col-xl-4 col-lg-4 col-md-6">
+            <div class="ud-single-feature wow fadeInUp" data-wow-delay=".20s">
+              <div class="ud-feature-content">
+                <h3 class="ud-feature-title"><a href="/quote-chasing-software/">Quote Chasing Software</a></h3>
+                <p class="ud-feature-desc">For teams focused on who needs follow up today.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
 
     <footer class="ud-footer wow fadeInUp" data-wow-delay=".15s">
       <div class="ud-footer-bottom">
