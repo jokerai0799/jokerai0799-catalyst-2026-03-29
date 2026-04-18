@@ -25,7 +25,7 @@ export function initSignupPage() {
   const planInput = form.querySelector('input[name="plan"]');
   if (planInput) planInput.value = selectedPlan;
   const planLabel = document.querySelector('[data-selected-plan]');
-  if (planLabel) planLabel.textContent = selectedPlan === 'business' ? 'Business workspace trial, up to 20 users' : 'Personal workspace trial, solo only';
+  if (planLabel) planLabel.textContent = selectedPlan === 'business' ? 'Business workspace trial' : 'Personal workspace trial';
   const notice = document.createElement('div');
   notice.className = 'qfu-inline-notice';
   notice.style.display = 'none';
