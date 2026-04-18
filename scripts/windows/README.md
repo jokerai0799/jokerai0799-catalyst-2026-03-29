@@ -1,6 +1,6 @@
 # Windows overlay helper
 
-## Quote Chaser metrics overlay
+## Metrics overlay
 
 File:
 - `quotechaser-metrics-overlay.ahk`
@@ -9,8 +9,9 @@ File:
 
 Creates a small always-on-top desktop overlay that polls:
 - `https://quotechaser.online/api/project-metrics`
+- `https://quotefollowup.online/api/project-metrics`
 
-It shows:
+It shows for both products:
 - live users
 - signups today
 
