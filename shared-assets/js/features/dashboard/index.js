@@ -571,7 +571,6 @@ function bindSharedLinks(state, refreshApp, attentionSignature) {
         replyEmail: $('#business-email').value.trim(),
         firstFollowupDays: Number((($('#first-followup').value || '').match(/\d+/) || ['2'])[0]),
         secondFollowupDays: Number((($('#second-followup').value || '').match(/\d+/) || ['5'])[0]),
-        notes: $('#settings-notes').value.trim(),
       });
       await refreshApp();
     });
@@ -589,7 +588,6 @@ export function renderDashboard(state, refreshApp) {
   if ($('#business-email')) $('#business-email').value = state.workspace.replyEmail || state.user.email;
   if ($('#first-followup')) $('#first-followup').value = `${state.workspace.firstFollowupDays || 2} days after sent`;
   if ($('#second-followup')) $('#second-followup').value = `${state.workspace.secondFollowupDays || 5} days later`;
-  if ($('#settings-notes')) $('#settings-notes').value = state.workspace.notes || '';
   const pendingInvitesList = $('#qfu-pending-invites-list');
   if (pendingInvitesList) {
     clear(pendingInvitesList);

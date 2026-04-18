@@ -890,7 +890,9 @@ async function handleApi(req, res, url) {
     auth.workspace.replyEmail = isValidEmail(replyEmail) ? replyEmail : (auth.workspace.replyEmail || auth.user.email);
     auth.workspace.firstFollowupDays = Math.max(1, Number(body.firstFollowupDays || auth.workspace.firstFollowupDays || 2));
     auth.workspace.secondFollowupDays = Math.max(1, Number(body.secondFollowupDays || auth.workspace.secondFollowupDays || 5));
-    auth.workspace.notes = withWorkspaceMeta(auth.workspace, body.notes, { planTier: getWorkspacePlanTier(auth.workspace) });
+    if (Object.prototype.hasOwnProperty.call(body, 'notes')) {
+      auth.workspace.notes = withWorkspaceMeta(auth.workspace, body.notes, { planTier: getWorkspacePlanTier(auth.workspace) });
+    }
     await saveChanges({ workspaces: [auth.workspace] });
     return sendJson(res, 200, { ok: true, workspace: auth.workspace });
   }
