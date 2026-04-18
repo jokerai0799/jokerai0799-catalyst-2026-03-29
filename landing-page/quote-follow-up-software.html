@@ -114,10 +114,10 @@
       </div>
     </section>
 
-    <section class="ud-about" style="padding-top: 80px;">
+    <section class="ud-about" style="padding-top: 80px; padding-bottom: 40px;">
       <div class="container">
-        <div class="ud-about-wrapper wow fadeInUp" data-wow-delay=".1s">
-          <div class="ud-about-content-wrapper" style="max-width: 100%; flex: 1 1 auto;">
+        <div class="row align-items-center g-5">
+          <div class="col-lg-5">
             <div class="ud-about-content" style="max-width: 100%;">
               <span class="tag">Why teams use it</span>
               <h2>Keep sent quotes visible and follow ups moving</h2>
@@ -134,6 +134,107 @@
                 <li><strong>Know what needs attention next</strong><span style="color: #7b8794;"> — due and overdue follow ups stay easy to spot.</span></li>
                 <li><strong>Give the team one clean queue</strong><span style="color: #7b8794;"> — ownership and outcomes stay clear across the workspace.</span></li>
               </ul>
+            </div>
+          </div>
+          <div class="col-lg-7">
+            <div class="qfu-hero-demo" aria-label="Quote Chaser workspace preview" style="margin: 0 auto; max-width: 100%; aspect-ratio: auto; min-height: 0;">
+              <div class="qfu-demo-sidebar">
+                <div class="qfu-demo-sidebar-brand">
+                  <img src="/shared-assets/images/logo/icon.svg" alt="Quote Chaser icon" />
+                  <span>Quote Chaser</span>
+                </div>
+                <ul class="qfu-demo-nav">
+                  <li class="is-active">Dashboard</li>
+                  <li>Quotes</li>
+                  <li>Chase List</li>
+                  <li>Playbook</li>
+                  <li>Settings</li>
+                </ul>
+              </div>
+              <div class="qfu-demo-main">
+                <div class="qfu-demo-toolbar">
+                  <div>
+                    <p class="qfu-demo-kicker">Workspace preview</p>
+                    <h3>Quote pipeline overview</h3>
+                  </div>
+                  <span class="qfu-demo-badge">Today</span>
+                </div>
+                <div class="qfu-demo-metrics">
+                  <div class="qfu-demo-metric-card qfu-demo-metric-card-blue">
+                    <span>Open pipeline</span>
+                    <strong data-currency-value="3380">£3,380</strong>
+                    <small>Quotes still in play</small>
+                  </div>
+                  <div class="qfu-demo-metric-card qfu-demo-metric-card-amber">
+                    <span>Due today</span>
+                    <strong>2</strong>
+                    <small>Quotes needing action now</small>
+                  </div>
+                  <div class="qfu-demo-metric-card qfu-demo-metric-card-green">
+                    <span>Won revenue</span>
+                    <strong data-currency-value="1450">£1,450</strong>
+                    <small>Closed business so far</small>
+                  </div>
+                </div>
+                <div class="qfu-demo-tracking-bar">
+                  <div class="qfu-demo-track-item qfu-demo-track-blue">
+                    <span>Sent</span>
+                    <strong data-currency-value="2400">£2,400</strong>
+                  </div>
+                  <div class="qfu-demo-track-item qfu-demo-track-amber">
+                    <span>Follow-up due</span>
+                    <strong data-currency-value="980">£980</strong>
+                  </div>
+                  <div class="qfu-demo-track-item qfu-demo-track-green">
+                    <span>Won</span>
+                    <strong data-currency-value="1450">£1,450</strong>
+                  </div>
+                </div>
+                <div class="qfu-demo-content-grid">
+                  <div class="qfu-demo-panel">
+                    <div class="qfu-demo-panel-head">
+                      <p>Pipeline</p>
+                      <span>Quote pipeline view</span>
+                    </div>
+                    <div class="qfu-demo-table-wrap">
+                      <table class="qfu-demo-table">
+                        <thead>
+                          <tr>
+                            <th>Client</th>
+                            <th>Quote</th>
+                            <th>Value</th>
+                            <th>Status</th>
+                            <th>Next</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr>
+                            <td>Jones Property Lets</td>
+                            <td>Boiler replacement quote</td>
+                            <td class="qfu-value qfu-value-blue" data-currency-value="2400">£2,400</td>
+                            <td><span class="qfu-status qfu-status-blue">Sent</span></td>
+                            <td>20 Mar</td>
+                          </tr>
+                          <tr>
+                            <td>Reed Electrical</td>
+                            <td>Consumer unit upgrade</td>
+                            <td class="qfu-value qfu-value-amber" data-currency-value="980">£980</td>
+                            <td><span class="qfu-status qfu-status-amber">Follow-up due</span></td>
+                            <td>Today</td>
+                          </tr>
+                          <tr>
+                            <td>Walker Homes</td>
+                            <td>Kitchen repaint and touch-ups</td>
+                            <td class="qfu-value qfu-value-green" data-currency-value="1450">£1,450</td>
+                            <td><span class="qfu-status qfu-status-green">Won</span></td>
+                            <td>None</td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -211,12 +312,10 @@
           </div>
         </div>
         <div class="row">
-          <div class="col-xl-3 col-lg-3 col-sm-6">
+          <div class="col-xl-6 col-lg-6 col-md-6">
             <div class="ud-single-feature wow fadeInUp" data-wow-delay=".1s">
-              <div class="ud-feature-icon">
-                <i class="lni lni-layout"></i>
-              </div>
               <div class="ud-feature-content">
+                <span style="display:inline-flex; align-items:center; justify-content:center; width:36px; height:36px; border-radius:999px; background:#eff6ff; color:#1d4ed8; font-size:14px; font-weight:700; margin-bottom:16px;">01</span>
                 <h3 class="ud-feature-title">Log the quote</h3>
                 <p class="ud-feature-desc">
                   Add the client, value, sent date, and owner so the quote is visible from day one.
@@ -224,12 +323,10 @@
               </div>
             </div>
           </div>
-          <div class="col-xl-3 col-lg-3 col-sm-6">
+          <div class="col-xl-6 col-lg-6 col-md-6">
             <div class="ud-single-feature wow fadeInUp" data-wow-delay=".15s">
-              <div class="ud-feature-icon">
-                <i class="lni lni-calendar"></i>
-              </div>
               <div class="ud-feature-content">
+                <span style="display:inline-flex; align-items:center; justify-content:center; width:36px; height:36px; border-radius:999px; background:#eff6ff; color:#1d4ed8; font-size:14px; font-weight:700; margin-bottom:16px;">02</span>
                 <h3 class="ud-feature-title">Set the next follow up</h3>
                 <p class="ud-feature-desc">
                   Keep the next action attached to the quote, so nobody has to guess what should happen next.
@@ -237,12 +334,10 @@
               </div>
             </div>
           </div>
-          <div class="col-xl-3 col-lg-3 col-sm-6">
+          <div class="col-xl-6 col-lg-6 col-md-6">
             <div class="ud-single-feature wow fadeInUp" data-wow-delay=".2s">
-              <div class="ud-feature-icon">
-                <i class="lni lni-dashboard"></i>
-              </div>
               <div class="ud-feature-content">
+                <span style="display:inline-flex; align-items:center; justify-content:center; width:36px; height:36px; border-radius:999px; background:#eff6ff; color:#1d4ed8; font-size:14px; font-weight:700; margin-bottom:16px;">03</span>
                 <h3 class="ud-feature-title">Work from a clear queue</h3>
                 <p class="ud-feature-desc">
                   See what is due, overdue, won, or closed out without jumping between tools.
@@ -250,12 +345,10 @@
               </div>
             </div>
           </div>
-          <div class="col-xl-3 col-lg-3 col-sm-6">
+          <div class="col-xl-6 col-lg-6 col-md-6">
             <div class="ud-single-feature wow fadeInUp" data-wow-delay=".25s">
-              <div class="ud-feature-icon">
-                <i class="lni lni-checkmark-circle"></i>
-              </div>
               <div class="ud-feature-content">
+                <span style="display:inline-flex; align-items:center; justify-content:center; width:36px; height:36px; border-radius:999px; background:#eff6ff; color:#1d4ed8; font-size:14px; font-weight:700; margin-bottom:16px;">04</span>
                 <h3 class="ud-feature-title">Close it out properly</h3>
                 <p class="ud-feature-desc">
                   Mark quotes as won, lost, or booked work so the whole team can see the real outcome.
