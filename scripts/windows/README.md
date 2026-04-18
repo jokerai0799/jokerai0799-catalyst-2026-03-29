@@ -7,7 +7,7 @@ File:
 
 ## What it does
 
-Creates a small always-on-top desktop overlay that polls:
+Creates a small compact always-on-top desktop overlay that polls:
 - `https://quotechaser.online/api/project-metrics`
 - `https://quotefollowup.online/api/project-metrics`
 
