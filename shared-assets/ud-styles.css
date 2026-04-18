@@ -1975,6 +1975,17 @@ p {
   padding: 0px 30px 40px 95px;
 }
 
+.ud-faq-body .qfu-inline-link {
+  color: #4a6cf7;
+  font-weight: 600;
+}
+
+.ud-faq-body .qfu-inline-link:hover,
+.ud-faq-body .qfu-inline-link:focus {
+  color: #3758f9;
+  text-decoration: underline;
+}
+
 @media only screen and (min-width: 992px) and (max-width: 1199px), (max-width: 767px) {
   .ud-single-faq .ud-faq-body {
     padding: 0px 16px 20px 82px;
