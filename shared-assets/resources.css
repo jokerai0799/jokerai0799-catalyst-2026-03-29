@@ -21,8 +21,8 @@
   content: "";
   position: absolute;
   inset: 0 0 auto 0;
-  height: 430px;
-  background: linear-gradient(180deg, #3056d3 0%, #3b63dc 26%, #edf3ff 76%, #ffffff 100%);
+  height: 540px;
+  background: var(--primary-color);
   z-index: 0;
 }
 
@@ -84,6 +84,39 @@
 
 .rc-shell {
   padding: 136px 0 96px;
+}
+
+.rc-shell > .container:first-child,
+.rc-article-shell > .container:first-child {
+  text-align: center;
+  padding-bottom: 96px;
+}
+
+.rc-shell > .container:first-child .rc-kicker,
+.rc-article-shell > .container:first-child .rc-kicker {
+  background: rgba(255, 255, 255, 0.14);
+  color: #ffffff;
+}
+
+.rc-shell > .container:first-child .rc-title,
+.rc-article-shell > .container:first-child .rc-title {
+  max-width: 900px;
+  margin-left: auto;
+  margin-right: auto;
+  color: #ffffff;
+}
+
+.rc-shell > .container:first-child .rc-subtitle,
+.rc-article-shell > .container:first-child .rc-subtitle {
+  max-width: 760px;
+  margin-left: auto;
+  margin-right: auto;
+  color: rgba(255, 255, 255, 0.82);
+}
+
+.rc-shell > .container:first-child .rc-hero-actions,
+.rc-article-shell > .container:first-child .rc-hero-actions {
+  justify-content: center;
 }
 
 .rc-kicker {
@@ -266,7 +299,7 @@
 }
 
 .rc-section {
-  padding: 88px 0 0;
+  padding: 56px 0 0;
 }
 
 .rc-section-head {
@@ -453,6 +486,10 @@
 }
 
 @media (max-width: 991px) {
+  .rc-page::before {
+    height: 480px;
+  }
+
   .rc-shell,
   .rc-article-shell {
     padding-top: 118px;
@@ -472,6 +509,10 @@
 }
 
 @media (max-width: 767px) {
+  .rc-page::before {
+    height: 430px;
+  }
+
   .rc-shell,
   .rc-article-shell {
     padding-top: 104px;
