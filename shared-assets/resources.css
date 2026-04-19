@@ -21,7 +21,7 @@
   content: "";
   position: absolute;
   inset: 0 0 auto 0;
-  height: 540px;
+  height: clamp(620px, 100vh, 760px);
   background: var(--primary-color);
   z-index: 0;
 }
@@ -52,30 +52,6 @@
 
 .rc-page .qfu-brand-followup {
   color: rgba(255, 255, 255, 0.82);
-}
-
-.rc-page .ud-header .ud-login-btn {
-  background: rgba(255, 255, 255, 0.14);
-  border-color: rgba(255, 255, 255, 0.24);
-  color: #ffffff;
-}
-
-.rc-page .ud-header .ud-login-btn:hover {
-  background: rgba(255, 255, 255, 0.2);
-  border-color: rgba(255, 255, 255, 0.28);
-  color: #ffffff;
-}
-
-.rc-page .ud-header .ud-white-btn {
-  background: #ffffff;
-  border-color: #ffffff;
-  color: #2445ad;
-}
-
-.rc-page .ud-header .ud-white-btn:hover {
-  background: #eef3ff;
-  border-color: #eef3ff;
-  color: #1f3c99;
 }
 
 .rc-page .ud-header .navbar-toggler .toggler-icon {
@@ -487,7 +463,7 @@
 
 @media (max-width: 991px) {
   .rc-page::before {
-    height: 480px;
+    height: clamp(560px, 100vh, 680px);
   }
 
   .rc-shell,
@@ -510,7 +486,7 @@
 
 @media (max-width: 767px) {
   .rc-page::before {
-    height: 430px;
+    height: clamp(500px, 100vh, 620px);
   }
 
   .rc-shell,
