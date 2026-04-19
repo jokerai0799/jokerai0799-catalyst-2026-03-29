@@ -33,6 +33,10 @@ html {
   z-index: 0;
 }
 
+.rc-article-page::before {
+  height: clamp(480px, 72vh, 600px);
+}
+
 .rc-page > * {
   position: relative;
   z-index: 1;
@@ -81,6 +85,14 @@ html {
   padding-bottom: 96px;
 }
 
+.rc-article-shell {
+  padding: 118px 0 84px;
+}
+
+.rc-article-shell > .container:first-child {
+  padding-bottom: 64px;
+}
+
 .rc-shell > .container:first-child .rc-kicker,
 .rc-article-shell > .container:first-child .rc-kicker {
   background: rgba(255, 255, 255, 0.14);
@@ -95,12 +107,20 @@ html {
   color: #ffffff;
 }
 
+.rc-article-shell > .container:first-child .rc-title {
+  max-width: 780px;
+}
+
 .rc-shell > .container:first-child .rc-subtitle,
 .rc-article-shell > .container:first-child .rc-subtitle {
   max-width: 760px;
   margin-left: auto;
   margin-right: auto;
   color: rgba(255, 255, 255, 0.82);
+}
+
+.rc-article-shell > .container:first-child .rc-subtitle {
+  max-width: 640px;
 }
 
 .rc-shell > .container:first-child .rc-hero-actions,
@@ -323,6 +343,7 @@ html {
 .rc-sidebar-stack {
   display: grid;
   gap: 18px;
+  align-content: start;
 }
 
 .rc-sidebar-card ul,
@@ -466,13 +487,14 @@ html {
 }
 
 .rc-article-shell {
-  padding: 136px 0 96px;
+  padding: 124px 0 88px;
 }
 
 .rc-article-grid {
   display: grid;
   gap: 28px;
-  grid-template-columns: minmax(0, 1.2fr) minmax(260px, 0.8fr);
+  grid-template-columns: minmax(0, 1.26fr) minmax(240px, 0.74fr);
+  align-items: start;
 }
 
 .rc-article-main {
@@ -494,9 +516,28 @@ html {
 }
 
 .rc-article-panel h3 {
-  margin: 26px 0 12px;
+  margin: 28px 0 12px;
+  padding-top: 22px;
+  border-top: 1px solid rgba(47, 61, 78, 0.1);
   font-size: 1.2rem;
   color: var(--rc-text);
+}
+
+.rc-note,
+.rc-checklist,
+.rc-related {
+  padding: 26px;
+  box-shadow: 0 18px 42px rgba(35, 51, 84, 0.08);
+}
+
+.rc-note {
+  background: #f6f8ff;
+  border-color: rgba(48, 86, 211, 0.1);
+}
+
+.rc-checklist,
+.rc-related {
+  background: #fbfcfe;
 }
 
 .rc-article-callout {
@@ -582,6 +623,10 @@ html {
     height: clamp(560px, 100vh, 680px);
   }
 
+  .rc-article-page::before {
+    height: clamp(430px, 68vh, 520px);
+  }
+
   .rc-shell,
   .rc-article-shell {
     padding-top: 118px;
@@ -603,6 +648,10 @@ html {
 @media (max-width: 767px) {
   .rc-page::before {
     height: clamp(500px, 100vh, 620px);
+  }
+
+  .rc-article-page::before {
+    height: clamp(390px, 66vh, 470px);
   }
 
   .rc-shell,
