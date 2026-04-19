@@ -30,6 +30,14 @@
   color: var(--rc-accent);
 }
 
+.rc-page .qfu-brand-quote {
+  color: #1a1f3d;
+}
+
+.rc-page .qfu-brand-followup {
+  color: #6b7280;
+}
+
 .rc-page .ud-header .navbar-toggler .toggler-icon {
   background: #1f2d3d;
 }
