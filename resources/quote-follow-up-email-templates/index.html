@@ -306,11 +306,42 @@
     <script>
       const navbarToggler = document.querySelector('.navbar-toggler');
       const navbarCollapse = document.querySelector('.navbar-collapse');
+
       if (navbarToggler && navbarCollapse) {
         navbarToggler.addEventListener('click', () => {
           const isOpen = navbarCollapse.classList.toggle('show');
           navbarToggler.classList.toggle('active', isOpen);
           navbarToggler.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+        });
+      }
+
+      window.addEventListener('scroll', function () {
+        const udHeader = document.querySelector('.ud-header');
+        if (!udHeader) return;
+
+        const sticky = udHeader.offsetTop;
+        if (window.pageYOffset > sticky) {
+          udHeader.classList.add('sticky');
+        } else {
+          udHeader.classList.remove('sticky');
+        }
+
+        const backToTop = document.querySelector('.back-to-top');
+        if (backToTop) {
+          if (document.body.scrollTop > 50 || document.documentElement.scrollTop > 50) {
+            backToTop.style.display = 'flex';
+          } else {
+            backToTop.style.display = 'none';
+          }
+        }
+      });
+
+      const backToTopButton = document.querySelector('.back-to-top');
+      if (backToTopButton) {
+        backToTopButton.style.display = 'none';
+        backToTopButton.addEventListener('click', function (event) {
+          event.preventDefault();
+          window.scrollTo({ top: 0, behavior: 'smooth' });
         });
       }
     </script>

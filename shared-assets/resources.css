@@ -14,15 +14,17 @@
 
 .rc-page {
   position: relative;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
   background: #ffffff;
-  box-shadow: 0 100vh 0 0 var(--heading-color);
 }
 
 .rc-page::before {
   content: "";
   position: absolute;
   inset: 0 0 auto 0;
-  height: max(760px, 100vh);
+  height: clamp(620px, 100vh, 760px);
   background: var(--primary-color);
   z-index: 0;
 }
@@ -59,11 +61,13 @@
   background: #ffffff;
 }
 
-.rc-page .ud-footer-bottom {
-  padding-bottom: 58px;
+.rc-page .ud-footer {
+  margin-top: auto;
 }
 
-.rc-shell {
+.rc-shell,
+.rc-article-shell {
+  flex: 1 0 auto;
   padding: 136px 0 96px;
 }
 
@@ -71,14 +75,6 @@
 .rc-article-shell > .container:first-child {
   text-align: center;
   padding-bottom: 96px;
-}
-
-.rc-shell > .container:first-child {
-  min-height: calc(100vh - 232px);
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
 }
 
 .rc-shell > .container:first-child .rc-kicker,
@@ -522,20 +518,12 @@
 
 @media (max-width: 991px) {
   .rc-page::before {
-    height: max(680px, 100vh);
+    height: clamp(560px, 100vh, 680px);
   }
 
   .rc-shell,
   .rc-article-shell {
     padding-top: 118px;
-  }
-
-  .rc-page .ud-footer-bottom {
-    padding-bottom: 42px;
-  }
-
-  .rc-shell > .container:first-child {
-    min-height: calc(100vh - 214px);
   }
 
   .rc-hero-grid,
@@ -553,21 +541,13 @@
 
 @media (max-width: 767px) {
   .rc-page::before {
-    height: max(620px, 100vh);
+    height: clamp(500px, 100vh, 620px);
   }
 
   .rc-shell,
   .rc-article-shell {
     padding-top: 104px;
     padding-bottom: 72px;
-  }
-
-  .rc-page .ud-footer-bottom {
-    padding-bottom: 34px;
-  }
-
-  .rc-shell > .container:first-child {
-    min-height: calc(100vh - 176px);
   }
 
   .rc-featured,
