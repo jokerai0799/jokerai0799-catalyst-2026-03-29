@@ -415,10 +415,6 @@
       </div>
     </footer>
 
-    <a href="#top" class="back-to-top" aria-label="Back to top">
-      <i class="lni lni-chevron-up"> </i>
-    </a>
-
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
     <script>
       const navbarToggler = document.querySelector('.navbar-toggler');
@@ -442,25 +438,7 @@
         } else {
           udHeader.classList.remove('sticky');
         }
-
-        const backToTop = document.querySelector('.back-to-top');
-        if (backToTop) {
-          if (document.body.scrollTop > 50 || document.documentElement.scrollTop > 50) {
-            backToTop.style.display = 'flex';
-          } else {
-            backToTop.style.display = 'none';
-          }
-        }
       });
-
-      const backToTopButton = document.querySelector('.back-to-top');
-      if (backToTopButton) {
-        backToTopButton.style.display = 'none';
-        backToTopButton.addEventListener('click', function (event) {
-          event.preventDefault();
-          window.scrollTo({ top: 0, behavior: 'smooth' });
-        });
-      }
     </script>
   </body>
 </html>

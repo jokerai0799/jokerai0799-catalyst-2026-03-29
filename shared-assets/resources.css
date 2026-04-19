@@ -12,6 +12,10 @@
   --rc-radius: 24px;
 }
 
+html {
+  background: var(--heading-color);
+}
+
 .rc-page {
   position: relative;
   min-height: 100vh;
