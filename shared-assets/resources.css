@@ -233,6 +233,10 @@ html {
   gap: 24px;
 }
 
+.rc-featured-wide {
+  grid-column: 1 / -1;
+}
+
 .rc-featured-meta,
 .rc-card-meta,
 .rc-mini-meta {
