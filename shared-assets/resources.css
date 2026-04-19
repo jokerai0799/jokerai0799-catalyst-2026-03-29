@@ -15,13 +15,14 @@
 .rc-page {
   position: relative;
   background: #ffffff;
+  box-shadow: 0 100vh 0 0 var(--heading-color);
 }
 
 .rc-page::before {
   content: "";
   position: absolute;
   inset: 0 0 auto 0;
-  height: clamp(620px, 100vh, 760px);
+  height: max(760px, 100vh);
   background: var(--primary-color);
   z-index: 0;
 }
@@ -58,6 +59,10 @@
   background: #ffffff;
 }
 
+.rc-page .ud-footer-bottom {
+  padding-bottom: 58px;
+}
+
 .rc-shell {
   padding: 136px 0 96px;
 }
@@ -66,6 +71,14 @@
 .rc-article-shell > .container:first-child {
   text-align: center;
   padding-bottom: 96px;
+}
+
+.rc-shell > .container:first-child {
+  min-height: calc(100vh - 232px);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
 }
 
 .rc-shell > .container:first-child .rc-kicker,
@@ -93,6 +106,52 @@
 .rc-shell > .container:first-child .rc-hero-actions,
 .rc-article-shell > .container:first-child .rc-hero-actions {
   justify-content: center;
+}
+
+.rc-page .navbar-btn .ud-main-btn {
+  color: rgba(255, 255, 255, 0.96);
+}
+
+.rc-page .navbar-btn .ud-login-btn {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.18);
+}
+
+.rc-page .navbar-btn .ud-login-btn:hover {
+  background: rgba(255, 255, 255, 0.16);
+  color: #ffffff;
+  opacity: 1;
+}
+
+.rc-page .navbar-btn .ud-white-btn,
+.rc-shell > .container:first-child .ud-white-btn,
+.rc-article-shell > .container:first-child .ud-white-btn {
+  background: #ffffff;
+  border-color: #ffffff;
+  color: var(--heading-color);
+  box-shadow: 0 16px 36px rgba(10, 18, 38, 0.14);
+}
+
+.rc-page .navbar-btn .ud-white-btn:hover,
+.rc-shell > .container:first-child .ud-white-btn:hover,
+.rc-article-shell > .container:first-child .ud-white-btn:hover {
+  background: rgba(255, 255, 255, 0.94);
+  border-color: rgba(255, 255, 255, 0.94);
+  color: var(--primary-color);
+}
+
+.rc-shell > .container:first-child .ud-link-btn,
+.rc-article-shell > .container:first-child .ud-link-btn {
+  background: transparent;
+  color: rgba(255, 255, 255, 0.94);
+  border-color: transparent;
+}
+
+.rc-shell > .container:first-child .ud-link-btn:hover,
+.rc-article-shell > .container:first-child .ud-link-btn:hover {
+  background: transparent;
+  color: #ffffff;
+  opacity: 0.82;
 }
 
 .rc-kicker {
@@ -463,12 +522,20 @@
 
 @media (max-width: 991px) {
   .rc-page::before {
-    height: clamp(560px, 100vh, 680px);
+    height: max(680px, 100vh);
   }
 
   .rc-shell,
   .rc-article-shell {
     padding-top: 118px;
+  }
+
+  .rc-page .ud-footer-bottom {
+    padding-bottom: 42px;
+  }
+
+  .rc-shell > .container:first-child {
+    min-height: calc(100vh - 214px);
   }
 
   .rc-hero-grid,
@@ -486,13 +553,21 @@
 
 @media (max-width: 767px) {
   .rc-page::before {
-    height: clamp(500px, 100vh, 620px);
+    height: max(620px, 100vh);
   }
 
   .rc-shell,
   .rc-article-shell {
     padding-top: 104px;
     padding-bottom: 72px;
+  }
+
+  .rc-page .ud-footer-bottom {
+    padding-bottom: 34px;
+  }
+
+  .rc-shell > .container:first-child {
+    min-height: calc(100vh - 176px);
   }
 
   .rc-featured,
