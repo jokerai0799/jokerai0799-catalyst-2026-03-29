@@ -13,33 +13,73 @@
 }
 
 .rc-page {
-  background: linear-gradient(180deg, #f7f9fc 0%, #ffffff 100%);
+  position: relative;
+  background: #ffffff;
+}
+
+.rc-page::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 430px;
+  background: linear-gradient(180deg, #3056d3 0%, #3b63dc 26%, #edf3ff 76%, #ffffff 100%);
+  z-index: 0;
+}
+
+.rc-page > * {
+  position: relative;
+  z-index: 1;
 }
 
 .rc-page .ud-header {
-  background: rgba(255, 255, 255, 0.96);
-  box-shadow: 0 14px 40px rgba(35, 51, 84, 0.08);
+  background: transparent;
+  box-shadow: none;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
 }
 
 .rc-page .ud-header .navbar-nav .nav-item a {
-  color: #1f2d3d;
+  color: rgba(255, 255, 255, 0.92);
 }
 
 .rc-page .ud-header .navbar-nav .nav-item a:hover,
 .rc-page .ud-header .navbar-nav .nav-item a[aria-current="page"] {
-  color: var(--rc-accent);
+  color: #ffffff;
 }
 
 .rc-page .qfu-brand-quote {
-  color: #1a1f3d;
+  color: #ffffff;
 }
 
 .rc-page .qfu-brand-followup {
-  color: #6b7280;
+  color: rgba(255, 255, 255, 0.82);
+}
+
+.rc-page .ud-header .ud-login-btn {
+  background: rgba(255, 255, 255, 0.14);
+  border-color: rgba(255, 255, 255, 0.24);
+  color: #ffffff;
+}
+
+.rc-page .ud-header .ud-login-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.28);
+  color: #ffffff;
+}
+
+.rc-page .ud-header .ud-white-btn {
+  background: #ffffff;
+  border-color: #ffffff;
+  color: #2445ad;
+}
+
+.rc-page .ud-header .ud-white-btn:hover {
+  background: #eef3ff;
+  border-color: #eef3ff;
+  color: #1f3c99;
 }
 
 .rc-page .ud-header .navbar-toggler .toggler-icon {
-  background: #1f2d3d;
+  background: #ffffff;
 }
 
 .rc-shell {
