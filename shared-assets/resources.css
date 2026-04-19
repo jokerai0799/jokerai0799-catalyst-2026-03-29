@@ -359,33 +359,6 @@ html {
   margin-bottom: 10px;
 }
 
-.rc-stats {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 14px;
-}
-
-.rc-stat {
-  padding: 18px 16px;
-  border-radius: 18px;
-  background: var(--rc-surface-soft);
-  border: 1px solid rgba(48, 86, 211, 0.08);
-}
-
-.rc-stat strong {
-  display: block;
-  margin-bottom: 4px;
-  font-size: 24px;
-  line-height: 1;
-  color: var(--rc-text);
-}
-
-.rc-stat span {
-  color: var(--rc-muted);
-  font-size: 13px;
-  line-height: 1.55;
-}
-
 .rc-section {
   padding: 56px 0 0;
 }
@@ -445,27 +418,8 @@ html {
   color: var(--rc-accent-strong);
 }
 
-.rc-topic-grid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 18px;
-}
-
-.rc-topic {
-  padding: 22px;
-  border-radius: 20px;
-  background: var(--rc-surface-soft);
-  border: 1px solid rgba(48, 86, 211, 0.08);
-}
-
-.rc-topic h3 {
-  font-size: 1.05rem;
-  margin: 0 0 10px;
-  color: var(--rc-text);
-}
-
 .rc-cta {
-  padding-bottom: 96px;
+  padding-bottom: 72px;
 }
 
 .rc-cta-card {
@@ -634,13 +588,8 @@ html {
 
   .rc-hero-grid,
   .rc-card-grid,
-  .rc-topic-grid,
   .rc-article-grid,
   .rc-home-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .rc-stats {
     grid-template-columns: 1fr;
   }
 }
