@@ -67,6 +67,16 @@
       "permanent": true
     },
     {
+      "source": "/resources",
+      "destination": "/resources/quote-follow-up-email-templates/",
+      "permanent": true
+    },
+    {
+      "source": "/resources/",
+      "destination": "/resources/quote-follow-up-email-templates/",
+      "permanent": true
+    },
+    {
       "source": "/landing-page/quote-follow-up-software.html",
       "destination": "/quote-follow-up-software/",
       "permanent": true
