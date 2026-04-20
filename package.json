@@ -4,8 +4,12 @@
   "version": "0.1.0",
   "scripts": {
     "start": "node server.js",
+    "build:assets": "node scripts/minify-assets.js",
     "migrate:supabase": "node scripts/migrate-local-to-supabase.js",
     "smoke": "node scripts/smoke-check.js",
     "test": "node --test"
+  },
+  "devDependencies": {
+    "esbuild": "^0.28.0"
   }
 }
