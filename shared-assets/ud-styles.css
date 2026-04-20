@@ -5170,7 +5170,7 @@ p {
 }
 
 .qfu-billing-panel {
-  height: 100%;
+  height: auto;
 }
 
 .qfu-billing-summary-grid {
