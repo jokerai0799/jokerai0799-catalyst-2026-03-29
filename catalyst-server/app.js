@@ -2,8 +2,12 @@ const crypto = require('crypto');
 const { URL } = require('url');
 const {
   APP_URL,
+  BILLING_CONFIG_ERRORS,
   GOOGLE_CLIENT_ID,
   GOOGLE_CLIENT_SECRET,
+  IS_PRODUCTION,
+  IS_VERCEL,
+  PROJECT_METRICS_TOKEN,
   RESEND_API_KEY,
   STRIPE_BUSINESS_PAYMENT_LINK,
   STRIPE_BUSINESS_PRICE_ID,
@@ -15,7 +19,7 @@ const {
 } = require('./config');
 const { attemptEmail, sendPasswordResetEmail, sendQuoteFollowupEmail, sendVerificationEmail } = require('./email');
 const { badRequest, notFound, readJsonOrReject, sendJson, serveStatic, tooManyRequests, unauthorized } = require('./http');
-const { clearSession, createSession, getSessionUser, getSessionUserId, parseCookies } = require('./session');
+const { clearSession, createSession, getSessionUser, getSessionUserId, parseCookies, requestIsSecure } = require('./session');
 const { checkRateLimit } = require('./rate-limit');
 const { isSupabaseReady, supabaseRequest } = require('./supabase');
 const {
@@ -61,6 +65,7 @@ const PROJECT_METRICS_CACHE_MS = 30 * 1000;
 const BUSINESS_TEAM_MEMBER_LIMIT = 20;
 const AUTH_RATE_LIMITS = {
   signup: { windowMs: 15 * 60 * 1000, max: 10 },
+  checkEmail: { windowMs: 15 * 60 * 1000, max: 20 },
   login: { windowMs: 15 * 60 * 1000, max: 20 },
   verify: { windowMs: 15 * 60 * 1000, max: 30 },
   resendVerification: { windowMs: 15 * 60 * 1000, max: 10 },
@@ -71,11 +76,30 @@ const STRIPE_WEBHOOK_TOLERANCE_SECONDS = 300;
 let projectMetricsCache = null;
 let projectMetricsCachedAt = 0;
 
+const GENERIC_LOGIN_ERROR = 'We could not sign you in with those details.';
+
 function getAppBaseUrl(req) {
   if (APP_URL) return APP_URL.replace(/\/$/, '');
   const proto = req.headers['x-forwarded-proto'] || 'http';
   const host = req.headers['x-forwarded-host'] || req.headers.host || '127.0.0.1';
   return `${proto}://${host}`.replace(/\/$/, '');
+}
+
+function safeTokenMatch(expected, actual) {
+  const expectedBuffer = Buffer.from(String(expected || ''), 'utf8');
+  const actualBuffer = Buffer.from(String(actual || ''), 'utf8');
+  if (!expectedBuffer.length || expectedBuffer.length !== actualBuffer.length) return false;
+  return crypto.timingSafeEqual(expectedBuffer, actualBuffer);
+}
+
+function getProjectMetricsToken(req) {
+  const bearer = String(req.headers.authorization || '').match(/^Bearer\s+(.+)$/i)?.[1] || '';
+  return String(req.headers['x-project-metrics-token'] || bearer || '').trim();
+}
+
+function canReadProjectMetrics(req) {
+  if (PROJECT_METRICS_TOKEN) return safeTokenMatch(PROJECT_METRICS_TOKEN, getProjectMetricsToken(req));
+  return !IS_VERCEL;
 }
 
 function getGoogleRedirectUri(req) {
@@ -92,12 +116,24 @@ function appendSetCookie(res, value) {
   res.setHeader('Set-Cookie', list);
 }
 
-function setCookie(res, name, value, { maxAge = 300, secure = false } = {}) {
-  appendSetCookie(res, `${name}=${encodeURIComponent(value)}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${maxAge}${secure ? '; Secure' : ''}`);
+function shouldExposeDirectAuthLinks() {
+  return !IS_PRODUCTION;
 }
 
-function clearCookie(res, name, { secure = false } = {}) {
-  appendSetCookie(res, `${name}=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0${secure ? '; Secure' : ''}`);
+function setCookie(res, name, value, { maxAge = 300, secure = false, path = '/', sameSite = 'Lax' } = {}) {
+  appendSetCookie(res, `${name}=${encodeURIComponent(value)}; Path=${path}; HttpOnly; SameSite=${sameSite}; Max-Age=${maxAge}; Priority=High${secure ? '; Secure' : ''}`);
+}
+
+function clearCookie(res, name, { secure = false, path = '/', sameSite = 'Lax' } = {}) {
+  appendSetCookie(res, `${name}=; Path=${path}; HttpOnly; SameSite=${sameSite}; Max-Age=0; Priority=High${secure ? '; Secure' : ''}`);
+}
+
+function getGenericCheckEmailResponse(email) {
+  return {
+    email,
+    emailDeliveryAvailable: Boolean(RESEND_API_KEY),
+    verifyUrl: null,
+  };
 }
 
 async function exchangeGoogleCode(req, code) {
@@ -278,8 +314,10 @@ function getWorkspaceMemberCount(store, workspaceId) {
 }
 
 function stripePlanTierFromPriceId(priceId) {
-  if (priceId === STRIPE_BUSINESS_PRICE_ID) return 'business';
-  return 'personal';
+  if (!priceId) return null;
+  if (STRIPE_PERSONAL_PRICE_ID && priceId === STRIPE_PERSONAL_PRICE_ID) return 'personal';
+  if (STRIPE_BUSINESS_PRICE_ID && priceId === STRIPE_BUSINESS_PRICE_ID) return 'business';
+  return null;
 }
 
 async function readRawBody(req) {
@@ -402,7 +440,15 @@ async function syncStripeBillingFromEvent(event) {
   const billingStatus = subscription?.status || (event.type === 'checkout.session.completed' ? 'active' : workspace.billing_status || 'inactive');
   const billingCurrency = (subscription?.currency || eventObject?.currency || workspace.billing_currency || 'GBP').toUpperCase();
   const nextPeriod = subscription?.current_period_end ? new Date(subscription.current_period_end * 1000).toISOString() : null;
-  const planTier = stripePlanTierFromPriceId(priceId || workspace.stripe_price_id || STRIPE_PERSONAL_PRICE_ID);
+  const knownPlanTier = stripePlanTierFromPriceId(priceId || workspace.stripe_price_id || null);
+  const requiresPlanResolution = Boolean(priceId || event.type === 'checkout.session.completed' || subscription);
+  if (requiresPlanResolution && BILLING_CONFIG_ERRORS.length) {
+    throw new Error(`Stripe billing is misconfigured: ${BILLING_CONFIG_ERRORS.join(' ')}`);
+  }
+  if (requiresPlanResolution && priceId && !knownPlanTier) {
+    throw new Error(`Stripe price ${priceId} does not match the configured Personal or Business price ids.`);
+  }
+  const planTier = knownPlanTier || workspace.billing_plan_tier || 'personal';
 
   const billingPayload = {
     workspace_id: workspace.id,
@@ -458,7 +504,7 @@ async function handleApi(req, res, url) {
   }
 
   if (req.method === 'GET' && pathname === '/api/project-metrics') {
-    res.setHeader('Access-Control-Allow-Origin', '*');
+    if (!canReadProjectMetrics(req)) return notFound(res);
     return sendJson(res, 200, await getProjectMetrics());
   }
 
@@ -466,6 +512,7 @@ async function handleApi(req, res, url) {
     if (!GOOGLE_CLIENT_ID || !GOOGLE_CLIENT_SECRET) return badRequest(res, 'Google auth is not configured yet.');
     const state = crypto.randomBytes(24).toString('hex');
     const redirectUri = getGoogleRedirectUri(req);
+    const secure = requestIsSecure(req);
     const googleUrl = new URL('https://accounts.google.com/o/oauth2/v2/auth');
     googleUrl.searchParams.set('client_id', GOOGLE_CLIENT_ID);
     googleUrl.searchParams.set('redirect_uri', redirectUri);
@@ -473,7 +520,7 @@ async function handleApi(req, res, url) {
     googleUrl.searchParams.set('scope', 'openid email profile');
     googleUrl.searchParams.set('prompt', 'select_account');
     googleUrl.searchParams.set('state', state);
-    setCookie(res, GOOGLE_STATE_COOKIE, state, { secure: url.protocol === 'https:' });
+    setCookie(res, GOOGLE_STATE_COOKIE, state, { secure, path: '/api/auth/google' });
     res.writeHead(302, { Location: googleUrl.toString() });
     res.end();
     return;
@@ -489,8 +536,7 @@ async function handleApi(req, res, url) {
         personalCheckoutLink: STRIPE_PERSONAL_PAYMENT_LINK || '',
         businessCheckoutLink: STRIPE_BUSINESS_PAYMENT_LINK || '',
         customerPortalUrl: STRIPE_CUSTOMER_PORTAL_URL || '',
-        personalPriceId: STRIPE_PERSONAL_PRICE_ID || '',
-        businessPriceId: STRIPE_BUSINESS_PRICE_ID || '',
+        configured: BILLING_CONFIG_ERRORS.length === 0,
       },
     });
   }
@@ -554,17 +600,17 @@ async function handleApi(req, res, url) {
     const state = String(url.searchParams.get('state') || '');
     const code = String(url.searchParams.get('code') || '');
     const error = String(url.searchParams.get('error') || '');
-    const secure = url.protocol === 'https:';
+    const secure = requestIsSecure(req);
 
     if (error) {
-      clearCookie(res, GOOGLE_STATE_COOKIE, { secure });
+      clearCookie(res, GOOGLE_STATE_COOKIE, { secure, path: '/api/auth/google' });
       res.writeHead(302, { Location: '/landing-page/login.html?google=cancelled' });
       res.end();
       return;
     }
 
     if (!code || !state || !cookies[GOOGLE_STATE_COOKIE] || cookies[GOOGLE_STATE_COOKIE] !== state) {
-      clearCookie(res, GOOGLE_STATE_COOKIE, { secure });
+      clearCookie(res, GOOGLE_STATE_COOKIE, { secure, path: '/api/auth/google' });
       res.writeHead(302, { Location: '/landing-page/login.html?google=invalid-state' });
       res.end();
       return;
@@ -625,13 +671,13 @@ async function handleApi(req, res, url) {
         await saveChanges({ users: [user] });
       }
 
-      await createSession(res, user.id);
-      clearCookie(res, GOOGLE_STATE_COOKIE, { secure });
+      await createSession(req, res, user.id);
+      clearCookie(res, GOOGLE_STATE_COOKIE, { secure, path: '/api/auth/google' });
       res.writeHead(302, { Location: '/dashboard/dashboard.html' });
       res.end();
       return;
     } catch {
-      clearCookie(res, GOOGLE_STATE_COOKIE, { secure });
+      clearCookie(res, GOOGLE_STATE_COOKIE, { secure, path: '/api/auth/google' });
       res.writeHead(302, { Location: '/landing-page/login.html?google=failed' });
       res.end();
       return;
@@ -700,23 +746,24 @@ async function handleApi(req, res, url) {
       ok: true,
       email,
       emailSent: Boolean(delivery.sent),
-      verifyUrl: delivery.sent ? null : `/landing-page/verify.html?token=${encodeURIComponent(user.verificationToken)}`,
+      verifyUrl: !delivery.sent && shouldExposeDirectAuthLinks() ? `/landing-page/verify.html?token=${encodeURIComponent(user.verificationToken)}` : null,
     });
   }
 
   if (req.method === 'GET' && pathname === '/api/auth/check-email') {
+    if (!(await enforceRateLimit(req, res, 'checkEmail'))) return;
     const email = String(url.searchParams.get('email') || '').trim().toLowerCase();
-    if (!isValidEmail(email)) return sendJson(res, 200, { email, exists: false, verified: false, verifyUrl: '/landing-page/login.html?verified=invalid' });
+    const genericResponse = getGenericCheckEmailResponse(email);
+    if (!isValidEmail(email)) return sendJson(res, 200, genericResponse);
     const store = await loadStore({ email });
     const user = findUserByEmail(store, email);
-    if (!user) return sendJson(res, 200, { email, exists: false, verified: false, verifyUrl: '/landing-page/login.html?verified=invalid' });
+    if (!user) return sendJson(res, 200, genericResponse);
     clearExpiredAuthTokens(user);
     return sendJson(res, 200, {
-      email,
-      exists: true,
-      verified: Boolean(user.verified),
-      emailDeliveryAvailable: Boolean(RESEND_API_KEY),
-      verifyUrl: !RESEND_API_KEY && user.verificationToken ? `/landing-page/verify.html?token=${encodeURIComponent(user.verificationToken)}` : null,
+      ...genericResponse,
+      verifyUrl: shouldExposeDirectAuthLinks() && !RESEND_API_KEY && !user.verified && user.verificationToken
+        ? `/landing-page/verify.html?token=${encodeURIComponent(user.verificationToken)}`
+        : null,
     });
   }
 
@@ -726,20 +773,26 @@ async function handleApi(req, res, url) {
     if (!body) return;
     const email = String(body.email || '').trim().toLowerCase();
     if (!isValidEmail(email)) return badRequest(res, 'Enter a valid email address.');
+    const genericResponse = {
+      ok: true,
+      sent: false,
+      emailDeliveryAvailable: Boolean(RESEND_API_KEY),
+      verifyUrl: null,
+    };
     const store = await loadStore({ email });
     const user = findUserByEmail(store, email);
-    if (!user) return sendJson(res, 200, { ok: true, sent: false, emailDeliveryAvailable: Boolean(RESEND_API_KEY) });
+    if (!user) return sendJson(res, 200, genericResponse);
     clearExpiredAuthTokens(user);
-    if (user.verified) return sendJson(res, 200, { ok: true, sent: false, verified: true, emailDeliveryAvailable: Boolean(RESEND_API_KEY) });
+    if (user.verified) return sendJson(res, 200, genericResponse);
     if (!user.verificationToken) setVerificationToken(user);
     await saveChanges({ users: [user] });
     const delivery = await attemptEmail(() => sendVerificationEmail(req, user));
     return sendJson(res, 200, {
-      ok: true,
+      ...genericResponse,
       sent: Boolean(delivery.sent),
-      verified: false,
-      emailDeliveryAvailable: Boolean(RESEND_API_KEY),
-      verifyUrl: delivery.sent ? null : `/landing-page/verify.html?token=${encodeURIComponent(user.verificationToken)}`,
+      verifyUrl: !delivery.sent && shouldExposeDirectAuthLinks()
+        ? `/landing-page/verify.html?token=${encodeURIComponent(user.verificationToken)}`
+        : null,
     });
   }
 
@@ -749,16 +802,16 @@ async function handleApi(req, res, url) {
     if (!body) return;
     const email = String(body.email || '').trim().toLowerCase();
     const password = String(body.password || '');
-    if (!isValidEmail(email)) return badRequest(res, 'Invalid email or password.');
+    if (!isValidEmail(email)) return badRequest(res, GENERIC_LOGIN_ERROR);
     const store = await loadStore({ email });
     const user = findUserByEmail(store, email);
-    if (!user) return badRequest(res, 'Invalid email or password.');
-    if (!user.passwordHash) return badRequest(res, 'Use Google sign-in for this account.');
-    if (!verifyPassword(password, user.passwordHash)) return badRequest(res, 'Invalid email or password.');
-    if (!user.verified) return badRequest(res, 'Check your email page and verify your account before logging in.');
+    if (!user) return badRequest(res, GENERIC_LOGIN_ERROR);
+    if (!user.passwordHash) return badRequest(res, GENERIC_LOGIN_ERROR);
+    if (!verifyPassword(password, user.passwordHash)) return badRequest(res, GENERIC_LOGIN_ERROR);
+    if (!user.verified) return badRequest(res, GENERIC_LOGIN_ERROR);
     user.lastSeenAt = new Date().toISOString();
     await saveChanges({ users: [user] });
-    await createSession(res, user.id);
+    await createSession(req, res, user.id);
     return sendJson(res, 200, { ok: true, user: sanitizeUser(user) });
   }
 
@@ -792,7 +845,7 @@ async function handleApi(req, res, url) {
     if (!isValidEmail(email)) return badRequest(res, 'Enter a valid email address.');
     const store = await loadStore({ email });
     const user = findUserByEmail(store, email);
-    if (!user) return sendJson(res, 200, { ok: true, sent: false, emailDeliveryAvailable: Boolean(RESEND_API_KEY) });
+    if (!user) return sendJson(res, 200, { ok: true, sent: false, emailDeliveryAvailable: Boolean(RESEND_API_KEY), resetUrl: null });
     clearExpiredAuthTokens(user);
     setResetToken(user);
     await saveChanges({ users: [user] });
@@ -801,7 +854,7 @@ async function handleApi(req, res, url) {
       ok: true,
       sent: Boolean(delivery.sent),
       emailDeliveryAvailable: Boolean(RESEND_API_KEY),
-      resetUrl: delivery.sent ? null : `/landing-page/reset-password.html?token=${encodeURIComponent(user.resetToken)}`,
+      resetUrl: !delivery.sent && shouldExposeDirectAuthLinks() ? `/landing-page/reset-password.html?token=${encodeURIComponent(user.resetToken)}` : null,
     });
   }
 
@@ -1227,7 +1280,11 @@ async function requestHandler(req, res) {
     if (url.pathname.startsWith('/api/')) return handleApi(req, res, url);
     return serveStatic(req, res, url.pathname);
   } catch (error) {
-    sendJson(res, error.status || 500, { error: error.message || 'Server error' });
+    const status = error.status || 500;
+    const message = status >= 500 && (IS_VERCEL || process.env.NODE_ENV === 'production')
+      ? 'Server error'
+      : (error.message || 'Server error');
+    sendJson(res, status, { error: message });
   }
 }
 

@@ -1,6 +1,21 @@
 const fs = require('fs');
 const path = require('path');
-const { APP_URL, ROOT } = require('./config');
+const { APP_URL, APP_URL_IS_HTTPS, IS_VERCEL, ROOT } = require('./config');
+
+function buildContentSecurityPolicy() {
+  return [
+    "default-src 'self'",
+    "base-uri 'self'",
+    "frame-ancestors 'self'",
+    "object-src 'none'",
+    "img-src 'self' data: https:",
+    "font-src 'self' data: https://cdn.jsdelivr.net https://cdnjs.cloudflare.com",
+    "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com",
+    "script-src 'self' 'unsafe-inline' data: https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://va.vercel-scripts.com",
+    "connect-src 'self' https://formsubmit.co https://api.resend.com https://vitals.vercel-insights.com",
+    "form-action 'self' https://formsubmit.co",
+  ].join('; ');
+}
 
 function readJson(req) {
   return new Promise((resolve, reject) => {
@@ -37,13 +52,19 @@ async function readJsonOrReject(req, res, badRequest) {
 }
 
 function securityHeaders(extra = {}) {
+  const frameAncestors = APP_URL
+    ? `frame-ancestors 'self' ${APP_URL.replace(/\/$/, '')}`
+    : "frame-ancestors 'self'";
   const headers = {
-    'X-Content-Type-Options': 'nosniff',
+    'Content-Security-Policy': buildContentSecurityPolicy().replace("frame-ancestors 'self'", frameAncestors),
+    'Cross-Origin-Opener-Policy': 'same-origin',
+    'Permissions-Policy': 'camera=(), microphone=(), geolocation=()',
     'Referrer-Policy': 'strict-origin-when-cross-origin',
+    'X-Content-Type-Options': 'nosniff',
     'X-Frame-Options': 'SAMEORIGIN',
+    ...(APP_URL_IS_HTTPS || IS_VERCEL ? { 'Strict-Transport-Security': 'max-age=63072000; includeSubDomains; preload' } : {}),
     ...extra,
   };
-  if (APP_URL) headers['Content-Security-Policy'] = `frame-ancestors 'self' ${APP_URL.replace(/\/$/, '')}`;
   return headers;
 }
 

@@ -43,7 +43,7 @@ export function initSignupPage() {
       await api.signup(payload);
       window.location.href = `check-email.html?email=${encodeURIComponent(payload.email)}`;
     } catch (error) {
-      setNotice(notice, error.message, 'error');
+      setNotice(notice, `${error.message} If you recently created an account, verify your email first or use Google sign-in if that is how you joined.`, 'error');
     }
   });
 }
@@ -72,20 +72,18 @@ export async function initCheckEmailPage() {
     resendButton.addEventListener('click', async () => {
       try {
         const result = await api.resendVerification(email);
-        if (result.verified) {
-          window.location.href = `login.html?verified=success&email=${encodeURIComponent(email)}`;
-          return;
-        }
         if (helper) {
           helper.textContent = result.sent
-            ? 'Verification email resent. Check your inbox.'
+            ? 'If your account still needs verification, a fresh email is on the way.'
             : (result.verifyUrl
-              ? 'A fresh verification link is ready below for local/dev use.'
-              : 'We could not send an email right now.');
+              ? 'A fresh verification link is ready below.'
+              : 'If your account still needs verification, check your inbox or try again shortly.');
         }
         if (result.verifyUrl) {
           verifyLink.style.display = '';
           verifyLink.setAttribute('href', result.verifyUrl);
+        } else {
+          verifyLink.style.display = 'none';
         }
       } catch (error) {
         if (helper) helper.textContent = error.message;

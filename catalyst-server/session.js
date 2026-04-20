@@ -1,6 +1,14 @@
 const crypto = require('crypto');
-const { IS_VERCEL, SESSION_COOKIE, SESSION_MAX_AGE_SECONDS } = require('./config');
+const { APP_URL_IS_HTTPS, IS_VERCEL, SESSION_COOKIE, SESSION_MAX_AGE_SECONDS } = require('./config');
 const { cleanupExpiredSessions, isSupabaseReady, supabaseRequest } = require('./supabase');
+
+function requestIsSecure(req) {
+  const forwardedProto = String(req?.headers?.['x-forwarded-proto'] || '')
+    .split(',')[0]
+    .trim()
+    .toLowerCase();
+  return Boolean(req?.socket?.encrypted || forwardedProto === 'https' || APP_URL_IS_HTTPS || IS_VERCEL);
+}
 
 async function getSessionRecord(sessionId) {
   if (!sessionId) return null;
@@ -71,15 +79,17 @@ function appendSetCookie(res, value) {
   res.setHeader('Set-Cookie', list);
 }
 
-async function createSession(res, userId) {
+async function createSession(req, res, userId) {
   const sid = await persistSession(userId);
-  appendSetCookie(res, `${SESSION_COOKIE}=${sid}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${SESSION_MAX_AGE_SECONDS}${IS_VERCEL ? '; Secure' : ''}`);
+  const secure = requestIsSecure(req);
+  appendSetCookie(res, `${SESSION_COOKIE}=${sid}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${SESSION_MAX_AGE_SECONDS}; Priority=High${secure ? '; Secure' : ''}`);
 }
 
 async function clearSession(req, res) {
   const sid = parseCookies(req)[SESSION_COOKIE];
   await deleteSession(sid);
-  appendSetCookie(res, `${SESSION_COOKIE}=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0${IS_VERCEL ? '; Secure' : ''}`);
+  const secure = requestIsSecure(req);
+  appendSetCookie(res, `${SESSION_COOKIE}=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0; Priority=High${secure ? '; Secure' : ''}`);
 }
 
 module.exports = {
@@ -88,4 +98,5 @@ module.exports = {
   getSessionUser,
   getSessionUserId,
   parseCookies,
+  requestIsSecure,
 };
