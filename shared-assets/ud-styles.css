@@ -936,10 +936,11 @@ p {
   margin-bottom: 8px;
 }
 
-.qfu-demo-toolbar h3 {
+.qfu-demo-toolbar .qfu-demo-title {
   font-size: 24px;
   line-height: 1.1;
   color: #0f172a;
+  margin: 0;
 }
 
 .qfu-demo-badge {
@@ -1793,7 +1794,7 @@ p {
 }
 
 .ud-single-pricing.active .ud-pricing-header h3,
-.ud-single-pricing.active .ud-pricing-header h4 {
+.ud-single-pricing.active .ud-pricing-header .ud-pricing-price {
   color: var(--white);
 }
 
@@ -1839,7 +1840,7 @@ p {
   margin-bottom: 8px;
 }
 
-.ud-single-pricing .ud-pricing-header h4 {
+.ud-single-pricing .ud-pricing-header .ud-pricing-price {
   font-weight: 600;
   font-size: 26px;
   color: var(--primary-color);
@@ -2046,9 +2047,10 @@ p {
   margin-right: 20px;
 }
 
-.ud-single-testimonial .ud-testimonial-info .ud-testimonial-meta h4 {
+.ud-single-testimonial .ud-testimonial-info .ud-testimonial-meta .ud-testimonial-name {
   font-weight: 600;
   font-size: 14px;
+  margin: 0;
 }
 
 .ud-single-testimonial .ud-testimonial-info .ud-testimonial-meta p {
@@ -2060,15 +2062,16 @@ p {
   margin-bottom: 30px;
 }
 
-.ud-brands .ud-title h6 {
+.ud-brands .ud-title .ud-brands-label {
   font-weight: normal;
   font-size: 12px;
   color: var(--body-color);
   display: inline-block;
   position: relative;
+  margin: 0;
 }
 
-.ud-brands .ud-title h6::after {
+.ud-brands .ud-title .ud-brands-label::after {
   content: "";
   position: absolute;
   width: 30px;
@@ -2321,7 +2324,7 @@ p {
   margin-right: 24px;
 }
 
-.ud-contact-info-wrapper .ud-info-meta h5 {
+.ud-contact-info-wrapper .ud-info-meta .ud-info-label {
   font-weight: 600;
   font-size: 18px;
   margin-bottom: 15px;
