@@ -20,6 +20,7 @@ async function run() {
   await Promise.all([
     minifyCss('shared-assets/ud-styles.css', 'shared-assets/ud-styles.min.css'),
     minifyCss('shared-assets/resources.css', 'shared-assets/resources.min.css'),
+    minifyCss('landing-page/assets/css/lineicons.css', 'landing-page/assets/css/lineicons.min.css'),
     build({
       entryPoints: [path.join(root, 'shared-assets/js/main.js')],
       outfile: path.join(root, 'shared-assets/js/main.min.js'),
@@ -34,7 +35,7 @@ async function run() {
     }),
   ]);
 
-  console.log('Minified CSS and JS assets written.');
+  console.log('Minified CSS and JS assets written, including LineIcons.');
 }
 
 run().catch((error) => {
