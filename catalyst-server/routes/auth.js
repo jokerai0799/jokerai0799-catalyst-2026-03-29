@@ -1,3 +1,12 @@
+const GOOGLE_RETURN_COOKIE = 'catalyst_google_return';
+
+function buildGooglePostAuthSuffix(flowValue) {
+  if (!flowValue || !String(flowValue).startsWith('checkout:')) return '';
+  const plan = String(flowValue).slice('checkout:'.length).trim().toLowerCase() === 'business' ? 'business' : 'personal';
+  const params = new URLSearchParams({ next: 'checkout', plan });
+  return `&${params.toString()}`;
+}
+
 async function handleAuthRoutes(req, res, url, ctx) {
   const pathname = url.pathname;
 
@@ -13,17 +22,20 @@ async function handleAuthRoutes(req, res, url, ctx) {
     const code = String(url.searchParams.get('code') || '');
     const error = String(url.searchParams.get('error') || '');
     const secure = ctx.requestIsSecure(req);
+    const postAuthSuffix = buildGooglePostAuthSuffix(cookies[GOOGLE_RETURN_COOKIE]);
 
     if (error) {
       ctx.clearCookie(res, ctx.GOOGLE_STATE_COOKIE, { secure, path: '/api/auth/google' });
-      res.writeHead(302, { Location: '/landing-page/login.html?google=cancelled' });
+      ctx.clearCookie(res, GOOGLE_RETURN_COOKIE, { secure, path: '/api/auth/google' });
+      res.writeHead(302, { Location: `/landing-page/login.html?google=cancelled${postAuthSuffix}` });
       res.end();
       return true;
     }
 
     if (!code || !state || !cookies[ctx.GOOGLE_STATE_COOKIE] || cookies[ctx.GOOGLE_STATE_COOKIE] !== state) {
       ctx.clearCookie(res, ctx.GOOGLE_STATE_COOKIE, { secure, path: '/api/auth/google' });
-      res.writeHead(302, { Location: '/landing-page/login.html?google=invalid-state' });
+      ctx.clearCookie(res, GOOGLE_RETURN_COOKIE, { secure, path: '/api/auth/google' });
+      res.writeHead(302, { Location: `/landing-page/login.html?google=invalid-state${postAuthSuffix}` });
       res.end();
       return true;
     }
@@ -85,12 +97,14 @@ async function handleAuthRoutes(req, res, url, ctx) {
 
       await ctx.createSession(req, res, user.id);
       ctx.clearCookie(res, ctx.GOOGLE_STATE_COOKIE, { secure, path: '/api/auth/google' });
-      res.writeHead(302, { Location: '/dashboard/dashboard.html' });
+      ctx.clearCookie(res, GOOGLE_RETURN_COOKIE, { secure, path: '/api/auth/google' });
+      res.writeHead(302, { Location: postAuthSuffix ? `/landing-page/login.html?google=success${postAuthSuffix}` : '/dashboard/dashboard.html' });
       res.end();
       return true;
     } catch {
       ctx.clearCookie(res, ctx.GOOGLE_STATE_COOKIE, { secure, path: '/api/auth/google' });
-      res.writeHead(302, { Location: '/landing-page/login.html?google=failed' });
+      ctx.clearCookie(res, GOOGLE_RETURN_COOKIE, { secure, path: '/api/auth/google' });
+      res.writeHead(302, { Location: `/landing-page/login.html?google=failed${postAuthSuffix}` });
       res.end();
       return true;
     }

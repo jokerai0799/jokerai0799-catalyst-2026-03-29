@@ -1,9 +1,108 @@
 import { api } from '../../core/api.js';
 import { setNotice, text } from '../../core/dom.js';
 
+const CHECKOUT_INTENT_STORAGE_KEY = 'qfu-pending-checkout';
+
+function normalizePlan(plan) {
+  return String(plan || '').trim().toLowerCase() === 'business' ? 'business' : 'personal';
+}
+
+function isCheckoutIntent(params) {
+  return String(params?.get('next') || '').trim().toLowerCase() === 'checkout';
+}
+
+function buildCheckoutQuery(plan) {
+  const query = new URLSearchParams();
+  query.set('next', 'checkout');
+  query.set('plan', normalizePlan(plan));
+  return query.toString();
+}
+
+function buildAuthPageUrl(page, plan, wantsCheckout = false) {
+  if (!wantsCheckout) return `${page}.html`;
+  return `${page}.html?${buildCheckoutQuery(plan)}`;
+}
+
+function appendCheckoutParams(targetUrl, plan, wantsCheckout = false) {
+  if (!wantsCheckout) return targetUrl;
+  const url = new URL(targetUrl, window.location.href);
+  url.searchParams.set('next', 'checkout');
+  url.searchParams.set('plan', normalizePlan(plan));
+  return `${url.pathname}${url.search}${url.hash}`;
+}
+
+function storePendingCheckout(plan) {
+  try {
+    window.localStorage.setItem(CHECKOUT_INTENT_STORAGE_KEY, JSON.stringify({
+      next: 'checkout',
+      plan: normalizePlan(plan),
+    }));
+  } catch {}
+}
+
+function clearPendingCheckout() {
+  try {
+    window.localStorage.removeItem(CHECKOUT_INTENT_STORAGE_KEY);
+  } catch {}
+}
+
+function readPendingCheckout() {
+  try {
+    const raw = window.localStorage.getItem(CHECKOUT_INTENT_STORAGE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    if (parsed?.next !== 'checkout') return null;
+    return { next: 'checkout', plan: normalizePlan(parsed.plan) };
+  } catch {
+    return null;
+  }
+}
+
+function getRequestedPlan(params) {
+  if (isCheckoutIntent(params)) return normalizePlan(params.get('plan'));
+  return readPendingCheckout()?.plan || 'personal';
+}
+
+async function fetchBillingConfig() {
+  try {
+    const response = await fetch('/api/public-config', { credentials: 'same-origin' });
+    if (!response.ok) return null;
+    const data = await response.json();
+    return data?.billing || null;
+  } catch {
+    return null;
+  }
+}
+
+async function redirectToCheckout(plan) {
+  const billing = await fetchBillingConfig();
+  const normalizedPlan = normalizePlan(plan);
+  const checkoutUrl = normalizedPlan === 'business'
+    ? billing?.businessCheckoutLink || ''
+    : billing?.personalCheckoutLink || '';
+  clearPendingCheckout();
+  window.location.href = checkoutUrl || '../dashboard/dashboard.html#settings';
+}
+
+function updateAuthPageLinks({ plan, wantsCheckout }) {
+  const loginUrl = buildAuthPageUrl('login', plan, wantsCheckout);
+  const signupUrl = buildAuthPageUrl('signup', plan, wantsCheckout);
+  document.querySelectorAll('a[href="login.html"]').forEach((node) => {
+    node.setAttribute('href', loginUrl);
+  });
+  document.querySelectorAll('a[href="signup.html"]').forEach((node) => {
+    node.setAttribute('href', signupUrl);
+  });
+  document.querySelectorAll('a[href="/api/auth/google/start"]').forEach((node) => {
+    node.setAttribute('href', wantsCheckout
+      ? `/api/auth/google/start?${buildCheckoutQuery(plan)}`
+      : '/api/auth/google/start');
+  });
+}
+
 export async function ensureLandingLinks() {
   const { user } = await api.getMe();
-  if (!user) return;
+  if (!user) return null;
   document.querySelectorAll('a.ud-login-btn').forEach((node) => {
     node.textContent = 'Open workspace';
     node.setAttribute('href', '../dashboard/dashboard.html');
@@ -14,14 +113,18 @@ export async function ensureLandingLinks() {
       node.textContent = 'Open workspace';
       node.setAttribute('href', '../dashboard/dashboard.html');
     });
+  return user;
 }
 
 export function initSignupPage() {
   const form = document.querySelector('.ud-login-form');
   if (!form) return;
   const params = new URLSearchParams(window.location.search);
-  const requestedPlan = params.get('plan') || params.get('trial') || '';
-  const selectedPlan = requestedPlan === 'business' ? 'business' : 'personal';
+  const wantsCheckout = isCheckoutIntent(params);
+  const selectedPlan = getRequestedPlan(params);
+  if (wantsCheckout) storePendingCheckout(selectedPlan);
+  updateAuthPageLinks({ plan: selectedPlan, wantsCheckout });
+
   const planInput = form.querySelector('input[name="plan"]');
   if (planInput) planInput.value = selectedPlan;
   const planLabel = document.querySelector('[data-selected-plan]');
@@ -41,7 +144,13 @@ export function initSignupPage() {
     };
     try {
       await api.signup(payload);
-      window.location.href = `check-email.html?email=${encodeURIComponent(payload.email)}`;
+      const checkEmailUrl = new URL('check-email.html', window.location.href);
+      checkEmailUrl.searchParams.set('email', payload.email);
+      if (wantsCheckout) {
+        checkEmailUrl.searchParams.set('next', 'checkout');
+        checkEmailUrl.searchParams.set('plan', selectedPlan);
+      }
+      window.location.href = `${checkEmailUrl.pathname}${checkEmailUrl.search}${checkEmailUrl.hash}`;
     } catch (error) {
       setNotice(notice, `${error.message} If you recently created an account, verify your email first or use Google sign-in if that is how you joined.`, 'error');
     }
@@ -51,10 +160,15 @@ export function initSignupPage() {
 export async function initCheckEmailPage() {
   const params = new URLSearchParams(window.location.search);
   const email = params.get('email') || '';
+  const wantsCheckout = isCheckoutIntent(params);
+  const selectedPlan = getRequestedPlan(params);
+  if (wantsCheckout) storePendingCheckout(selectedPlan);
   text(document.querySelector('[data-email-target]'), email || 'your email address');
   const verifyLink = document.querySelector('[data-verify-link]');
   const resendButton = document.querySelector('[data-resend-verification]');
   const helper = document.querySelector('[data-check-email-helper]');
+  const signInLink = Array.from(document.querySelectorAll('a')).find((node) => (node.getAttribute('href') || '') === 'login.html');
+  if (signInLink) signInLink.setAttribute('href', buildAuthPageUrl('login', selectedPlan, wantsCheckout));
   if (!verifyLink) return;
   const data = await api.checkEmail(email);
   if (helper) {
@@ -64,7 +178,7 @@ export async function initCheckEmailPage() {
   }
   if (data.verifyUrl) {
     verifyLink.style.display = '';
-    verifyLink.setAttribute('href', data.verifyUrl);
+    verifyLink.setAttribute('href', appendCheckoutParams(data.verifyUrl, selectedPlan, wantsCheckout));
   } else {
     verifyLink.style.display = 'none';
   }
@@ -81,7 +195,7 @@ export async function initCheckEmailPage() {
         }
         if (result.verifyUrl) {
           verifyLink.style.display = '';
-          verifyLink.setAttribute('href', result.verifyUrl);
+          verifyLink.setAttribute('href', appendCheckoutParams(result.verifyUrl, selectedPlan, wantsCheckout));
         } else {
           verifyLink.style.display = 'none';
         }
@@ -95,11 +209,28 @@ export async function initCheckEmailPage() {
 export async function initVerifyPage() {
   const params = new URLSearchParams(window.location.search);
   const token = params.get('token');
+  const storedCheckout = readPendingCheckout();
+  const wantsCheckout = isCheckoutIntent(params) || Boolean(storedCheckout);
+  const selectedPlan = isCheckoutIntent(params) ? getRequestedPlan(params) : (storedCheckout?.plan || 'personal');
+  if (wantsCheckout) storePendingCheckout(selectedPlan);
   try {
     const data = await api.verify(token);
-    window.location.href = `login.html?verified=success&email=${encodeURIComponent(data.email)}`;
+    const loginUrl = new URL('login.html', window.location.href);
+    loginUrl.searchParams.set('verified', 'success');
+    loginUrl.searchParams.set('email', data.email);
+    if (wantsCheckout) {
+      loginUrl.searchParams.set('next', 'checkout');
+      loginUrl.searchParams.set('plan', selectedPlan);
+    }
+    window.location.href = `${loginUrl.pathname}${loginUrl.search}${loginUrl.hash}`;
   } catch {
-    window.location.href = 'login.html?verified=invalid';
+    const loginUrl = new URL('login.html', window.location.href);
+    loginUrl.searchParams.set('verified', 'invalid');
+    if (wantsCheckout) {
+      loginUrl.searchParams.set('next', 'checkout');
+      loginUrl.searchParams.set('plan', selectedPlan);
+    }
+    window.location.href = `${loginUrl.pathname}${loginUrl.search}${loginUrl.hash}`;
   }
 }
 
@@ -163,7 +294,7 @@ export function initResetPasswordPage() {
   });
 }
 
-export function initLoginPage() {
+export async function initLoginPage() {
   const form = document.querySelector('.ud-login-form');
   if (!form) return;
   const notice = document.createElement('div');
@@ -175,6 +306,12 @@ export function initLoginPage() {
   const email = params.get('email');
   const reset = params.get('reset');
   const google = params.get('google');
+  const storedCheckout = readPendingCheckout();
+  const wantsCheckout = isCheckoutIntent(params) || Boolean(storedCheckout && (verified === 'success' || google === 'success'));
+  const selectedPlan = isCheckoutIntent(params) ? getRequestedPlan(params) : (storedCheckout?.plan || 'personal');
+  if (wantsCheckout) storePendingCheckout(selectedPlan);
+  updateAuthPageLinks({ plan: selectedPlan, wantsCheckout });
+
   if (verified === 'success') setNotice(notice, `Email verified${email ? ` for ${email}` : ''}. You can log in now.`, 'success');
   if (verified === 'invalid') setNotice(notice, 'That verification link is invalid or expired.', 'error');
   if (reset === 'success') setNotice(notice, 'Password updated. You can log in now.', 'success');
@@ -183,6 +320,16 @@ export function initLoginPage() {
   if (google === 'invalid-state') setNotice(notice, 'Google sign-in expired. Try again.', 'error');
   if (google === 'not-configured') setNotice(notice, 'Google sign-in is not configured yet.', 'error');
 
+  if (wantsCheckout) {
+    try {
+      const { user } = await api.getMe();
+      if (user) {
+        await redirectToCheckout(selectedPlan);
+        return;
+      }
+    } catch {}
+  }
+
   form.addEventListener('submit', async (event) => {
     event.preventDefault();
     try {
@@ -190,6 +337,10 @@ export function initLoginPage() {
         email: String(new FormData(form).get('email') || '').trim().toLowerCase(),
         password: String(new FormData(form).get('password') || ''),
       });
+      if (wantsCheckout) {
+        await redirectToCheckout(selectedPlan);
+        return;
+      }
       window.location.href = '../dashboard/dashboard.html';
     } catch (error) {
       setNotice(notice, error.message, 'error');

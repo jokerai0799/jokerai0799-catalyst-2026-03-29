@@ -1,6 +1,15 @@
 const crypto = require('crypto');
 const { URL } = require('url');
 
+const GOOGLE_RETURN_COOKIE = 'catalyst_google_return';
+
+function normalizeGoogleCheckoutFlow(url) {
+  const next = String(url.searchParams.get('next') || '').trim().toLowerCase();
+  if (next !== 'checkout') return '';
+  const plan = String(url.searchParams.get('plan') || '').trim().toLowerCase() === 'business' ? 'business' : 'personal';
+  return `checkout:${plan}`;
+}
+
 async function handlePreflightRoutes(req, res, url, ctx) {
   const pathname = url.pathname;
 
@@ -26,6 +35,7 @@ async function handlePreflightRoutes(req, res, url, ctx) {
     const state = crypto.randomBytes(24).toString('hex');
     const redirectUri = ctx.getGoogleRedirectUri(req);
     const secure = ctx.requestIsSecure(req);
+    const postAuthFlow = normalizeGoogleCheckoutFlow(url);
     const googleUrl = new URL('https://accounts.google.com/o/oauth2/v2/auth');
     googleUrl.searchParams.set('client_id', ctx.config.GOOGLE_CLIENT_ID);
     googleUrl.searchParams.set('redirect_uri', redirectUri);
@@ -34,6 +44,11 @@ async function handlePreflightRoutes(req, res, url, ctx) {
     googleUrl.searchParams.set('prompt', 'select_account');
     googleUrl.searchParams.set('state', state);
     ctx.setCookie(res, ctx.GOOGLE_STATE_COOKIE, state, { secure, path: '/api/auth/google' });
+    if (postAuthFlow) {
+      ctx.setCookie(res, GOOGLE_RETURN_COOKIE, postAuthFlow, { secure, path: '/api/auth/google' });
+    } else {
+      ctx.clearCookie(res, GOOGLE_RETURN_COOKIE, { secure, path: '/api/auth/google' });
+    }
     res.writeHead(302, { Location: googleUrl.toString() });
     res.end();
     return true;

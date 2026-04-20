@@ -48,7 +48,15 @@ async function fetchBillingConfig() {
   }
 }
 
-function localizePricing(billingConfig = {}) {
+function buildCheckoutAuthUrl(plan) {
+  const params = new URLSearchParams({
+    next: 'checkout',
+    plan: plan === 'business' ? 'business' : 'personal',
+  });
+  return `/landing-page/login.html?${params.toString()}`;
+}
+
+function localizePricing(billingConfig = {}, user = null) {
   const { locale, currency } = getCurrencyConfig();
   const rate = CURRENCY_RATES[currency] || 1;
 
@@ -69,13 +77,15 @@ function localizePricing(billingConfig = {}) {
     const plan = node.getAttribute('data-plan-checkout');
     const stripeLink = node.getAttribute('data-stripe-link') || checkoutLinks[plan] || '';
     if (stripeLink) {
-      node.setAttribute('href', stripeLink);
+      node.dataset.checkoutUrl = stripeLink;
+      node.setAttribute('href', user ? stripeLink : buildCheckoutAuthUrl(plan));
       node.classList.remove('is-disabled');
       node.setAttribute('aria-disabled', 'false');
     } else {
       node.setAttribute('href', '#pricing');
       node.classList.add('is-disabled');
       node.setAttribute('aria-disabled', 'true');
+      delete node.dataset.checkoutUrl;
     }
   });
 
@@ -87,10 +97,11 @@ function localizePricing(billingConfig = {}) {
 export async function initLandingPage() {
   localizeDemoCurrency();
   const billingConfig = await fetchBillingConfig();
-  localizePricing(billingConfig || {});
+  let user = null;
   try {
-    await ensureLandingLinks();
+    user = await ensureLandingLinks();
   } catch (error) {
     console.warn('Landing session lookup failed', error);
   }
+  localizePricing(billingConfig || {}, user || null);
 }
