@@ -5,18 +5,23 @@ Persistent
 ; Compact Windows overlay for Quote Chaser + Quote Follow Up.
 ; 1. Install AutoHotkey v2 on your Windows PC.
 ; 2. Save this file anywhere.
-; 3. Double-click it to show a small always-on-top overlay.
-; 4. Press Ctrl+Alt+R to refresh, Ctrl+Alt+O to snap back to the top-right, Ctrl+Alt+Q to close.
+; 3. Optional for private production metrics: create a sibling file named
+;    `quotechaser-metrics-overlay.secrets.ini` with:
+;      [project-metrics]
+;      quotechaser=your-token-here
+; 4. Double-click it to show a small always-on-top overlay.
+; 5. Press Ctrl+Alt+R to refresh, Ctrl+Alt+O to snap back to the top-right, Ctrl+Alt+Q to close.
 
 PRODUCTS := [
-    Map("name", "Quote Chaser", "label", "QUOTE CHASER", "url", "https://quotechaser.online/api/project-metrics", "accent", "8B95FF"),
-    Map("name", "Quote Follow Up", "label", "QUOTE FOLLOW UP", "url", "https://quotefollowup.online/api/project-metrics", "accent", "5EEAD4")
+    Map("name", "Quote Chaser", "label", "QUOTE CHASER", "url", "https://quotechaser.online/api/project-metrics", "accent", "8B95FF", "tokenEnv", "QUOTECHASER_METRICS_TOKEN", "tokenIniKey", "quotechaser"),
+    Map("name", "Quote Follow Up", "label", "QUOTE FOLLOW UP", "url", "https://quotefollowup.online/api/project-metrics", "accent", "5EEAD4", "tokenEnv", "QUOTEFOLLOWUP_METRICS_TOKEN", "tokenIniKey", "quotefollowup")
 ]
 REFRESH_MS := 30000
 WINDOW_WIDTH := 188
 MARGIN_RIGHT := 20
 MARGIN_TOP := 20
 WINDOW_OPACITY := 220
+SECRETS_INI_PATH := RegExReplace(A_ScriptFullPath, "\.[^.]+$", ".secrets.ini")
 
 controls := []
 overlayGui := Gui("+AlwaysOnTop -Caption +ToolWindow +Border", "Metrics Overlay")
@@ -45,6 +50,8 @@ for index, product in PRODUCTS {
     controls.Push(Map(
         "name", product["name"],
         "url", product["url"],
+        "tokenEnv", product["tokenEnv"],
+        "tokenIniKey", product["tokenIniKey"],
         "statusDot", statusDot,
         "liveUsersValue", liveUsersValue,
         "signupsValue", signupsValue
@@ -74,7 +81,7 @@ RefreshMetrics(*) {
 
     for _, control in controls {
         try {
-            metrics := FetchMetrics(control["url"])
+            metrics := FetchMetrics(control["url"], LoadMetricsToken(control))
             control["liveUsersValue"].Text := metrics["liveUsers"]
             control["signupsValue"].Text := metrics["signupsToday"]
             control["statusDot"].Opt("c6EE7B7")
@@ -93,10 +100,33 @@ RefreshMetrics(*) {
     }
 }
 
-FetchMetrics(url) {
+LoadMetricsToken(control) {
+    global SECRETS_INI_PATH
+
+    token := Trim(EnvGet(control["tokenEnv"]))
+    if (token != "") {
+        return token
+    }
+
+    if FileExist(SECRETS_INI_PATH) {
+        try {
+            token := Trim(IniRead(SECRETS_INI_PATH, "project-metrics", control["tokenIniKey"], ""))
+            if (token != "") {
+                return token
+            }
+        }
+    }
+
+    return ""
+}
+
+FetchMetrics(url, token := "") {
     request := ComObject("WinHttp.WinHttpRequest.5.1")
     request.Open("GET", url, false)
     request.SetRequestHeader("Accept", "application/json")
+    if (token != "") {
+        request.SetRequestHeader("x-project-metrics-token", token)
+    }
     request.SetTimeouts(4000, 4000, 4000, 4000)
     request.Send()
 
