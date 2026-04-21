@@ -4,4 +4,5 @@ Allow: /
 Disallow: /api/
 Disallow: /dashboard/
 
+Host: https://quotechaser.online
 Sitemap: https://quotechaser.online/sitemap.xml
