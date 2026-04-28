@@ -7,7 +7,15 @@ async function handleBillingRoutes(req, res, url, ctx) {
       ctx.sendJson(res, 400, { error: 'Invalid Stripe signature.' });
       return true;
     }
-    const event = JSON.parse(rawBody.toString('utf8') || '{}');
+
+    let event;
+    try {
+      event = JSON.parse(rawBody.toString('utf8') || '{}');
+    } catch {
+      ctx.sendJson(res, 400, { error: 'Invalid Stripe payload.' });
+      return true;
+    }
+
     const firstSeen = await ctx.recordStripeWebhookEvent(event);
     if (!firstSeen) {
       ctx.sendJson(res, 200, { received: true, duplicate: true });

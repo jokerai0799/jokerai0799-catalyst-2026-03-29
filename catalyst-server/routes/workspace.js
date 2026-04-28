@@ -7,6 +7,7 @@ async function handleWorkspaceRoutes(req, res, url, ctx) {
     const body = await ctx.readJsonOrReject(req, res, ctx.badRequest);
     if (!body) return true;
     const workspaceId = String(body.workspaceId || '').trim();
+    if (!workspaceId) return ctx.badRequest(res, 'Choose a workspace first.'), true;
     const allowed = new Set((auth.store.accessibleWorkspaces || []).map((workspaceAccess) => workspaceAccess.id));
     if (!allowed.has(workspaceId)) return ctx.badRequest(res, 'You do not have access to that workspace.'), true;
     ctx.sendJson(res, 200, { ok: true, workspaceId });
@@ -45,6 +46,9 @@ async function handleWorkspaceRoutes(req, res, url, ctx) {
     if (!body) return true;
     const name = ctx.normalizeName(body.name);
     const email = String(body.email || '').trim().toLowerCase();
+    if (email === auth.user.email.toLowerCase()) {
+      return ctx.badRequest(res, 'You are already part of this workspace.'), true;
+    }
     const role = ctx.normalizeRole(body.role);
     if (!name || !email) return ctx.badRequest(res, 'Name and email are required.'), true;
     if (!ctx.isValidEmail(email)) return ctx.badRequest(res, 'Use a valid email address.'), true;

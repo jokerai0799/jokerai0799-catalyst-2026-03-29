@@ -543,7 +543,17 @@ function createAppContext(overrides = {}) {
       return null;
     }
     const requestedWorkspaceId = String(req.headers['x-workspace-id'] || '').trim();
-    return ctx.loadStore({ userId, workspaceId: requestedWorkspaceId || undefined });
+    try {
+      return await ctx.loadStore({ userId, workspaceId: requestedWorkspaceId || undefined });
+    } catch (error) {
+      const isAuthSessionProblem = error?.status === 401 || error?.status === 403;
+      if (isAuthSessionProblem) {
+        await ctx.clearSession(req, res);
+        ctx.unauthorized(res);
+        return null;
+      }
+      throw error;
+    }
   };
 
   if (overrides.helpers) Object.assign(ctx, overrides.helpers);

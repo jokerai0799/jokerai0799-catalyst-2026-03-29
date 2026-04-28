@@ -156,33 +156,6 @@ function mapWorkspaceToDb(row) {
   };
 }
 
-function mapWorkspaceBillingToDb(row) {
-  return {
-    workspace_id: row.id,
-    billing_plan_tier: row.billingPlanTier || null,
-    billing_status: row.billingStatus || null,
-    billing_currency: row.billingCurrency || null,
-    stripe_customer_id: row.stripeCustomerId || null,
-    stripe_subscription_id: row.stripeSubscriptionId || null,
-    stripe_price_id: row.stripePriceId || null,
-    stripe_current_period_end: row.stripeCurrentPeriodEnd ? isoDate(row.stripeCurrentPeriodEnd) : null,
-    created_at: isoDate(row.createdAt),
-  };
-}
-
-function mergeWorkspaceBillingRow(workspaceRow, billingRow) {
-  if (!billingRow) return workspaceRow;
-  return {
-    ...workspaceRow,
-    billing_plan_tier: billingRow.billing_plan_tier ?? workspaceRow.billing_plan_tier,
-    billing_status: billingRow.billing_status ?? workspaceRow.billing_status,
-    billing_currency: billingRow.billing_currency ?? workspaceRow.billing_currency,
-    stripe_customer_id: billingRow.stripe_customer_id ?? workspaceRow.stripe_customer_id,
-    stripe_subscription_id: billingRow.stripe_subscription_id ?? workspaceRow.stripe_subscription_id,
-    stripe_price_id: billingRow.stripe_price_id ?? workspaceRow.stripe_price_id,
-    stripe_current_period_end: billingRow.stripe_current_period_end ?? workspaceRow.stripe_current_period_end,
-  };
-}
 
 function mapUserToDb(row) {
   return {
@@ -318,15 +291,6 @@ function buildInFilter(values) {
   return `in.(${quoted.join(',')})`;
 }
 
-async function attachWorkspaceBillingRows(workspaceRows) {
-  if (!Array.isArray(workspaceRows) || !workspaceRows.length) return [];
-  const workspaceFilter = buildInFilter(workspaceRows.map((row) => row.id));
-  const billingRows = workspaceFilter
-    ? (await supabaseRequest(`workspace_billing?workspace_id=${encodeURIComponent(workspaceFilter)}&select=*`, { allow404: true }) || [])
-    : [];
-  const billingByWorkspaceId = new Map((billingRows || []).map((row) => [row.workspace_id, row]));
-  return workspaceRows.map((workspaceRow) => mergeWorkspaceBillingRow(workspaceRow, billingByWorkspaceId.get(workspaceRow.id)));
-}
 
 async function cleanupExpiredSessions({ force = false } = {}) {
   if (!SUPABASE_ENABLED) return false;
@@ -397,7 +361,7 @@ async function loadUserScopedStore(userRow, requestedWorkspaceId) {
   const workspaceIds = Array.from(new Set([userRow.workspace_id, ...(membershipRows || []).map((row) => row.workspace_id).filter(Boolean)]));
   const workspaceFilter = buildInFilter(workspaceIds);
   const workspaceRows = workspaceFilter
-    ? await attachWorkspaceBillingRows(await supabaseRequest(`workspaces?id=${encodeURIComponent(workspaceFilter)}&select=*`))
+    ? await supabaseRequest(`workspaces?id=${encodeURIComponent(workspaceFilter)}&select=*`)
     : [];
   const membershipByWorkspace = new Map((membershipRows || []).map((row) => [row.workspace_id, row]));
   const accessibleWorkspaces = workspaceRows.map((workspaceRow) => {
@@ -424,7 +388,7 @@ async function loadUserScopedStore(userRow, requestedWorkspaceId) {
 
 async function loadStore(scope = {}) {
   if (scope?.workspaceId && !scope?.userId && !scope?.email) {
-    const workspaceRows = await attachWorkspaceBillingRows(await supabaseRequest(`workspaces?id=eq.${encodeURIComponent(scope.workspaceId)}&select=*`));
+    const workspaceRows = await supabaseRequest(`workspaces?id=eq.${encodeURIComponent(scope.workspaceId)}&select=*`);
     const workspaceRow = workspaceRows?.[0] || null;
     if (!workspaceRow) return emptyStore();
     return loadWorkspaceScope(workspaceRow, { incomingInviteEmail: scope.incomingInviteEmail });
@@ -463,7 +427,7 @@ async function loadStore(scope = {}) {
     supabaseRequest('workspace_invites?select=*', { allow404: true }),
   ]);
 
-  const workspacesRows = await attachWorkspaceBillingRows(rawWorkspacesRows);
+  const workspacesRows = rawWorkspacesRows;
 
   const eventsByQuote = new Map();
   for (const row of eventRows || []) {
@@ -568,8 +532,8 @@ async function deleteQueuedRows(table, ids, { allowMissing = false } = {}) {
 }
 
 async function saveChanges({ workspaces = [], users = [], teamMembers = [], quotes = [], invites = [], deletes = {} } = {}) {
-  await syncTable('workspaces', workspaces, mapWorkspaceToDb);
-  await syncTable('users', users, mapUserToDb);
+  await syncTable('workspaces', uniqueRowsById(workspaces), mapWorkspaceToDb);
+  await syncTable('users', uniqueRowsById(users), mapUserToDb);
   await syncTable('team_members', teamMembers, mapTeamMemberToDb);
   await syncTable('quotes', quotes, mapQuoteToDb);
   await syncQuoteEvents(quotes);
