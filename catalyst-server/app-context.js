@@ -448,15 +448,23 @@ function createAppContext(overrides = {}) {
     return response.json();
   };
 
+  ctx.getWorkspaceBillingPatch = function getWorkspaceBillingPatch(workspace, billingPayload) {
+    return {
+      billing_plan_tier: billingPayload.billing_plan_tier,
+      billing_status: billingPayload.billing_status,
+      billing_currency: billingPayload.billing_currency,
+      stripe_customer_id: billingPayload.stripe_customer_id,
+      stripe_subscription_id: billingPayload.stripe_subscription_id,
+      stripe_price_id: billingPayload.stripe_price_id,
+      stripe_current_period_end: billingPayload.stripe_current_period_end,
+      trial_ends_at: workspace?.trial_ends_at || null,
+    };
+  };
+
   ctx.findWorkspaceForStripeEvent = async function findWorkspaceForStripeEvent(eventObject) {
     const customerId = String(eventObject?.customer || '').trim();
     if (customerId) {
-      const billingRows = await ctx.supabaseRequest(`workspace_billing?stripe_customer_id=eq.${encodeURIComponent(customerId)}&select=workspace_id`, { allow404: true });
-      if (billingRows?.[0]?.workspace_id) {
-        const workspaceRows = await ctx.supabaseRequest(`workspaces?id=eq.${encodeURIComponent(billingRows[0].workspace_id)}&select=*`);
-        if (workspaceRows?.[0]) return workspaceRows[0];
-      }
-      const rows = await ctx.supabaseRequest(`workspaces?stripe_customer_id=eq.${encodeURIComponent(customerId)}&select=*`);
+      const rows = await ctx.supabaseRequest(`workspaces?stripe_customer_id=eq.${encodeURIComponent(customerId)}&select=*&limit=1`, { allow404: true });
       if (rows?.[0]) return rows[0];
     }
 
@@ -519,24 +527,9 @@ function createAppContext(overrides = {}) {
       created_at: workspace.created_at || new Date().toISOString(),
     };
 
-    await ctx.supabaseRequest('workspace_billing', {
-      method: 'POST',
-      body: [billingPayload],
-      headers: { Prefer: 'resolution=merge-duplicates,return=minimal' },
-      allow404: true,
-    });
-
     await ctx.supabaseRequest(`workspaces?id=eq.${encodeURIComponent(workspace.id)}`, {
       method: 'PATCH',
-      body: {
-        billing_plan_tier: billingPayload.billing_plan_tier,
-        billing_status: billingPayload.billing_status,
-        billing_currency: billingPayload.billing_currency,
-        stripe_customer_id: billingPayload.stripe_customer_id,
-        stripe_subscription_id: billingPayload.stripe_subscription_id,
-        stripe_price_id: billingPayload.stripe_price_id,
-        stripe_current_period_end: billingPayload.stripe_current_period_end,
-      },
+      body: ctx.getWorkspaceBillingPatch(workspace, billingPayload),
       headers: { Prefer: 'return=minimal' },
     });
 

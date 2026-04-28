@@ -261,6 +261,45 @@ function flattenQuoteEvents(quotes) {
   );
 }
 
+function uniqueRowsById(rows, key = 'id') {
+  const seen = new Map();
+  for (const row of rows || []) {
+    const rowKey = row?.[key];
+    if (!rowKey) continue;
+    seen.set(rowKey, row);
+  }
+  return Array.from(seen.values());
+}
+
+function collectQuoteEventIds(quotes) {
+  const ids = new Set();
+  for (const quote of quotes || []) {
+    for (const event of Array.isArray(quote?.history) ? quote.history : []) {
+      if (event?.id) ids.add(event.id);
+    }
+  }
+  return ids;
+}
+
+async function syncQuoteEvents(quotes = []) {
+  const validQuotes = (quotes || []).filter((quote) => quote?.id);
+  if (!validQuotes.length) return;
+
+  const quoteIds = validQuotes.map((quote) => quote.id);
+  const filter = buildInFilter(quoteIds);
+  if (!filter) return;
+
+  const desiredEvents = uniqueRowsById(flattenQuoteEvents(validQuotes));
+  const desiredEventIds = collectQuoteEventIds(validQuotes);
+  const existingRows = await supabaseRequest(`quote_events?quote_id=${encodeURIComponent(filter)}&select=id,quote_id`, { allow404: true }) || [];
+  const obsoleteIds = existingRows
+    .filter((row) => row?.id && !desiredEventIds.has(row.id))
+    .map((row) => row.id);
+
+  await deleteQueuedRows('quote_events', obsoleteIds, { allowMissing: true });
+  await syncTable('quote_events', desiredEvents, (row) => row);
+}
+
 function emptyStore() {
   return {
     users: [],
@@ -530,20 +569,13 @@ async function deleteQueuedRows(table, ids, { allowMissing = false } = {}) {
 
 async function saveChanges({ workspaces = [], users = [], teamMembers = [], quotes = [], invites = [], deletes = {} } = {}) {
   await syncTable('workspaces', workspaces, mapWorkspaceToDb);
-  await syncTable('workspace_billing', workspaces, mapWorkspaceBillingToDb, { allowMissing: true, probeQuery: 'workspace_billing?select=workspace_id&limit=1' });
   await syncTable('users', users, mapUserToDb);
   await syncTable('team_members', teamMembers, mapTeamMemberToDb);
   await syncTable('quotes', quotes, mapQuoteToDb);
-  for (const quote of quotes || []) {
-    if (!quote?.id) continue;
-    await supabaseRequest(`quote_events?quote_id=eq.${encodeURIComponent(quote.id)}`, {
-      method: 'DELETE',
-      headers: { Prefer: 'return=minimal' },
-    });
-  }
-  await syncTable('quote_events', flattenQuoteEvents(quotes), (row) => row);
+  await syncQuoteEvents(quotes);
   await syncTable('workspace_invites', invites, mapInviteToDb, { allowMissing: true });
 
+  await deleteQueuedRows('quote_events', deletes.quote_events, { allowMissing: true });
   await deleteQueuedRows('quotes', deletes.quotes);
   await deleteQueuedRows('team_members', deletes.team_members);
   await deleteQueuedRows('workspace_invites', deletes.workspace_invites, { allowMissing: true });
