@@ -6,6 +6,7 @@
     "start": "node server.js",
     "build:assets": "node scripts/minify-assets.js",
     "migrate:supabase": "node scripts/migrate-local-to-supabase.js",
+    "submit:indexnow": "node scripts/submit-indexnow.js",
     "smoke": "node scripts/smoke-check.js",
     "test": "node --test"
   },
