@@ -1,0 +1,39 @@
+name: IndexNow
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  submit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Wait for deploy window
+        run: sleep 120
+
+      - name: Verify live site is reachable
+        run: |
+          for attempt in 1 2 3 4 5 6; do
+            if curl -fsS https://quotechaser.online/sitemap.xml >/dev/null \
+              && curl -fsS https://quotechaser.online/5063828b67d64d7f9c60cd971f20b134.txt >/dev/null; then
+              exit 0
+            fi
+            echo "Live site not ready yet (attempt $attempt); waiting 20s..."
+            sleep 20
+          done
+          echo "Live site did not become ready in time."
+          exit 1
+
+      - name: Submit IndexNow URLs
+        run: npm run submit:indexnow
